@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AseAudit.Core.Modules.Module1.Dtos;
+namespace AseAudit.Core.Modules.Identity.Dtos;
 
 public sealed class HostAccountSnapshotDto
 {

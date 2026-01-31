@@ -8,10 +8,19 @@ namespace ASEAudit.Shared.Scoring;
 
 public sealed class AuditItemResult
 {
+    // 識別
     public string ItemKey { get; init; } = string.Empty;
-    public double Score { get; init; }                    // 0~100
-    public double Weight { get; init; } = 1.0;            // default 1
-    public bool? Passed { get; init; }                    // optional
-    public Dictionary<string, object?>? Detail { get; init; } // optional
+
+    // 顯示用（報表 / UI）
+    public string Title { get; init; } = string.Empty;     
+    public string Message { get; init; } = string.Empty;   
+
+    // 評分用
+    public double Score { get; init; }        // 0~100
+    public double Weight { get; init; } = 1.0;
+    public bool? Passed { get; init; }
+
+    // 擴充資訊
+    public Dictionary<string, object>? Detail { get; init; }
 }
 

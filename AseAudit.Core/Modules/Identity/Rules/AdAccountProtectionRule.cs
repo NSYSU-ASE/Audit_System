@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ASEAudit.Shared.Scoring;
-using AseAudit.Core.Modules.Module1.Dtos;
+using AseAudit.Core.Modules.Identity.Dtos;
 
-namespace AseAudit.Core.Modules.Module1.Rules;
+namespace AseAudit.Core.Modules.Identity.Rules;
 
 /// <summary>
 /// 公司密碼原則標準（流程圖：windows AD / 帳號是否 AD / 是否 administrator）
