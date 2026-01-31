@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ASEAudit.Shared\ASEAudit.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
