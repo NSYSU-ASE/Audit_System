@@ -85,4 +85,31 @@ public class TestAuditController : ControllerBase
             detail = r.Detail
         });
     }
+
+    // 圖控分群測試
+    [HttpGet("user-group")]
+    public IActionResult TestUserGroup()
+    {
+        var rule = new UserGroupRule();
+
+        // ✅ 假資料：都有設定，而且使用者也在群組內 -> 100
+        var sample = new UserGroupSnapshotDto
+        {
+            HasGroupConfig = true,
+            UserAccount = "K21403",
+            ExpectedGroup = "RPT_Operator",
+            ActualGroups = new() { "RPT_Operator", "Users" }
+        };
+
+        var result = rule.Evaluate(sample);
+
+        return Ok(new
+        {
+            score = result.Score,
+            title = result.Title,
+            message = result.Message,
+            detail = result.Detail
+        });
+    }
+
 }
