@@ -1,0 +1,6 @@
+{
+  "hasGroupConfig": true,
+  "userAccount": "KH\\K21403",
+  "expectedGroup": "RPT_Operator",
+  "actualGroups": [ "RPT_ShiftA", "RPT_ReadOnly" ]
+}

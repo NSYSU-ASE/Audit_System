@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ASE Audit Demo</title>
+    <style>
+        body {
+            font-family: system-ui, "Microsoft JhengHei";
+            margin: 20px;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        select, button {
+            padding: 8px 10px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        .kpi {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .muted {
+            color: #666;
+            font-size: 12px;
+        }
+
+        pre {
+            background: #111;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 8px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>智慧稽核 Demo（Identity / UI 控制項）</h2>
+
+    <div class="row">
+        <label>案例：</label>
+        <select id="caseSel">
+            <option value="good">good（符合）</option>
+            <option value="mid">mid（部分符合）</option>
+            <option value="bad">bad（不符合）</option>
+        </select>
+
+        <button onclick="loadSummary()">載入總覽</button>
+        <span class="muted">（API：/api/demo/summary）</span>
+    </div>
+
+    <div class="card">
+        <div class="kpi">總分（加權平均）：<span id="avg">-</span></div>
+        <div class="muted" id="meta"></div>
+    </div>
+
+    <div id="list"></div>
+
+    <script>
+async function loadSummary() {
+  const c = document.getElementById("caseSel").value;
+  const res = await fetch(`/api/demo/summary?case=${c}`);
+  const data = await res.json();
+
+  document.getElementById("avg").textContent = data.weightedAverage;
+  document.getElementById("meta").textContent = `case=${data.caseName}，items=${data.totalItems}`;
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  for (const it of data.items) {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <div><b>${it.title}</b> <span class="muted">(${it.itemKey})</span></div>
+      <div>Score：<b>${it.score}</b>　Weight：${it.weight}　Passed：${it.passed}</div>
+      <div style="margin-top:6px">${it.message ?? ""}</div>
+      <details style="margin-top:8px">
+        <summary>Detail</summary>
+        <pre>${escapeHtml(JSON.stringify(it.detail, null, 2))}</pre>
+      </details>
+    `;
+    list.appendChild(div);
+  }
+}
+
+function escapeHtml(s){
+  return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+}
+    </script>
+</body>
+</html>

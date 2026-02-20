@@ -112,4 +112,44 @@ public class TestAuditController : ControllerBase
         });
     }
 
+    [HttpPost("sr110")]
+    public IActionResult Sr110([FromBody] UiControlOcrTextDto body)
+    {
+        var rule = new ErrorFeedbackRule();
+
+        var result = rule.Evaluate(new UiControlSnapshotDto
+        {
+            ScreenName = body.ScreenName,
+            OcrText = body.Text
+        });
+
+        return Ok(new
+        {
+            score = result.Score,
+            title = result.Title,
+            message = result.Message,
+            detail = result.Detail
+        });
+    }
+
+    [HttpPost("sr112")]
+    public IActionResult Sr112([FromBody] UiControlOcrTextDto body)
+    {
+        var rule = new SystemUseNoticeRule();
+
+        var result = rule.Evaluate(new UiControlSnapshotDto
+        {
+            ScreenName = body.ScreenName,
+            OcrText = body.Text
+        });
+
+        return Ok(new
+        {
+            score = result.Score,
+            title = result.Title,
+            message = result.Message,
+            detail = result.Detail
+        });
+    }
+
 }
