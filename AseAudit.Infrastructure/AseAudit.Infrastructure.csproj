@@ -10,4 +10,8 @@
     <ProjectReference Include="..\AseAudit.Core\AseAudit.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="SQL_file\" />
+  </ItemGroup>
+
 </Project>
