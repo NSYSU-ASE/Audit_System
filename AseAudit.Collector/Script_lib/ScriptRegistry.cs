@@ -33,7 +33,8 @@ public static class ScriptRegistry
         [
             (nameof(HostAccountSnapshot),   HostAccountSnapshot.Content),                  
             (nameof(PasswordPolicySnapshot), PasswordPolicySnapshot.Content),              
-            (nameof(UserGroupSnapshot),      UserGroupSnapshot.Content),                   
+            (nameof(UserGroupSnapshot),      UserGroupSnapshot.Content),
+            (nameof(AccountAuthorizationSnapshot), AccountAuthorizationSnapshot.Content),
         ];
     }
 
@@ -57,33 +58,41 @@ public static class ScriptRegistry
 
     public static class SystemEvent
     {
+        // RE 3 #2 — 覆蓋行為稽核日誌
+        // RE 4 #3 — 雙人核准稽核紀錄
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            // ↓ 新增腳本時在此加一行
+            (nameof(SecurityEventLogSnapshot), SecurityEventLogSnapshot.Content),
         ];
     }
 
     public static class AuditProcess
     {
+        // RE 3 #1 — 緊急覆蓋機制偵測
+        // RE 3 #3 — 覆蓋權限角色限制
+        // RE 4 #2 — 防自我核准驗證
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            // ↓ 新增腳本時在此加一行
+            (nameof(PrivilegeOverrideSnapshot), PrivilegeOverrideSnapshot.Content),
         ];
     }
 
     public static class DataManagement
     {
+        // SR 2.1 #4 — 各介面存取控制驗證
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            // ↓ 新增腳本時在此加一行
+            (nameof(ListeningPortAccessSnapshot), ListeningPortAccessSnapshot.Content),
         ];
     }
 
     public static class SourceManagement
     {
+        // RE 1 #1 — 服務帳號權限限縮
+        // RE 1 #3 — 排程任務非高權限執行
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            // ↓ 新增腳本時在此加一行
+            (nameof(ServiceAccountSnapshot), ServiceAccountSnapshot.Content),
         ];
     }
 
@@ -96,6 +105,7 @@ public static class ScriptRegistry
             [nameof(HostAccountSnapshot)]    = HostAccountSnapshot.Content,
             [nameof(PasswordPolicySnapshot)] = PasswordPolicySnapshot.Content,
             [nameof(UserGroupSnapshot)]      = UserGroupSnapshot.Content,
+            [nameof(AccountAuthorizationSnapshot)] = AccountAuthorizationSnapshot.Content,
 
             // SoftwareControl
             [nameof(InstalledProgramsSnapshot)] = InstalledProgramsSnapshot.Content,
@@ -104,6 +114,18 @@ public static class ScriptRegistry
             // Firewall
             [nameof(FirewallPolicySnapshot)]   = FirewallPolicySnapshot.Content,
             [nameof(NetworkInterfaceSnapshot)] = NetworkInterfaceSnapshot.Content,
+
+            // SystemEvent
+            [nameof(SecurityEventLogSnapshot)]  = SecurityEventLogSnapshot.Content,
+
+            // AuditProcess
+            [nameof(PrivilegeOverrideSnapshot)] = PrivilegeOverrideSnapshot.Content,
+
+            // DataManagement
+            [nameof(ListeningPortAccessSnapshot)] = ListeningPortAccessSnapshot.Content,
+
+            // SourceManagement
+            [nameof(ServiceAccountSnapshot)] = ServiceAccountSnapshot.Content,
 
             // ↓ 新增腳本時在此加一行
         };
