@@ -1,4 +1,5 @@
 using System.Text.Json;
+using AseAudit.Collector.Script_lib;
 
 namespace AseAudit.Collector
 {
@@ -19,7 +20,12 @@ namespace AseAudit.Collector
         {
             _logger.LogInformation("Audit collection starting.");
 
-            var scriptResults = await _scriptEngine.RunAllAsync(stoppingToken);
+            // ★ 測試模式：僅執行 FirewallPolicySnapshot
+            var testScripts = new List<(string Name, string Content)>
+            {
+                (nameof(FirewallPolicySnapshot), FirewallPolicySnapshot.Content)
+            };
+            var scriptResults = await _scriptEngine.RunModuleAsync(testScripts, stoppingToken);
 
             // 將 ScriptResult 轉換為可序列化的 JSON 物件
             var allResults = new Dictionary<string, object>();

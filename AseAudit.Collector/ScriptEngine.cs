@@ -37,25 +37,25 @@ public interface IScriptExecutor
 //  實作：PowerShell 執行引擎
 // ─────────────────────────────────────────────
 
-public sealed class PowerShellExecutor : IScriptExecutor, IDisposable
+public sealed class PowerShellExecutor : IScriptExecutor
 {
     private readonly ILogger<PowerShellExecutor> _logger;
-    private readonly RunspacePool _pool;
 
     public PowerShellExecutor(ILogger<PowerShellExecutor> logger)
     {
         _logger = logger;
-
-        var iss = InitialSessionState.CreateDefault();
-        iss.ExecutionPolicy = Microsoft.PowerShell.ExecutionPolicy.Bypass;
-        _pool = RunspaceFactory.CreateRunspacePool(1, Environment.ProcessorCount, iss, null);
-        _pool.Open();
     }
 
     public async Task<ScriptResult> RunAsync(string script, CancellationToken ct = default)
     {
+        var iss = InitialSessionState.CreateDefault();
+        iss.ExecutionPolicy = Microsoft.PowerShell.ExecutionPolicy.Bypass;
+
+        using var runspace = RunspaceFactory.CreateRunspace(iss);
+        runspace.Open();
+
         using var ps = PowerShell.Create();
-        ps.RunspacePool = _pool;
+        ps.Runspace = runspace;
         ps.AddScript(script);
 
         try
@@ -78,8 +78,6 @@ public sealed class PowerShellExecutor : IScriptExecutor, IDisposable
             return new ScriptResult { Success = false, ErrorMessage = ex.Message };
         }
     }
-
-    public void Dispose() => _pool.Dispose();
 }
 
 // ─────────────────────────────────────────────
