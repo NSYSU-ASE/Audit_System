@@ -4,7 +4,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 // Register services for dependency injection
 builder.Services.AddSingleton<IScriptExecutor, PowerShellExecutor>();
-builder.Services.AddSingleton<CollectionService>();
+builder.Services.AddSingleton<ScriptEngine>();
 
 builder.Services.AddHostedService<Worker>();
 

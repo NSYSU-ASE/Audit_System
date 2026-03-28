@@ -9,16 +9,12 @@ namespace AseAudit.Collector;
 //  回傳型別：腳本執行結果包裝
 // ─────────────────────────────────────────────
 
-/// <summary>
-/// 腳本執行結果包裝，供其他 .cs 呼叫時取得輸出與狀態。
-/// </summary>
 public sealed class ScriptResult
 {
     public bool Success { get; init; }
     public string RawOutput { get; init; } = string.Empty;
     public string? ErrorMessage { get; init; }
 
-    /// <summary>將 RawOutput 反序列化為指定型別（腳本應輸出 JSON）。</summary>
     public T? Deserialize<T>() =>
         string.IsNullOrWhiteSpace(RawOutput)
             ? default
@@ -41,10 +37,6 @@ public interface IScriptExecutor
 //  實作：PowerShell 執行引擎
 // ─────────────────────────────────────────────
 
-/// <summary>
-/// 使用 PowerShell SDK 在 In-Process Runspace 執行腳本。
-/// 需要 NuGet：System.Management.Automation
-/// </summary>
 public sealed class PowerShellExecutor : IScriptExecutor, IDisposable
 {
     private readonly ILogger<PowerShellExecutor> _logger;
@@ -69,7 +61,8 @@ public sealed class PowerShellExecutor : IScriptExecutor, IDisposable
         try
         {
             var results = await Task.Run(() => ps.Invoke(), ct);
-            var output = string.Join(Environment.NewLine, results.Select(r => r?.ToString() ?? string.Empty));
+            var output = string.Join(Environment.NewLine,
+                results.Select(r => r?.ToString() ?? string.Empty));
 
             if (ps.HadErrors)
             {
@@ -90,63 +83,78 @@ public sealed class PowerShellExecutor : IScriptExecutor, IDisposable
 }
 
 // ─────────────────────────────────────────────
-//  收集服務：組合執行器 + 腳本，供 Worker / API 呼叫
-//  腳本內容已移至 Script_lib/ 資料夾，透過 ScriptRegistry 管理
+//  ScriptEngine — 自動執行 Script_lib 內所有腳本
+//
+//  透過 ScriptRegistry.All 取得全部腳本，逐一執行並
+//  回傳 Dictionary<string, ScriptResult>。
 // ─────────────────────────────────────────────
 
-/// <summary>
-/// 對外提供各模組資料收集方法，注入 IScriptExecutor 即可替換執行策略。
-/// </summary>
-public sealed class CollectionService
+public sealed class ScriptEngine
 {
     private readonly IScriptExecutor _executor;
-    private readonly ILogger<CollectionService> _logger;
+    private readonly ILogger<ScriptEngine> _logger;
 
-    public CollectionService(IScriptExecutor executor, ILogger<CollectionService> logger)
+    public ScriptEngine(IScriptExecutor executor, ILogger<ScriptEngine> logger)
     {
         _executor = executor;
         _logger = logger;
     }
 
-    // ── Identity ─────────────────────────────
-
-    public Task<ScriptResult> CollectHostAccountAsync(CancellationToken ct = default)
-        => RunAndLogAsync(nameof(HostAccountSnapshot), HostAccountSnapshot.Content, ct);
-
-    public Task<ScriptResult> CollectPasswordPolicyAsync(CancellationToken ct = default)
-        => RunAndLogAsync(nameof(PasswordPolicySnapshot), PasswordPolicySnapshot.Content, ct);
-
-    public Task<ScriptResult> CollectUserGroupsAsync(CancellationToken ct = default)
-        => RunAndLogAsync(nameof(UserGroupSnapshot), UserGroupSnapshot.Content, ct);
-
-    // ── SoftwareControl ───────────────────────
-
-    public Task<ScriptResult> CollectInstalledProgramsAsync(CancellationToken ct = default)
-        => RunAndLogAsync(nameof(InstalledProgramsSnapshot), InstalledProgramsSnapshot.Content, ct);
-
-    public Task<ScriptResult> CollectAntivirusStatusAsync(CancellationToken ct = default)
-        => RunAndLogAsync(nameof(AntivirusStatusSnapshot), AntivirusStatusSnapshot.Content, ct);
-
-    // ── Firewall ──────────────────────────────
-
-    public Task<ScriptResult> CollectFirewallPolicyAsync(CancellationToken ct = default)
-        => RunAndLogAsync(nameof(FirewallPolicySnapshot), FirewallPolicySnapshot.Content, ct);
-
-    public Task<ScriptResult> CollectNetworkInterfacesAsync(CancellationToken ct = default)
-        => RunAndLogAsync(nameof(NetworkInterfaceSnapshot), NetworkInterfaceSnapshot.Content, ct);
-
-    // ── 私有輔助 ──────────────────────────────
-
-    private async Task<ScriptResult> RunAndLogAsync(string name, string script, CancellationToken ct)
+    /// <summary>
+    /// 依序執行 ScriptRegistry.All 中註冊的所有腳本，
+    /// 回傳以腳本名稱為 key、執行結果為 value 的字典。
+    /// </summary>
+    public async Task<Dictionary<string, ScriptResult>> RunAllAsync(CancellationToken ct = default)
     {
-        _logger.LogInformation("Collecting [{Script}]...", name);
-        var result = await _executor.RunAsync(script, ct);
+        var results = new Dictionary<string, ScriptResult>();
 
-        if (result.Success)
-            _logger.LogInformation("[{Script}] OK ({Length} chars)", name, result.RawOutput.Length);
-        else
-            _logger.LogWarning("[{Script}] FAILED: {Error}", name, result.ErrorMessage);
+        _logger.LogInformation("ScriptEngine: 開始執行全部 {Count} 支腳本", ScriptRegistry.All.Count);
 
-        return result;
+        foreach (var (name, content) in ScriptRegistry.All)
+        {
+            if (ct.IsCancellationRequested) break;
+
+            _logger.LogInformation("Collecting [{Script}]...", name);
+            var result = await _executor.RunAsync(content, ct);
+
+            if (result.Success)
+                _logger.LogInformation("[{Script}] OK ({Length} chars)", name, result.RawOutput.Length);
+            else
+                _logger.LogWarning("[{Script}] FAILED: {Error}", name, result.ErrorMessage);
+
+            results[name] = result;
+        }
+
+        _logger.LogInformation("ScriptEngine: 全部腳本執行完成，成功 {Ok}/{Total}",
+            results.Count(r => r.Value.Success), results.Count);
+
+        return results;
+    }
+
+    /// <summary>
+    /// 執行指定模組的腳本清單。
+    /// </summary>
+    public async Task<Dictionary<string, ScriptResult>> RunModuleAsync(
+        IReadOnlyList<(string Name, string Content)> moduleScripts,
+        CancellationToken ct = default)
+    {
+        var results = new Dictionary<string, ScriptResult>();
+
+        foreach (var (name, content) in moduleScripts)
+        {
+            if (ct.IsCancellationRequested) break;
+
+            _logger.LogInformation("Collecting [{Script}]...", name);
+            var result = await _executor.RunAsync(content, ct);
+
+            if (result.Success)
+                _logger.LogInformation("[{Script}] OK ({Length} chars)", name, result.RawOutput.Length);
+            else
+                _logger.LogWarning("[{Script}] FAILED: {Error}", name, result.ErrorMessage);
+
+            results[name] = result;
+        }
+
+        return results;
     }
 }
