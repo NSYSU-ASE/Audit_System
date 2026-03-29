@@ -36,11 +36,12 @@ public static class ScriptRegistry
 
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            (nameof(HostAccountSnapshot),   HostAccountSnapshot.Content),
-            (nameof(PasswordPolicySnapshot), PasswordPolicySnapshot.Content),
-            (nameof(UserGroupSnapshot),      UserGroupSnapshot.Content),
+            (nameof(OsVersionSnapshot),          OsVersionSnapshot.Content),
+            (nameof(HostAccountSnapshot),         HostAccountSnapshot.Content),
+            (nameof(PasswordPolicySnapshot),      PasswordPolicySnapshot.Content),
+            (nameof(UserGroupSnapshot),           UserGroupSnapshot.Content),
             (nameof(AccountAuthorizationSnapshot), AccountAuthorizationSnapshot.Content),
-            (nameof(SessionIntegritySnapshot), SessionIntegritySnapshot.Content),
+            (nameof(SessionIntegritySnapshot),    SessionIntegritySnapshot.Content),
         ];
     }
 
@@ -179,6 +180,7 @@ public static class ScriptRegistry
         new Dictionary<string, string>
         {
             // Identity
+            [nameof(OsVersionSnapshot)]      = OsVersionSnapshot.Content,
             [nameof(HostAccountSnapshot)]    = HostAccountSnapshot.Content,
             [nameof(PasswordPolicySnapshot)] = PasswordPolicySnapshot.Content,
             [nameof(UserGroupSnapshot)]      = UserGroupSnapshot.Content,
