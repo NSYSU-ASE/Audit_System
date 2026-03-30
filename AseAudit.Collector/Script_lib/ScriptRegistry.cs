@@ -102,9 +102,15 @@ public static class ScriptRegistry
     {
         // RE 3 #2 — 覆蓋行為稽核日誌
         // RE 4 #3 — 雙人核准稽核紀錄
+        //
+        // EventStatusSnapshot — 各項稽核記錄是否開啟狀態
+        // EventLogSnapshot    — 各類稽核事件日誌內容（含時間戳記、來源、類別、類型、事件ID、事件結果）
+        //
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
             (nameof(SecurityEventLogSnapshot), SecurityEventLogSnapshot.Content),
+            (nameof(EventStatusSnapshot),      EventStatusSnapshot.Content),
+            (nameof(EventLogSnapshot),         EventLogSnapshot.Content),
         ];
     }
 
@@ -221,6 +227,10 @@ public static class ScriptRegistry
 
             // SourceManagement
             [nameof(ServiceAccountSnapshot)] = ServiceAccountSnapshot.Content,
+
+            // SystemEvent (new)
+            [nameof(EventStatusSnapshot)]  = EventStatusSnapshot.Content,
+            [nameof(EventLogSnapshot)]     = EventLogSnapshot.Content,
 
             // ↓ 新增腳本時在此加一行
         };
