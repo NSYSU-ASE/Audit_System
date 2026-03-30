@@ -1,0 +1,987 @@
+﻿<!doctype html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>智慧資安稽核工具 - 詳細報表</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0b1220;
+            --card: rgba(255,255,255,0.08);
+            --card2: rgba(255,255,255,0.06);
+            --stroke: rgba(255,255,255,0.14);
+            --txt: rgba(255,255,255,0.92);
+            --muted: rgba(255,255,255,0.62);
+            --low: #16a34a;
+            --mid: #facc15;
+            --high: #dc2626;
+        }
+
+        body {
+            background: radial-gradient(1200px 600px at 20% 0%, rgba(99,102,241,.25), transparent 60%), radial-gradient(1200px 600px at 90% 30%, rgba(16,185,129,.18), transparent 55%), linear-gradient(180deg, #070b14 0%, #0b1220 60%, #070b14 100%);
+            color: var(--txt);
+            min-height: 100vh;
+            font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+        }
+
+        .glass {
+            background: var(--card);
+            border: 1px solid var(--stroke);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+        }
+
+        .glass-soft {
+            background: var(--card2);
+            border: 1px solid var(--stroke);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+        }
+
+        .brand {
+            letter-spacing: .5px;
+            font-weight: 800;
+        }
+
+        .chip {
+            font-size: .85rem;
+            padding: .35rem .6rem;
+            border-radius: 999px;
+            border: 1px solid var(--stroke);
+            background: rgba(255,255,255,.06);
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .mono {
+            font-variant-numeric: tabular-nums;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .pill {
+            border-radius: 999px;
+        }
+
+        .small-note {
+            color: rgba(255,255,255,.55);
+            font-size: .85rem;
+        }
+
+        .kpi {
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: .3px;
+        }
+
+        .btn-ghost {
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.14);
+            color: rgba(255,255,255,.86);
+        }
+
+            .btn-ghost:hover {
+                background: rgba(255,255,255,.10);
+                color: rgba(255,255,255,.95);
+            }
+
+        /* 上方摘要卡（外框不動，只動內容） */
+        .info-card {
+            padding: 16px 18px;
+            border-radius: 18px;
+        }
+
+            /* ✅ 只動內容：置中 + 放大（不動框、不改 col） */
+            .info-card.centered {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                min-height: 120px;
+            }
+
+                .info-card.centered .small-note {
+                    font-size: .9rem;
+                    opacity: .85;
+                    margin-bottom: 10px;
+                }
+
+        .id-badge {
+            background: rgba(59,130,246,.18);
+            border: 1px solid rgba(59,130,246,.35);
+            color: rgba(255,255,255,.95);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-weight: 900;
+        }
+
+        .type-tag {
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.14);
+            color: rgba(255,255,255,.78);
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-weight: 800;
+        }
+
+        .info-card.centered .big-id,
+        .info-card.centered .big-type {
+            font-size: 1.25rem;
+            padding: 10px 16px;
+            border-radius: 999px;
+        }
+
+        .info-card.centered .big-score {
+            font-size: 3.2rem;
+            font-weight: 1000;
+            line-height: 1;
+            letter-spacing: .5px;
+        }
+
+        /* 風險：上大塊 + 下三小塊（保留你原本喜歡的風格） */
+        .risk-stack {
+            display: grid;
+            grid-template-rows: auto auto;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .risk-banner {
+            border-radius: 18px;
+            padding: 14px 16px;
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 16px 48px rgba(0,0,0,.35);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 82px;
+        }
+
+            .risk-banner .title {
+                font-weight: 900;
+                letter-spacing: .2px;
+            }
+
+            .risk-banner .big {
+                font-size: 1.55rem;
+                font-weight: 1000;
+                letter-spacing: .3px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                white-space: nowrap;
+            }
+
+            .risk-banner.low {
+                background: linear-gradient(135deg, rgba(22,163,74,.85), rgba(22,163,74,.55));
+            }
+
+            .risk-banner.mid {
+                background: linear-gradient(135deg, rgba(250,204,21,.92), rgba(250,204,21,.60));
+                color: #1f2937;
+            }
+
+            .risk-banner.high {
+                background: linear-gradient(135deg, rgba(220,38,38,.90), rgba(220,38,38,.58));
+            }
+
+        .risk-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .risk-mini {
+            border-radius: 16px;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-height: 58px;
+            opacity: .88;
+        }
+
+            .risk-mini .label {
+                font-weight: 900;
+                font-size: .95rem;
+                white-space: nowrap;
+            }
+
+            .risk-mini .dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 999px;
+                box-shadow: 0 0 0 4px rgba(255,255,255,.06);
+                flex: 0 0 auto;
+            }
+
+            .risk-mini.low .dot {
+                background: var(--low);
+            }
+
+            .risk-mini.mid .dot {
+                background: var(--mid);
+            }
+
+            .risk-mini.high .dot {
+                background: var(--high);
+            }
+
+            .risk-mini.active {
+                opacity: 1;
+                background: rgba(255,255,255,.08);
+                border-color: rgba(255,255,255,.22);
+                box-shadow: 0 14px 40px rgba(0,0,0,.30);
+                transform: translateY(-1px);
+            }
+
+        /* 原本下半部表格/輸入樣式（維持你喜歡的感覺） */
+        .score-pill {
+            background: rgba(37,99,235,.95);
+            color: #fff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            min-width: 70px;
+            text-align: center;
+            font-weight: 900;
+            display: inline-block;
+            box-shadow: 0 10px 28px rgba(0,0,0,.28);
+        }
+
+        .dark-field {
+            background: rgba(0,0,0,.22) !important;
+            border: 1px solid rgba(255,255,255,.16) !important;
+            color: rgba(255,255,255,.92) !important;
+        }
+
+        .reason {
+            min-height: 44px;
+            resize: vertical;
+            border-radius: 14px !important;
+        }
+
+        .table-dark {
+            --bs-table-bg: rgba(255,255,255,.03);
+            --bs-table-striped-bg: rgba(255,255,255,.04);
+            --bs-table-hover-bg: rgba(255,255,255,.06);
+            border-color: rgba(255,255,255,.10);
+        }
+
+        @media (max-width: 991px) {
+            .risk-mini-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .risk-banner {
+                min-height: 74px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-4">
+
+        <!-- Header -->
+        <div class="glass p-3 px-lg-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-4"
+                     style="width:44px;height:44px;background:rgba(99,102,241,.22);border:1px solid rgba(255,255,255,.14)">
+                    <i class="bi bi-file-earmark-text fs-4"></i>
+                </div>
+                <div>
+                    <div class="brand fs-4">智慧資安稽核工具</div>
+                    <div class="small-note">詳細報表（單一機台）</div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="chip"><i class="bi bi-calendar3 me-1"></i>本次稽核：2025-12</span>
+                <a class="chip text-decoration-none" href="index.html"><i class="bi bi-arrow-left me-1"></i>回主頁</a>
+            </div>
+        </div>
+
+        <!-- ✅ 你原本喜歡的：機台資訊大外框（恢復） -->
+        <div class="glass p-3 p-lg-4 mt-3">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                <div>
+                    <div class="fw-bold fs-5">機台資訊</div>
+                    <div class="small-note">保留雷達圖，並列出 FR1~FR7 的扣分原因（可編輯後匯出）</div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-ghost pill" id="btnExportCSV">
+                        <i class="bi bi-filetype-csv me-1"></i>匯出 CSV
+                    </button>
+                    <button class="btn btn-primary pill" id="btnExportXLS">
+                        <i class="bi bi-file-earmark-excel me-1"></i>匯出 Excel
+                    </button>
+                    <button class="btn btn-danger pill" id="btnDailyReport">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>生成每日報告 PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- ✅ 一定要有 row：保持橫排 -->
+            <div class="row g-3 mt-2">
+                <div class="col-12 col-lg-3">
+                    <div class="glass-soft info-card centered h-100">
+                        <div class="small-note">機台編號</div>
+                        <span class="id-badge mono big-id" id="devId">--</span>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-3">
+                    <div class="glass-soft info-card centered h-100">
+                        <div class="small-note">種類</div>
+                        <span class="type-tag big-type" id="devType">--</span>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-3">
+                    <div class="glass-soft info-card centered h-100">
+                        <div class="small-note">成熟度</div>
+                        <div class="mono big-score" id="devOverall">--</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-3">
+                    <div class="risk-stack">
+                        <div id="riskBanner" class="risk-banner mid">
+                            <div>
+                                <div class="title">風險等級</div>
+                            </div>
+                            <div class="big" id="riskBig">
+                                <i class="bi bi-shield-exclamation"></i><span>中風險</span>
+                            </div>
+                        </div>
+
+                        <div class="risk-mini-grid">
+                            <div id="miniLow" class="risk-mini low">
+                                <div class="label">低風險</div>
+                                <div class="dot"></div>
+                            </div>
+                            <div id="miniMid" class="risk-mini mid">
+                                <div class="label">中風險</div>
+                                <div class="dot"></div>
+                            </div>
+                            <div id="miniHigh" class="risk-mini high">
+                                <div class="label">高風險</div>
+                                <div class="dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Radar（維持你原本喜歡的樣子） -->
+        <div class="glass p-3 p-lg-4 mt-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <div class="fw-bold fs-5">FR 雷達圖</div>
+                    <div class="small-note">分數直接標示在圖上（更直觀）</div>
+                </div>
+                <div class="glass-soft px-3 py-2 d-flex align-items-center gap-3">
+                    <div>
+                        <div class="small-note">FR 平均</div>
+                        <div class="kpi mono" id="frAvg">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-soft p-3 mt-3" style="height:360px;">
+                <canvas id="frRadar"></canvas>
+            </div>
+        </div>
+
+        <!-- Reasons list（維持你原本喜歡的樣子） -->
+        <div class="glass p-3 p-lg-4 mt-3 mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <div class="fw-bold fs-5">扣分原因（FR1 ~ FR7）</div>
+                    <div class="small-note">只保留「得分(%) + 原因」，不再顯示扣分數</div>
+                </div>
+                <div class="mono small-note" id="rowCount">共 0 筆</div>
+            </div>
+
+            <div class="table-responsive mt-3">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:90px;">FR</th>
+                            <th class="text-center" style="width:140px;">得分 (%)</th>
+                            <th>扣分原因（可編輯）</th>
+                        </tr>
+                    </thead>
+                    <tbody id="frTbody"></tbody>
+                </table>
+            </div>
+
+            <div class="small-note mt-2">
+                匯出 CSV / Excel 會包含：機台編號、種類、總分、風險等級、FR、得分、扣分原因。
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ====== Demo data（之後換成 API 回傳即可）======
+        const devices = [
+            {
+                id: "HMI-03", type: "HMI",
+                fr: [63, 57, 60, 55, 52, 59, 61],
+                reasons: [
+                    "未啟用密碼複雜度/密碼週期政策",
+                    "帳號權限未分級，存在共用帳號",
+                    "缺少變更紀錄/稽核軌跡保存",
+                    "遠端存取缺少 MFA / 限制來源",
+                    "資產標籤不完整，維護責任不明確",
+                    "系統更新/修補流程未文件化",
+                    "備援/還原演練紀錄不足"
+                ]
+            },
+            {
+                id: "PC-001", type: "AD / Windows",
+                fr: [82, 76, 91, 68, 73, 80, 77],
+                reasons: [
+                    "密碼策略未套用到所有 OU",
+                    "離職帳號停用流程延遲",
+                    "稽核策略未完整啟用",
+                    "RDP 存取未限制來源網段",
+                    "資產責任人欄位缺漏",
+                    "修補窗口與回復計畫未對齊",
+                    "備份未做離線/異地保護"
+                ]
+            }
+        ];
+
+        const frNames = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+        function riskLevel(score) {
+            if (score >= 80) return { key: "low", label: "低風險" };
+            if (score >= 50) return { key: "mid", label: "中風險" };
+            return { key: "high", label: "高風險" };
+        }
+
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+        function findDeviceById(id) {
+            if (!id) return devices[0];
+            return devices.find(d => d.id === id) || devices[0];
+        }
+        function escapeHTML(str) {
+            return String(str ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        // ====== Radar value labels plugin ======
+        const radarValueLabelsPlugin = {
+            id: "radarValueLabels",
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                const meta = chart.getDatasetMeta(0);
+                if (!meta?.data?.length) return;
+
+                const data = chart.data.datasets[0].data;
+
+                ctx.save();
+                ctx.font = "800 12px Segoe UI, system-ui, -apple-system, Arial";
+                ctx.fillStyle = "rgba(255,255,255,.92)";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                meta.data.forEach((point, i) => {
+                    const { x, y } = point.getProps(["x", "y"], true);
+                    ctx.fillText(String(data[i]), x, y - 14);
+                });
+
+                ctx.restore();
+            }
+        };
+
+        let radarChart = null;
+        function renderRadar(scores) {
+            const canvas = document.getElementById("frRadar");
+            if (!canvas) return;
+            if (radarChart) radarChart.destroy();
+
+            const values = scores.map(v => Math.round(v));
+
+            radarChart = new Chart(canvas, {
+                type: "radar",
+                data: {
+                    labels: frNames,
+                    datasets: [{
+                        data: values,
+                        fill: true,
+                        backgroundColor: "rgba(59,130,246,0.22)",
+                        borderColor: "rgba(59,130,246,0.95)",
+                        pointBackgroundColor: "#3b82f6",
+                        pointBorderColor: "#fff",
+                        pointRadius: 4,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                backdropColor: "transparent",
+                                color: "rgba(255,255,255,.6)"
+                            },
+                            grid: { color: "rgba(255,255,255,.15)" },
+                            angleLines: { color: "rgba(255,255,255,.2)" },
+                            pointLabels: {
+                                color: "#fff",
+                                font: { size: 13, weight: "bold" }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.raw} 分` } }
+                    }
+                },
+                plugins: [radarValueLabelsPlugin]
+            });
+        }
+
+        function renderRiskUI(overallScore) {
+            const r = riskLevel(overallScore);
+
+            const banner = document.getElementById("riskBanner");
+            const big = document.getElementById("riskBig");
+
+            banner.classList.remove("low", "mid", "high");
+            banner.classList.add(r.key);
+
+            const icon =
+                r.key === "low" ? "bi-shield-check" :
+                    r.key === "mid" ? "bi-shield-exclamation" :
+                        "bi-shield-x";
+
+            if (r.key === "mid") {
+                big.style.color = "#111827";
+            } else {
+                big.style.color = "rgba(255,255,255,.96)";
+            }
+            big.innerHTML = `<i class="bi ${icon}"></i><span>${r.label}</span>`;
+
+            const low = document.getElementById("miniLow");
+            const mid = document.getElementById("miniMid");
+            const high = document.getElementById("miniHigh");
+            [low, mid, high].forEach(el => el.classList.remove("active"));
+            if (r.key === "low") low.classList.add("active");
+            if (r.key === "mid") mid.classList.add("active");
+            if (r.key === "high") high.classList.add("active");
+        }
+
+        function renderDevice(device) {
+            document.getElementById("devId").textContent = device.id;
+            document.getElementById("devType").textContent = device.type;
+
+            const overall = Math.round(avg(device.fr));
+            document.getElementById("devOverall").textContent = overall;
+
+            renderRiskUI(overall);
+
+            renderRadar(device.fr);
+            document.getElementById("frAvg").textContent = Math.round(avg(device.fr));
+
+            const tbody = document.getElementById("frTbody");
+            tbody.innerHTML = device.fr.map((score, i) => {
+                const s = Math.round(score);
+                const reason = (device.reasons && device.reasons[i]) ? device.reasons[i] : "（示意）此項尚未符合要求，需補強設定與證據。";
+                return `
+              <tr>
+                <td class="fw-bold">${frNames[i]}</td>
+                <td class="text-center"><span class="score-pill mono">${s}</span></td>
+                <td>
+                  <textarea class="form-control dark-field reason" data-fr="${frNames[i]}" rows="2">${escapeHTML(reason)}</textarea>
+                  <div class="small-note mt-1">（可直接編輯，匯出會帶出你改的內容）</div>
+                </td>
+              </tr>
+            `;
+            }).join("");
+
+            document.getElementById("rowCount").textContent = `共 ${device.fr.length} 筆`;
+        }
+
+        function collectRowsForExport(device) {
+            const reasonsMap = new Map();
+            document.querySelectorAll("textarea[data-fr]").forEach(t => {
+                reasonsMap.set(t.getAttribute("data-fr"), t.value.trim());
+            });
+
+            const overall = Math.round(avg(device.fr));
+            const r = riskLevel(overall);
+
+            return device.fr.map((score, i) => {
+                const fr = frNames[i];
+                const s = Math.round(score);
+                const reason = reasonsMap.get(fr) || "";
+                return {
+                    device_id: device.id,
+                    device_type: device.type,
+                    overall_score: overall,
+                    overall_risk: r.label,
+                    fr: fr,
+                    score_percent: s,
+                    deduction_reason: reason
+                };
+            });
+        }
+
+        function downloadBlob(filename, mimeType, content) {
+            const blob = new Blob([content], { type: mimeType });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function exportCSV(device) {
+            const rows = collectRowsForExport(device);
+            const headers = Object.keys(rows[0]);
+            const esc = (v) => {
+                const s = String(v ?? "");
+                if (/[",\n]/.test(s)) return `"${s.replaceAll('"', '""')}"`;
+                return s;
+            };
+            const csv = [
+                headers.join(","),
+                ...rows.map(r => headers.map(h => esc(r[h])).join(","))
+            ].join("\n");
+
+            const bom = "\uFEFF";
+            downloadBlob(`${device.id}_detail.csv`, "text/csv;charset=utf-8", bom + csv);
+        }
+
+        function exportXLS(device) {
+            const rows = collectRowsForExport(device);
+            const headers = Object.keys(rows[0]);
+
+            const table = `
+            <table border="1">
+              <thead><tr>${headers.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr></thead>
+              <tbody>
+                ${rows.map(r => `<tr>${headers.map(h => `<td>${escapeHTML(r[h])}</td>`).join("")}</tr>`).join("")}
+              </tbody>
+            </table>
+          `;
+
+            const html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office"
+                  xmlns:x="urn:schemas-microsoft-com:office:excel"
+                  xmlns="http://www.w3.org/TR/REC-html40">
+              <head><meta charset="utf-8"></head>
+              <body>${table}</body>
+            </html>
+          `;
+            downloadBlob(`${device.id}_detail.xls`, "application/vnd.ms-excel;charset=utf-8", html);
+        }
+
+        // Init
+        const id = getQueryParam("id");
+        const currentDevice = findDeviceById(id);
+        renderDevice(currentDevice);
+
+        document.getElementById("btnExportCSV").addEventListener("click", () => exportCSV(currentDevice));
+        document.getElementById("btnExportXLS").addEventListener("click", () => exportXLS(currentDevice));
+
+        document.getElementById("btnDailyReport").addEventListener("click", generateDailyReport);
+
+        function generateDailyReport() {
+            // 取當下頁面資料（含你在 textarea 編輯的原因）
+            const auditDate = new Date();
+            const yyyy = auditDate.getFullYear();
+            const mm = String(auditDate.getMonth() + 1).padStart(2, "0");
+            const dd = String(auditDate.getDate()).padStart(2, "0");
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+
+            const deviceId = document.getElementById("devId")?.textContent?.trim() || "--";
+            const deviceType = document.getElementById("devType")?.textContent?.trim() || "--";
+            const overall = document.getElementById("devOverall")?.textContent?.trim() || "--";
+            const riskText = document.getElementById("riskBig")?.innerText?.trim() || "--";
+
+            // 收集 FR 表格（得分 + 原因）
+            const rows = [];
+            const frEls = document.querySelectorAll("textarea[data-fr]");
+            const scoreEls = document.querySelectorAll(".score-pill");
+
+            frEls.forEach((t, idx) => {
+                const fr = t.getAttribute("data-fr") || `FR${idx + 1}`;
+                const score = scoreEls[idx]?.textContent?.trim() || "--";
+                const reason = t.value?.trim() || "";
+                rows.push({ fr, score, reason });
+            });
+
+            // ✅ Demo：先用 FR index 對應到 SR 群組（之後你有真正 SR 結果 JSON 再換成 API 回傳）
+            const srGroups = [
+                { sr: "SR1.1 / SR1.1RE(1)", title: "AD 管理與帳號識別", score: rows[0]?.score ?? "--", reason: rows[0]?.reason ?? "" },
+                { sr: "SR1.3 / SR1.4", title: "AD 帳號比對黃頁", score: rows[1]?.score ?? "--", reason: rows[1]?.reason ?? "" },
+                { sr: "SR1.5 / SR1.7 / SR1.11", title: "密碼政策 / 嘗試限制 / ALM log", score: rows[2]?.score ?? "--", reason: rows[2]?.reason ?? "" },
+                { sr: "SR1.10", title: "鑑別回饋", score: rows[3]?.score ?? "--", reason: rows[3]?.reason ?? "" },
+                { sr: "SR1.12", title: "系統使用通知", score: rows[4]?.score ?? "--", reason: rows[4]?.reason ?? "" }
+            ];
+
+            // HTML escape（避免報告內文字破版）
+            const esc = (s) => String(s ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+
+            // 產出報告 HTML（新視窗）
+            const reportHtml = `
+      <!doctype html>
+      <html lang="zh-Hant">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>每日稽核報告_${esc(deviceId)}_${esc(dateStr)}</title>
+        <style>
+          body{
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", Arial, sans-serif;
+            margin: 24px;
+            color: #111827;
+          }
+          .topbar{
+            display:flex;
+            justify-content: space-between;
+            align-items:flex-start;
+            gap: 16px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+          }
+          h1{
+            font-size: 20px;
+            margin: 0 0 6px 0;
+            letter-spacing: .2px;
+          }
+          .sub{
+            color:#4b5563;
+            font-size: 12px;
+            margin: 0;
+            line-height: 1.6;
+          }
+          .meta{
+            text-align:right;
+            font-size: 12px;
+            color:#374151;
+            line-height: 1.7;
+            white-space: nowrap;
+          }
+          .badge{
+            display:inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            border: 1px solid #e5e7eb;
+            background:#f9fafb;
+            margin-left: 8px;
+          }
+          .section{
+            margin-top: 16px;
+            page-break-inside: avoid;
+          }
+          .section-title{
+            font-size: 14px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+          }
+          table{
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+          }
+          th, td{
+            border: 1px solid #e5e7eb;
+            padding: 10px 10px;
+            vertical-align: top;
+          }
+          th{
+            background:#f3f4f6;
+            text-align:left;
+            font-weight: 800;
+          }
+          .score{
+            font-weight: 900;
+            text-align:center;
+            width: 90px;
+            white-space: nowrap;
+          }
+          .reason{
+            white-space: pre-wrap;
+            color:#111827;
+          }
+          .footer{
+            margin-top: 18px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+            color:#6b7280;
+            font-size: 11px;
+            display:flex;
+            justify-content: space-between;
+            gap: 12px;
+          }
+
+          @media print {
+            body{ margin: 12mm; }
+            .no-print{ display:none !important; }
+          }
+
+          .print-actions{
+            display:flex;
+            gap: 10px;
+            justify-content:flex-end;
+            margin-bottom: 10px;
+          }
+          button{
+            border: 1px solid #d1d5db;
+            background: #111827;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor:pointer;
+            font-weight: 800;
+            font-size: 12px;
+          }
+          button.secondary{
+            background:#fff;
+            color:#111827;
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="print-actions no-print">
+          <button class="secondary" onclick="window.close()">關閉</button>
+          <button onclick="window.print()">列印 / 另存 PDF</button>
+        </div>
+
+        <div class="topbar">
+          <div>
+            <h1>日月光智慧資安稽核工具｜每日稽核報告（FR1 身分識別模組）</h1>
+            <p class="sub">本報告為每日稽核摘要，內容包含 SR 控制項群組得分與扣分原因（可追溯）。</p>
+          </div>
+          <div class="meta">
+            稽核日期：<b>${esc(dateStr)}</b><br/>
+            機台編號：<b>${esc(deviceId)}</b><br/>
+            系統類型：<b>${esc(deviceType)}</b><br/>
+            成熟度：<b>${esc(overall)}%</b><br/>
+            風險等級：<span class="badge">${esc(riskText)}</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">一、SR 控制項評分（今日）</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:190px;">SR 群組</th>
+                <th>控制內容</th>
+                <th class="score">得分(%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${srGroups.map(g => `
+                <tr>
+                  <td><b>${esc(g.sr)}</b></td>
+                  <td>${esc(g.title)}</td>
+                  <td class="score">${esc(g.score)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">二、扣分原因（明細）</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:190px;">SR 群組</th>
+                <th class="score">得分(%)</th>
+                <th>扣分原因</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${srGroups.map(g => `
+                <tr>
+                  <td><b>${esc(g.sr)}</b></td>
+                  <td class="score">${esc(g.score)}</td>
+                  <td class="reason">${esc(g.reason || "（無）")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="section-title">三、改善建議（可作為追蹤項）</div>
+          <ol style="margin:6px 0 0 18px; font-size:12px; color:#111827;">
+            <li>針對低分 SR 群組優先補強：密碼複雜度 / 嘗試限制 / 定期更換。</li>
+            <li>將鑑別回饋訊息統一（避免帳號枚舉），並保留稽核軌跡。</li>
+            <li>每日報告留存，供稽核追溯與改善成效檢核。</li>
+          </ol>
+        </div>
+
+        <div class="footer">
+          <div>輸出來源：智慧資安稽核工具（detail）</div>
+          <div>文件用途：內部稽核 / 改善追蹤（每日）</div>
+        </div>
+      </body>
+      </html>
+        `;
+
+            const w = window.open("", "_blank", "width=920,height=720");
+            if (!w) {
+                alert("瀏覽器阻擋彈出視窗，請允許 Pop-up 後再試一次。");
+                return;
+            }
+
+            w.document.open();
+            w.document.write(reportHtml);
+            w.document.close();
+
+            // ✅ 自動列印放在這裡（不在 reportHtml 內放 <script>）
+            w.onload = () => setTimeout(() => w.print(), 300);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+﻿<!doctype html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>區域資料測試</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            margin: 40px;
+            color: #111;
+            background: #fff;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 24px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 600px;
+            font-size: 28px;
+        }
+
+        th, td {
+            border: 2px solid #444;
+            padding: 12px 18px;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f3f3;
+            font-weight: 700;
+        }
+
+        .note {
+            margin-top: 20px;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>區域資料測試</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>AreaId</th>
+                <th>AreaName</th>
+                <th>Owner</th>
+            </tr>
+        </thead>
+        <tbody id="areaBody">
+            <tr>
+                <td colspan="3">載入中...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="note">此頁面用來確認 localhost 已成功抓到資料庫最新區域資料。</div>
+    <div id="errorBox" class="error"></div>
+
+    <script>
+    async function loadAreas() {
+      try {
+        const res = await fetch('/api/Areas');
+        if (!res.ok) {
+          throw new Error(`API 錯誤：${res.status}`);
+        }
+
+        const data = await res.json();
+        const tbody = document.getElementById('areaBody');
+        const errorBox = document.getElementById('errorBox');
+
+        errorBox.textContent = '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="3">查無資料</td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = data.map(item => `
+          <tr>
+            <td>${item.areaId ?? ''}</td>
+            <td>${item.areaName ?? ''}</td>
+            <td>${item.owner ?? ''}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        document.getElementById('areaBody').innerHTML = `
+          <tr>
+            <td colspan="3">載入失敗</td>
+          </tr>
+        `;
+        document.getElementById('errorBox').textContent = err.message;
+      }
+    }
+
+    loadAreas();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1290 @@
+﻿<!doctype html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>智慧資安稽核工具 - Area（Zone II）</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0b1220;
+            --card: rgba(255,255,255,0.08);
+            --card2: rgba(255,255,255,0.06);
+            --stroke: rgba(255,255,255,0.14);
+            --txt: rgba(255,255,255,0.92);
+            --muted: rgba(255,255,255,0.62);
+            --green: #22c55e;
+            --yellow: #facc15;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --cyan: #22d3ee;
+        }
+
+        body {
+            background: radial-gradient(1200px 600px at 20% 0%, rgba(99,102,241,.25), transparent 60%), radial-gradient(1200px 600px at 90% 30%, rgba(16,185,129,.18), transparent 55%), linear-gradient(180deg, #070b14 0%, #0b1220 60%, #070b14 100%);
+            color: var(--txt);
+            min-height: 100vh;
+            font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: var(--card);
+            border: 1px solid var(--stroke);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+        }
+
+        .glass-soft {
+            background: var(--card2);
+            border: 1px solid var(--stroke);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+        }
+
+        .brand {
+            letter-spacing: .5px;
+            font-weight: 800;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .mono {
+            font-variant-numeric: tabular-nums;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .chip {
+            font-size: .85rem;
+            padding: .35rem .6rem;
+            border-radius: 999px;
+            border: 1px solid var(--stroke);
+            background: rgba(255,255,255,.06);
+            color: var(--muted);
+            white-space: nowrap;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+            .chip:hover {
+                color: #fff;
+                border-color: rgba(255,255,255,.22);
+            }
+
+        .dark-field {
+            background: rgba(0,0,0,.25) !important;
+            border: 1px solid rgba(255,255,255,.18) !important;
+            color: rgba(255,255,255,.92) !important;
+        }
+
+            .dark-field::placeholder {
+                color: rgba(255,255,255,.45) !important;
+            }
+
+        select.dark-field option {
+            color: #111827;
+        }
+
+        /* Lamp badge */
+        .lamp {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            padding: .5rem .75rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.16);
+            background: rgba(255,255,255,.06);
+            font-weight: 800;
+            letter-spacing: .2px;
+            white-space: nowrap;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(255,255,255,.06) inset;
+        }
+
+        .lamp.green {
+            color: #bbf7d0;
+            background: rgba(34,197,94,.14);
+            border-color: rgba(34,197,94,.22);
+        }
+
+            .lamp.green .dot {
+                background: var(--green);
+            }
+
+        .lamp.yellow {
+            color: #fef08a;
+            background: rgba(250,204,21,.14);
+            border-color: rgba(250,204,21,.22);
+        }
+
+            .lamp.yellow .dot {
+                background: var(--yellow);
+            }
+
+        .lamp.red {
+            color: #fecaca;
+            background: rgba(239,68,68,.14);
+            border-color: rgba(239,68,68,.22);
+        }
+
+            .lamp.red .dot {
+                background: var(--red);
+            }
+
+        /* Trend pill */
+        .trend {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .45rem .7rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.05);
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+            .trend.up {
+                color: #86efac;
+                background: rgba(34,197,94,.14);
+                border-color: rgba(34,197,94,.22);
+            }
+
+            .trend.down {
+                color: #fecaca;
+                background: rgba(239,68,68,.14);
+                border-color: rgba(239,68,68,.22);
+            }
+
+            .trend.flat {
+                color: rgba(255,255,255,.72);
+            }
+
+        .kpiBig {
+            font-size: 3.2rem;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: .5px;
+        }
+
+        .btn-cyan {
+            border-radius: 999px;
+            border: 1px solid rgba(34,211,238,.35);
+            background: rgba(34,211,238,.10);
+            color: #a5f3fc;
+            font-weight: 900;
+        }
+
+            .btn-cyan:hover {
+                background: rgba(34,211,238,.16);
+                color: #e0faff;
+            }
+
+        /* FR mini cards */
+        .fr-mini {
+            padding: 14px 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+            transition: transform .12s ease, box-shadow .12s ease;
+            height: 100%;
+        }
+
+            .fr-mini:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 16px 44px rgba(0,0,0,.35);
+            }
+
+            .fr-mini .name {
+                font-weight: 900;
+                letter-spacing: .2px;
+                color: rgba(255,255,255,.9);
+            }
+
+            .fr-mini .val {
+                font-size: 1.7rem;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+        .bar {
+            height: 8px;
+            background: rgba(255,255,255,.08);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+            .bar > span {
+                display: block;
+                height: 100%;
+                background: rgba(59,130,246,.85);
+                width: 0%;
+                border-radius: 999px;
+            }
+
+        /* Radar wrap */
+        .radar-wrap {
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.04);
+            border-radius: 18px;
+            overflow: hidden;
+            padding: 14px;
+        }
+
+        .radar-canvas-box {
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(0,0,0,.18);
+            padding: 12px;
+            height: 380px;
+        }
+
+        /* Building selector pills */
+        .bPills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px 0 0;
+        }
+
+        .bPill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: .48rem .75rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.05);
+            color: rgba(255,255,255,.85);
+            font-weight: 900;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+            .bPill:hover {
+                border-color: rgba(255,255,255,.24);
+            }
+
+            .bPill.active {
+                background: rgba(59,130,246,.22);
+                border-color: rgba(59,130,246,.35);
+                color: #dbeafe;
+            }
+
+            .bPill .miniDot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                box-shadow: 0 0 0 3px rgba(255,255,255,.06) inset;
+                background: rgba(255,255,255,.35);
+            }
+
+        /* Owner line (新增) */
+        .ownerLine {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .38rem .6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.05);
+            color: rgba(255,255,255,.78);
+            font-weight: 800;
+            font-size: .9rem;
+            margin-top: .55rem;
+            white-space: nowrap;
+        }
+
+            .ownerLine i {
+                opacity: .9;
+            }
+
+        /* Risk map (heatmap) */
+        .riskwrap {
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.04);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .riskhead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(255,255,255,.04);
+            border-bottom: 1px solid rgba(255,255,255,.10);
+        }
+
+            .riskhead .title {
+                font-weight: 900;
+                letter-spacing: .2px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+                .riskhead .title .tag {
+                    font-size: .82rem;
+                    padding: .25rem .55rem;
+                    border-radius: 999px;
+                    border: 1px solid rgba(255,255,255,.14);
+                    background: rgba(255,255,255,.06);
+                    color: rgba(255,255,255,.75);
+                    font-weight: 800;
+                }
+
+        .legendRow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 12px 14px 0;
+        }
+
+        .legendItem {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: .38rem .6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.05);
+            color: rgba(255,255,255,.80);
+            font-weight: 900;
+            font-size: .84rem;
+        }
+
+            .legendItem .dot2 {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                box-shadow: 0 0 0 3px rgba(255,255,255,.06) inset;
+            }
+
+        .riskmap {
+            overflow: hidden;
+            padding: 12px 28px 22px 12px;
+        }
+
+        .fitBox {
+            transform-origin: top left;
+            will-change: transform;
+        }
+
+        .grid {
+            display: grid;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .xlab, .ylab {
+            font-weight: 900;
+            color: rgba(255,255,255,.85);
+            letter-spacing: .15px;
+        }
+
+        .xlab {
+            text-align: center;
+            padding: 6px 4px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.03);
+            border: 1px solid rgba(255,255,255,.08);
+            cursor: pointer;
+            user-select: none;
+        }
+
+            .xlab:hover {
+                border-color: rgba(255,255,255,.18);
+            }
+
+            .xlab.active {
+                background: rgba(59,130,246,.18);
+                border-color: rgba(59,130,246,.30);
+                color: #dbeafe;
+            }
+
+        .ylab {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 6px 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.03);
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .cell {
+            position: relative;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.04);
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform .12s ease, box-shadow .12s ease;
+            padding: 0 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+            .cell:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 14px 34px rgba(0,0,0,.35);
+            }
+
+            .cell.active {
+                outline: 2px solid rgba(59,130,246,.45);
+                outline-offset: 2px;
+            }
+
+            .cell .dot2 {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                box-shadow: 0 0 0 4px rgba(255,255,255,.06) inset;
+                flex: 0 0 auto;
+            }
+
+            .cell.green {
+                background: rgba(34,197,94,.12);
+                border-color: rgba(34,197,94,.20);
+            }
+
+                .cell.green .dot2 {
+                    background: var(--green);
+                }
+
+            .cell.yellow {
+                background: rgba(250,204,21,.12);
+                border-color: rgba(250,204,21,.20);
+            }
+
+                .cell.yellow .dot2 {
+                    background: var(--yellow);
+                }
+
+            .cell.red {
+                background: rgba(239,68,68,.12);
+                border-color: rgba(239,68,68,.20);
+            }
+
+                .cell.red .dot2 {
+                    background: var(--red);
+                }
+
+        /* Improvement cards */
+        .improveCard {
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.05);
+            border-radius: 18px;
+            padding: 16px;
+            height: 100%;
+        }
+
+        .improveTitle {
+            font-weight: 900;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .pillFR {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: .35rem .55rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.05);
+            font-weight: 900;
+            font-size: .82rem;
+            color: rgba(255,255,255,.82);
+            white-space: nowrap;
+        }
+
+            .pillFR .dot2 {
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                box-shadow: 0 0 0 3px rgba(255,255,255,.06) inset;
+            }
+
+            .pillFR.green {
+                color: #bbf7d0;
+                background: rgba(34,197,94,.14);
+                border-color: rgba(34,197,94,.22);
+            }
+
+                .pillFR.green .dot2 {
+                    background: var(--green);
+                }
+
+            .pillFR.yellow {
+                color: #fef08a;
+                background: rgba(250,204,21,.14);
+                border-color: rgba(250,204,21,.22);
+            }
+
+                .pillFR.yellow .dot2 {
+                    background: var(--yellow);
+                }
+
+            .pillFR.red {
+                color: #fecaca;
+                background: rgba(239,68,68,.14);
+                border-color: rgba(239,68,68,.22);
+            }
+
+                .pillFR.red .dot2 {
+                    background: var(--red);
+                }
+
+        @media (max-width: 768px) {
+            .cell {
+                min-height: 38px;
+            }
+
+            .xlab {
+                padding: 5px 3px;
+            }
+
+            .ylab {
+                padding: 5px 8px;
+            }
+
+            .grid {
+                gap: 6px;
+            }
+
+            .radar-canvas-box {
+                height: 320px;
+            }
+
+            .kpiBig {
+                font-size: 2.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-4">
+
+        <!-- Header -->
+        <div class="glass p-3 px-lg-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-4"
+                     style="width:44px;height:44px;background:rgba(99,102,241,.22);border:1px solid rgba(255,255,255,.14)">
+                    <i class="bi bi-building fs-4"></i>
+                </div>
+                <div>
+                    <div class="brand fs-4">智慧資安稽核工具</div>
+                    <div class="muted fw-semibold">
+                        Area：<span id="areaName">Zone II</span>
+                        <span class="mx-2">·</span>
+                        <span id="periodText">本次稽核：2025-12</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a class="chip" href="main.html"><i class="bi bi-arrow-left"></i>返回總覽</a>
+                <span class="chip"><i class="bi bi-person-circle"></i><span id="userName">admin</span></span>
+                <a class="chip" href="login.html"><i class="bi bi-box-arrow-right"></i>登出</a>
+            </div>
+        </div>
+
+        <!-- Controls（保留簡單：期間 + 燈號標準） -->
+        <div class="glass p-3 p-lg-4 mt-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="chip" style="cursor:default;"><i class="bi bi-calendar3"></i>期間</div>
+                    <select id="periodSelect" class="form-select dark-field mono" style="width: 180px;"></select>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="chip" style="cursor:default;"><i class="bi bi-lightbulb"></i>燈號標準</div>
+                    <span class="chip mono" style="cursor:default; color:#bbf7d0; border-color: rgba(34,197,94,.22); background: rgba(34,197,94,.10);">80~100</span>
+                    <span class="chip mono" style="cursor:default; color:#fef08a; border-color: rgba(250,204,21,.22); background: rgba(250,204,21,.10);">70~79</span>
+                    <span class="chip mono" style="cursor:default; color:#fecaca; border-color: rgba(239,68,68,.22); background: rgba(239,68,68,.10);">0~69</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area KPI + 雷達圖（同一塊） -->
+        <div class="glass p-3 p-lg-4 mt-3">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                <div>
+                    <div class="muted fw-semibold">
+                        <span id="kpiTitle">Zone II 成熟度</span>
+                        <span class="ms-2 muted" style="font-size:.9rem;">（可點棟別切換檢視）</span>
+                    </div>
+
+                    <!-- ✅ 新增：負責人顯示（在框起來那塊） -->
+                    <div class="ownerLine" id="ownerLine">
+                        <i class="bi bi-person-badge"></i>
+                        <span id="ownerText">Zone II 負責人：Owner1</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 flex-wrap mt-2">
+                        <div class="kpiBig mono" id="areaAvg">--</div>
+                        <div id="areaTrend" class="trend flat"><i class="bi bi-dash"></i><span class="mono">(0)</span></div>
+                        <div id="areaLamp" class="lamp yellow"><span class="dot"></span><span>黃燈</span></div>
+                    </div>
+
+                    <div class="bPills mt-3" id="buildingPills"></div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <a class="btn btn-cyan px-3 py-2" id="btnGoBuilding" href="javascript:void(0)">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>查看棟別詳細
+                    </a>
+
+                    <a class="btn btn-cyan px-3 py-2" href="audit_setup.html">
+                        <i class="bi bi-sliders2-vertical me-1"></i>前往稽核設定
+                    </a>
+                </div>
+            </div>
+
+            <div class="radar-wrap mt-3">
+                <div class="radar-canvas-box">
+                    <canvas id="frRadar"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- FR maturity cards -->
+        <div class="glass p-3 p-lg-4 mt-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="fw-bold fs-5">個別成熟度（FR1 ~ FR7）</div>
+                <div class="muted" id="frHint">目前：Zone II 平均</div>
+            </div>
+            <div class="row g-3 mt-1" id="frGrid"></div>
+        </div>
+
+        <!-- Risk map（Zone II 棟別） -->
+        <div class="glass p-3 p-lg-4 mt-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div class="fw-bold fs-5">該區風險地圖（Zone II）</div>
+                <div class="muted mono" id="buildingMeta">棟別 6｜FR 7</div>
+            </div>
+
+            <div class="legendRow">
+                <span class="legendItem"><span class="dot2" style="background:var(--green)"></span>綠</span>
+                <span class="legendItem"><span class="dot2" style="background:var(--yellow)"></span>黃</span>
+                <span class="legendItem"><span class="dot2" style="background:var(--red)"></span>紅</span>
+                <span class="legendItem"><i class="bi bi-mouse me-1"></i>點棟別欄位/上方 pill 可切換檢視</span>
+            </div>
+
+            <div class="riskwrap mt-3">
+                <div class="riskhead">
+                    <div class="title">
+                        <i class="bi bi-bar-chart-steps"></i>
+                        Zone II
+                        <span class="tag mono" id="zoneCount">6 棟</span>
+                    </div>
+                    <div class="muted" id="selectedBuildingText">目前：Zone II 平均</div>
+                </div>
+                <div class="riskmap" id="zoneMap"></div>
+            </div>
+        </div>
+
+        <!-- Improvements -->
+        <div class="glass p-3 p-lg-4 mt-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div class="fw-bold fs-5">精進方向</div>
+                <div class="muted" id="improveHint">（依目前檢視：Zone II 平均）</div>
+            </div>
+
+            <div class="row g-3 mt-2" id="improveGrid"></div>
+        </div>
+
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // =========================
+        // ✅ Owner 設定（只要改這裡）
+        // =========================
+        const AREA_OWNER = {
+            "Zone II": "Owner1",
+            "East (東區)": "Owner2",
+            "West (西區)": "Owner3",
+            "MTL": "Owner1",
+            "CRD": "Owner2",
+            "Admin (行政)": "Owner3"
+        };
+
+        // =========================
+        // Data (Zone II demo)
+        // =========================
+        const FR_NAMES = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const ZONE_BUILDINGS = ["K18", "K21", "K22", "K24", "K25", "K26"];
+
+        // 以 2025-12 示範（你之後可接 API 或從 querystring 帶 period）
+        const DATA = {
+            "2025-11": {
+                area: { avg: 72, fr: [71, 72, 73, 69, 72, 71, 70] },
+                buildings: {
+                    "K18": [90, 86, 84, 86, 88, 88, 85],
+                    "K21": [84, 82, 80, 83, 85, 84, 82],
+                    "K22": [85, 81, 81, 80, 84, 83, 81],
+                    "K24": [86, 83, 83, 82, 86, 85, 83],
+                    "K25": [88, 84, 82, 85, 87, 86, 84],
+                    "K26": [90, 85, 73, 72, 74, 81, 73]
+                }
+            },
+            "2025-12": {
+                area: { avg: 73, fr: [72, 73, 74, 70, 75, 70, 71] },
+                buildings: {
+                    "K18": [90, 86, 84, 86, 88, 88, 85],
+                    "K21": [84, 84, 80, 83, 85, 84, 82],
+                    "K22": [85, 81, 81, 80, 84, 83, 81],
+                    "K24": [86, 83, 83, 82, 86, 85, 83],
+                    "K25": [88, 84, 82, 85, 87, 86, 84],
+                    "K26": [90, 85, 73, 72, 74, 81, 73]
+                }
+            }
+        };
+
+        const IMPROVE_HINTS = {
+            "K18": [
+                { fr: "FR4", level: "yellow", text: "遠端存取需補強 MFA / 來源限制" },
+                { fr: "FR7", level: "yellow", text: "備援/復原演練頻率不足" }
+            ],
+            "K21": [
+                { fr: "FR2", level: "yellow", text: "權限審核週期需制度化" }
+            ],
+            "K22": [
+                { fr: "FR3", level: "yellow", text: "稽核軌跡/紀錄保存需一致化" }
+            ],
+            "K24": [
+                { fr: "FR5", level: "yellow", text: "資產清冊更新與變更控管需同步" }
+            ],
+            "K25": [
+                { fr: "FR1", level: "yellow", text: "帳密政策需納入例外審批與追蹤" }
+            ],
+            "K26": [
+                { fr: "FR3", level: "red", text: "紀錄保存不足（變更/稽核軌跡）" },
+                { fr: "FR5", level: "yellow", text: "資產清冊更新不即時" }
+            ],
+            "__AREA__": [
+                { fr: "FR4", level: "yellow", text: "遠端存取：MFA / 來源限制建議統一" },
+                { fr: "FR3", level: "yellow", text: "紀錄保存：保留週期與稽核軌跡補強" },
+                { fr: "FR5", level: "yellow", text: "資產清冊：盤點頻率與責任人落實" }
+            ]
+        };
+
+        // =========================
+        // Helpers
+        // =========================
+        function getBand(score) {
+            if (score >= 80) return { key: "green", text: "綠燈" };
+            if (score >= 70) return { key: "yellow", text: "黃燈" };
+            return { key: "red", text: "紅燈" };
+        }
+        function trendPill(delta) {
+            if (delta > 0) return { cls: "trend up", icon: "bi bi-arrow-up", text: `(+${delta})` };
+            if (delta < 0) return { cls: "trend down", icon: "bi bi-arrow-down", text: `(${delta})` };
+            return { cls: "trend flat", icon: "bi bi-dash", text: `(0)` };
+        }
+        function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+        function bandByValue(v) {
+            if (v >= 80) return "green";
+            if (v >= 70) return "yellow";
+            return "red";
+        }
+
+        // querystring：?region=Zone II&period=2025-12
+        function getQS() {
+            const p = new URLSearchParams(location.search);
+            return {
+                region: p.get("region") || "Zone II",
+                period: p.get("period") || "2025-12"
+            };
+        }
+
+        // 導頁到棟別詳細頁（你之後做 building.html）
+        function goBuildingPage(building) {
+            if (!building) {
+                alert("請先選擇棟別（例如 K18 / K21 ...）");
+                return;
+            }
+            const qs = getQS();
+            const url = `building.html?zone=${encodeURIComponent(qs.region)}&b=${encodeURIComponent(building)}&period=${encodeURIComponent(currentPeriod)}`;
+            location.href = url;
+        }
+
+        // 更新「查看棟別詳細」按鈕狀態
+        function updateGoBuildingButton() {
+            const btn = document.getElementById("btnGoBuilding");
+            if (!btn) return;
+
+            if (selectedBuilding) {
+                btn.classList.remove("disabled");
+                btn.setAttribute("aria-disabled", "false");
+                btn.innerHTML = `<i class="bi bi-box-arrow-up-right me-1"></i>查看 ${selectedBuilding} 詳細`;
+            } else {
+                btn.classList.add("disabled");
+                btn.setAttribute("aria-disabled", "true");
+                btn.innerHTML = `<i class="bi bi-box-arrow-up-right me-1"></i>查看棟別詳細`;
+            }
+        }
+
+        // =========================
+        // State
+        // =========================
+        const els = {
+            areaName: document.getElementById("areaName"),
+            periodText: document.getElementById("periodText"),
+            periodSelect: document.getElementById("periodSelect"),
+
+            kpiTitle: document.getElementById("kpiTitle"),
+            areaAvg: document.getElementById("areaAvg"),
+            areaTrend: document.getElementById("areaTrend"),
+            areaLamp: document.getElementById("areaLamp"),
+
+            buildingPills: document.getElementById("buildingPills"),
+
+            frGrid: document.getElementById("frGrid"),
+            frHint: document.getElementById("frHint"),
+
+            zoneMap: document.getElementById("zoneMap"),
+            zoneCount: document.getElementById("zoneCount"),
+            selectedBuildingText: document.getElementById("selectedBuildingText"),
+
+            improveGrid: document.getElementById("improveGrid"),
+            improveHint: document.getElementById("improveHint"),
+
+            // ✅ 新增：owner
+            ownerText: document.getElementById("ownerText")
+        };
+
+        let currentPeriod = "2025-12";
+        let selectedBuilding = null; // null 表示 Area 平均
+
+        // =========================
+        // Radar plugin：點上顯示數字
+        // =========================
+        const radarValueLabelsPlugin = {
+            id: "radarValueLabels",
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                const meta = chart.getDatasetMeta(0);
+                if (!meta?.data?.length) return;
+
+                const data = chart.data.datasets[0].data;
+
+                ctx.save();
+                ctx.font = "700 12px Segoe UI, system-ui, -apple-system, Arial";
+                ctx.fillStyle = "rgba(255,255,255,.92)";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                meta.data.forEach((point, i) => {
+                    const { x, y } = point.getProps(["x", "y"], true);
+                    ctx.fillText(String(data[i]), x, y - 14);
+                });
+
+                ctx.restore();
+            }
+        };
+
+        let radarChart = null;
+        function renderRadar(frArr) {
+            const canvas = document.getElementById("frRadar");
+            if (!canvas) return;
+            if (radarChart) radarChart.destroy();
+
+            const values = frArr.map(v => Math.round(v));
+
+            radarChart = new Chart(canvas, {
+                type: "radar",
+                data: {
+                    labels: FR_NAMES,
+                    datasets: [{
+                        label: "FR 平均分數",
+                        data: values,
+                        fill: true,
+                        backgroundColor: "rgba(59,130,246,0.25)",
+                        borderColor: "rgba(59,130,246,0.9)",
+                        pointBackgroundColor: "#3b82f6",
+                        pointBorderColor: "#fff",
+                        pointRadius: 4,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                backdropColor: "transparent",
+                                color: "rgba(255,255,255,.6)"
+                            },
+                            grid: { color: "rgba(255,255,255,.15)" },
+                            angleLines: { color: "rgba(255,255,255,.2)" },
+                            pointLabels: {
+                                color: "#fff",
+                                font: { size: 13, weight: "bold" }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.raw} 分` } }
+                    }
+                },
+                plugins: [radarValueLabelsPlugin]
+            });
+        }
+
+        // =========================
+        // UI renderers
+        // =========================
+        function buildPeriodSelect() {
+            const keys = Object.keys(DATA).sort((a, b) => a.localeCompare(b));
+            els.periodSelect.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join("");
+            if (!DATA[currentPeriod]) currentPeriod = keys[keys.length - 1] || "2025-12";
+            els.periodSelect.value = currentPeriod;
+        }
+
+        function setSelectedBuilding(b) {
+            selectedBuilding = b; // null=area
+            // pills active
+            [...els.buildingPills.querySelectorAll(".bPill")].forEach(el => {
+                el.classList.toggle("active", el.dataset.b === (b || "__AREA__"));
+            });
+
+            // map column active
+            [...els.zoneMap.querySelectorAll(".xlab")].forEach(el => {
+                el.classList.toggle("active", el.dataset.b === b);
+            });
+
+            // cell active (欄位高亮)
+            const cells = els.zoneMap.querySelectorAll(".cell");
+            cells.forEach(c => {
+                c.classList.toggle("active", b && c.dataset.b === b);
+            });
+
+            apply();
+            updateGoBuildingButton();
+        }
+
+        function renderTop(areaObj, prevAreaObj) {
+            const now = selectedBuilding ? avg(DATA[currentPeriod].buildings[selectedBuilding]) : areaObj.avg;
+
+            const prev = (() => {
+                if (!prevAreaObj) return now;
+                if (selectedBuilding) {
+                    const prevB = prevAreaObj.buildings[selectedBuilding];
+                    return prevB ? avg(prevB) : now;
+                }
+                return prevAreaObj.area.avg;
+            })();
+
+            const delta = Math.round(now - prev);
+            const t = trendPill(delta);
+
+            els.kpiTitle.textContent = selectedBuilding ? `${selectedBuilding} 成熟度` : `Zone II 成熟度`;
+            els.areaAvg.textContent = Math.round(now);
+
+            els.areaTrend.className = t.cls;
+            els.areaTrend.innerHTML = `<i class="${t.icon}"></i><span class="mono">${t.text}</span>`;
+
+            const band = getBand(now);
+            els.areaLamp.className = `lamp ${band.key}`;
+            els.areaLamp.innerHTML = `<span class="dot"></span><span>${band.text}</span>`;
+
+            els.frHint.textContent = selectedBuilding ? `目前：${selectedBuilding}` : "目前：Zone II 平均";
+            els.selectedBuildingText.textContent = selectedBuilding ? `目前：${selectedBuilding}` : "目前：Zone II 平均";
+            els.improveHint.textContent = selectedBuilding ? `（依目前檢視：${selectedBuilding}）` : "（依目前檢視：Zone II 平均）";
+        }
+
+        function renderFR(frArr, prevFrArr) {
+            els.frGrid.innerHTML = frArr.map((v, i) => {
+                const prev = (prevFrArr && prevFrArr[i] != null) ? prevFrArr[i] : v;
+                const delta = Math.round(v - prev);
+                const t = trendPill(delta);
+                const pct = Math.max(0, Math.min(100, Math.round(v)));
+
+                return `
+              <div class="col-12 col-md-6 col-xl-3">
+                <div class="fr-mini">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div class="name">${FR_NAMES[i]}</div>
+                    <div class="${t.cls}" style="padding:.35rem .6rem;">
+                      <i class="${t.icon}"></i><span class="mono">${t.text}</span>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-end justify-content-between mt-2">
+                    <div class="val mono">${Math.round(v)}</div>
+                    <div class="muted fw-semibold">成熟度</div>
+                  </div>
+                  <div class="bar mt-3"><span style="width:${pct}%;"></span></div>
+                </div>
+              </div>
+            `;
+            }).join("");
+        }
+
+        function renderBuildingPills(areaObj) {
+            const prev = selectedBuilding;
+            const pills = [];
+
+            // Area 平均
+            const areaBand = getBand(areaObj.avg);
+            pills.push(`
+            <div class="bPill ${selectedBuilding ? "" : "active"}" data-b="__AREA__" role="button" aria-label="Zone II 平均">
+              <span class="miniDot" style="background: var(--${areaBand.key});"></span>
+              Zone II 平均
+            </div>
+          `);
+
+            ZONE_BUILDINGS.forEach(b => {
+                const score = avg(DATA[currentPeriod].buildings[b]);
+                const band = getBand(score);
+                pills.push(`
+              <div class="bPill ${selectedBuilding === b ? "active" : ""}" data-b="${b}" role="button" aria-label="${b}">
+                <span class="miniDot" style="background: var(--${band.key});"></span>
+                ${b}
+              </div>
+            `);
+            });
+
+            els.buildingPills.innerHTML = pills.join("");
+
+            els.buildingPills.querySelectorAll(".bPill").forEach(el => {
+                el.addEventListener("click", () => {
+                    const b = el.dataset.b;
+                    setSelectedBuilding(b === "__AREA__" ? null : b);
+                });
+            });
+
+            if (prev && !ZONE_BUILDINGS.includes(prev)) selectedBuilding = null;
+        }
+
+        function renderImprove() {
+            const key = selectedBuilding || "__AREA__";
+            const items = IMPROVE_HINTS[key] || [];
+
+            if (!items.length) {
+                els.improveGrid.innerHTML = `
+              <div class="col-12">
+                <div class="improveCard">
+                  <div class="muted">目前沒有設定精進項目（可在 IMPROVE_HINTS 補上）。</div>
+                </div>
+              </div>
+            `;
+                return;
+            }
+
+            els.improveGrid.innerHTML = items.map((it, idx) => {
+                const pills = `
+              <span class="pillFR ${it.level}">
+                <span class="dot2"></span>${it.fr}
+              </span>
+            `;
+                return `
+              <div class="col-12 col-md-6 col-xl-4">
+                <div class="improveCard">
+                  <div class="improveTitle">
+                    <div><i class="bi bi-flag me-2"></i>${selectedBuilding ? selectedBuilding : "Zone II"} - 建議 ${idx + 1}</div>
+                    <a class="chip" href="javascript:void(0)" style="padding:.3rem .6rem;">
+                      <i class="bi bi-eye"></i>查看
+                    </a>
+                  </div>
+                  <div class="mt-2 d-flex gap-2 flex-wrap">${pills}</div>
+                  <ul class="mt-3 mb-0 muted" style="line-height:1.7;">
+                    <li>${it.text}</li>
+                  </ul>
+                </div>
+              </div>
+            `;
+            }).join("");
+        }
+
+        // Risk map: FR rows x building columns
+        function renderRiskMap() {
+            const periodObj = DATA[currentPeriod];
+            const bFR = periodObj.buildings;
+
+            els.zoneCount.textContent = `${ZONE_BUILDINGS.length} 棟`;
+
+            const grid = document.createElement("div");
+            grid.className = "grid";
+
+            const firstCol = 128;
+            const colW = 86;
+            grid.style.gridTemplateColumns = `${firstCol}px repeat(${ZONE_BUILDINGS.length}, ${colW}px)`;
+
+            // Header row
+            grid.appendChild(makeXLab("FR \\ 棟別", null, true));
+            ZONE_BUILDINGS.forEach(b => {
+                const el = makeXLab(b, b, false);
+                if (selectedBuilding === b) el.classList.add("active");
+                grid.appendChild(el);
+            });
+
+            // Data rows
+            FR_NAMES.forEach((frName, frIdx) => {
+                grid.appendChild(makeYLab(frName));
+                ZONE_BUILDINGS.forEach(b => {
+                    const v = bFR[b][frIdx];
+                    const band = bandByValue(v);
+                    const cell = document.createElement("div");
+                    cell.className = `cell ${band}`;
+                    cell.dataset.b = b;
+
+                    if (selectedBuilding === b) cell.classList.add("active");
+
+                    cell.title = `${b} · ${frName}：${Math.round(v)}`;
+                    cell.innerHTML = `<span class="dot2"></span>`;
+                    cell.addEventListener("click", () => setSelectedBuilding(b));
+                    grid.appendChild(cell);
+                });
+            });
+
+            const fitBox = document.createElement("div");
+            fitBox.className = "fitBox";
+            fitBox.appendChild(grid);
+
+            els.zoneMap.innerHTML = "";
+            els.zoneMap.appendChild(fitBox);
+
+            requestAnimationFrame(() => {
+                const wrap = els.zoneMap;
+                const maxW = wrap.clientWidth - 12;
+                const needW = firstCol + (ZONE_BUILDINGS.length * colW) + ((ZONE_BUILDINGS.length) * 8);
+                const scale = Math.min(1, maxW / needW);
+                fitBox.style.transform = `scale(${scale})`;
+                fitBox.style.width = `${needW}px`;
+            });
+        }
+
+        function makeXLab(text, b, isCorner) {
+            const el = document.createElement("div");
+            el.className = "xlab";
+            el.textContent = text;
+            if (isCorner) {
+                el.style.cursor = "default";
+                el.style.opacity = ".9";
+                return el;
+            }
+            el.dataset.b = b;
+            el.addEventListener("click", () => setSelectedBuilding(b));
+            return el;
+        }
+        function makeYLab(text) {
+            const el = document.createElement("div");
+            el.className = "ylab";
+            el.textContent = text;
+            return el;
+        }
+
+        function getPrevPeriod(period) {
+            const keys = Object.keys(DATA).sort((a, b) => a.localeCompare(b));
+            const idx = keys.indexOf(period);
+            if (idx <= 0) return null;
+            return keys[idx - 1];
+        }
+
+        // =========================
+        // Apply all
+        // =========================
+        function apply() {
+            const qs = getQS();
+
+            els.areaName.textContent = qs.region;
+            els.periodText.textContent = `本次稽核：${currentPeriod}`;
+
+            // ✅ 顯示該區負責人（在框起來那塊）
+            const owner = AREA_OWNER[qs.region] || "Owner1";
+            if (els.ownerText) {
+                els.ownerText.textContent = `${qs.region} 負責人：${owner}`;
+            }
+
+            const cur = DATA[currentPeriod];
+            const prevKey = getPrevPeriod(currentPeriod);
+            const prev = prevKey ? DATA[prevKey] : null;
+
+            renderBuildingPills(cur.area);
+            renderTop(cur.area, prev);
+
+            const frArr = selectedBuilding ? cur.buildings[selectedBuilding] : cur.area.fr;
+            const prevFrArr = (() => {
+                if (!prev) return frArr;
+                if (selectedBuilding) {
+                    return prev.buildings[selectedBuilding] || frArr;
+                }
+                return prev.area.fr;
+            })();
+
+            renderRadar(frArr);
+            renderFR(frArr, prevFrArr);
+
+            renderRiskMap();
+            renderImprove();
+            updateGoBuildingButton();
+        }
+
+        // =========================
+        // Init
+        // =========================
+        function init() {
+            const qs = getQS();
+
+            currentPeriod = qs.period in DATA ? qs.period : "2025-12";
+            buildPeriodSelect();
+
+            els.periodSelect.addEventListener("change", () => {
+                currentPeriod = els.periodSelect.value;
+                if (selectedBuilding && !ZONE_BUILDINGS.includes(selectedBuilding)) selectedBuilding = null;
+                apply();
+            });
+
+            selectedBuilding = null;
+            apply();
+
+            const btnGo = document.getElementById("btnGoBuilding");
+            if (btnGo) {
+                btnGo.addEventListener("click", () => goBuildingPage(selectedBuilding));
+            }
+            updateGoBuildingButton();
+
+            window.addEventListener("resize", () => {
+                renderRiskMap();
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

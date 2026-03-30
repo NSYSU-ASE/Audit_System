@@ -1,0 +1,746 @@
+﻿<!doctype html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>智慧資安稽核工具 - UI（完整版）</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0b1220;
+            --card: rgba(255,255,255,0.08);
+            --card2: rgba(255,255,255,0.06);
+            --stroke: rgba(255,255,255,0.14);
+            --txt: rgba(255,255,255,0.92);
+            --muted: rgba(255,255,255,0.62);
+        }
+
+        body {
+            background: radial-gradient(1200px 600px at 20% 0%, rgba(99,102,241,.25), transparent 60%), radial-gradient(1200px 600px at 90% 30%, rgba(16,185,129,.18), transparent 55%), linear-gradient(180deg, #070b14 0%, #0b1220 60%, #070b14 100%);
+            color: var(--txt);
+            min-height: 100vh;
+            font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+        }
+
+        .glass {
+            background: var(--card);
+            border: 1px solid var(--stroke);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+        }
+
+        .glass-soft {
+            background: var(--card2);
+            border: 1px solid var(--stroke);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+        }
+
+        .brand {
+            letter-spacing: .5px;
+            font-weight: 800;
+        }
+
+        .chip {
+            font-size: .85rem;
+            padding: .35rem .6rem;
+            border-radius: 999px;
+            border: 1px solid var(--stroke);
+            background: rgba(255,255,255,.06);
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .kpi {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .sub {
+            color: var(--muted);
+            font-size: .92rem;
+        }
+
+        .badge-risk {
+            border: 1px solid rgba(255,255,255,.2);
+            padding: .45rem .6rem;
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: .2px;
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .risk-low {
+            background: rgba(34,197,94,.15);
+            color: #86efac;
+        }
+
+        .risk-med {
+            background: rgba(245,158,11,.18);
+            color: #fde68a;
+        }
+
+        .risk-high {
+            background: rgba(239,68,68,.18);
+            color: #fecaca;
+        }
+
+        /* index3 風格的大色塊 KPI */
+        .kpi-box {
+            border-radius: 18px;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+            font-weight: 800;
+            box-shadow: 0 12px 40px rgba(0,0,0,.40);
+            border: 1px solid rgba(255,255,255,.12);
+        }
+
+        .kpi-low {
+            background: #16a34a;
+        }
+
+        .kpi-mid {
+            background: #facc15;
+            color: #1f2937;
+        }
+
+        .kpi-high {
+            background: #dc2626;
+        }
+
+        /* ✅ 總機台數超醒目 KPI */
+        .total-kpi {
+            text-align: center;
+            padding: 14px 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: linear-gradient(135deg, rgba(59,130,246,.25), rgba(99,102,241,.18));
+            box-shadow: 0 18px 60px rgba(0,0,0,.45);
+        }
+
+            .total-kpi .label {
+                color: rgba(255,255,255,.75);
+                font-weight: 800;
+                letter-spacing: .2px;
+            }
+
+            .total-kpi .num {
+                font-size: 3.2rem;
+                font-weight: 900;
+                line-height: 1;
+                margin-top: 6px;
+            }
+
+        .mono {
+            font-variant-numeric: tabular-nums;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .pill {
+            border-radius: 999px;
+        }
+
+        .small-note {
+            color: rgba(255,255,255,.55);
+            font-size: .85rem;
+        }
+
+        /* index3 的分數小藍框 */
+        .score-box {
+            background: #2563eb;
+            color: #fff;
+            border-radius: 8px;
+            padding: 6px 10px;
+            min-width: 48px;
+            text-align: center;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .badge-low {
+            background: #22c55e !important;
+        }
+
+        .badge-mid {
+            background: #facc15 !important;
+            color: #1f2937 !important;
+        }
+
+        .badge-high {
+            background: #ef4444 !important;
+        }
+
+        /* 讓 input/select 在深色底好看、字是白色 */
+        .dark-field {
+            background: rgba(0,0,0,.25) !important;
+            border: 1px solid rgba(255,255,255,.18) !important;
+            color: rgba(255,255,255,.92) !important;
+        }
+
+            .dark-field::placeholder {
+                color: rgba(255,255,255,.45) !important;
+            }
+
+        select.dark-field option {
+            color: #111827;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-4">
+
+        <!-- Header -->
+        <div class="glass p-3 px-lg-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-4"
+                     style="width:44px;height:44px;background:rgba(99,102,241,.22);border:1px solid rgba(255,255,255,.14)">
+                    <i class="bi bi-shield-check fs-4"></i>
+                </div>
+                <div>
+                    <div class="brand fs-4">智慧資安稽核工具</div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="chip"><i class="bi bi-calendar3 me-1"></i>本次稽核：2025-12</span>
+                <span class="chip"><i class="bi bi-pc-display me-1"></i>機台數：<span id="deviceCount">0</span></span>
+                <span class="chip"><i class="bi bi-exclamation-triangle me-1"></i>高風險：<span id="highCount">0</span></span>
+            </div>
+        </div>
+
+        <!-- ✅ 總機台數超醒目（置中） -->
+        <div class="row g-3 mt-3">
+            <div class="col-12">
+                <div class="total-kpi glass">
+                    <div class="label">本次稽核總機台數</div>
+                    <div class="num mono"><span id="deviceCountBig">0</span> 台</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 風險機台數（大色塊） -->
+        <div class="row g-3 mt-2">
+            <div class="col-md-4">
+                <div class="kpi-box kpi-low">
+                    低風險<br>
+                    <span class="display-6 mono" id="lowCount">0</span> 台
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="kpi-box kpi-mid">
+                    中風險<br>
+                    <span class="display-6 mono" id="medCount">0</span> 台
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="kpi-box kpi-high">
+                    高風險<br>
+                    <span class="display-6 mono" id="highCountBig">0</span> 台
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie + FR Radar -->
+        <div class="row g-3 mt-1">
+            <!-- Left: Pie + actions -->
+            <div class="col-12 col-lg-4">
+                <div class="glass p-3 p-lg-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="fw-bold fs-5">總機台數圓餅圖（機台種類占比）</div>
+                            <div class="small-note">以本次稽核清單統計</div>
+                        </div>
+                        <button class="btn btn-ghost pill" data-bs-toggle="offcanvas" data-bs-target="#detailsCanvas">
+                            <i class="bi bi-list-ul me-1"></i>查看詳細
+                        </button>
+                    </div>
+
+                    <div class="mt-3 glass-soft p-3" style="height:260px;">
+                        <canvas id="typePie"></canvas>
+                    </div>
+
+                    <div class="mt-3 d-grid gap-2">
+                        <button class="btn btn-primary pill">
+                            <i class="bi bi-upload me-1"></i>匯入稽核資料（之後接後端）
+                        </button>
+                        <button class="btn btn-ghost pill">
+                            <i class="bi bi-download me-1"></i>匯出報表（CSV / PDF）
+                        </button>
+                    </div>
+
+                    <div class="mt-3 small-note">
+                        * 目前為 UI 版型：之後你只要把資料來源換成 API 回傳即可。
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Overall score + Radar -->
+            <div class="col-12 col-lg-8">
+                <div class="glass p-3 p-lg-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="fw-bold fs-5">功能需求（FR1 ~ FR7）得分與風險</div>
+                            <div class="small-note">分數直接標示在雷達圖上（更直觀）</div>
+                        </div>
+
+                        <!-- 成熟度 -->
+                        <div class="glass-soft px-3 py-2 d-flex align-items-center gap-3">
+                            <div>
+                                <div class="small-note">平均成熟度</div>
+                                <div class="kpi mono" id="overallScore">--</div>
+                            </div>
+                            <div>
+                                <div class="small-note">危險等級</div>
+                                <div id="overallRisk" class="badge-risk risk-med">--</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ✅ 雷達圖（含分數標示） -->
+                    <div class="glass-soft p-3 mt-3" style="height:360px;">
+                        <canvas id="frRadar"></canvas>
+                    </div>
+
+                    <!-- ✅ 已移除 FR1~FR7 卡片區 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="row g-3 mt-1">
+            <div class="col-12">
+                <div class="glass p-3 p-lg-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="fw-bold fs-5">📋 機台數據</div>
+                            <div class="small-note">可搜尋、排序；操作固定為「詳細報表」</div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <div class="input-group" style="max-width: 320px;">
+                                <span class="input-group-text bg-transparent text-white-50" style="border:1px solid rgba(255,255,255,.18)">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input id="searchBox" type="text" class="form-control dark-field" placeholder="搜尋機台編號 / 類型...">
+                            </div>
+
+                            <select id="sortSelect" class="form-select dark-field" style="max-width: 260px;">
+                                <option value="id">排序：機台編號</option>
+                                <option value="scoreAsc">排序：成熟度低到高</option>
+                                <option value="scoreDesc">排序：成熟度高到低</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>機台編號</th>
+                                    <th>類型</th>
+                                    <th class="text-center">成熟度</th>
+                                    <th class="text-center">風險</th>
+                                    <th class="text-center">FR1</th>
+                                    <th class="text-center">FR2</th>
+                                    <th class="text-center">FR3</th>
+                                    <th class="text-center">FR4</th>
+                                    <th class="text-center">FR5</th>
+                                    <th class="text-center">FR6</th>
+                                    <th class="text-center">FR7</th>
+                                    <th class="text-end">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deviceTbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-2 small-note">
+                        <div>提示：點「詳細報表」會開啟示意 Modal（之後可改成導頁或接後端報表）。</div>
+                        <div class="mono" id="shownCount">顯示 0 筆</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offcanvas -->
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="detailsCanvas">
+        <div class="offcanvas-header border-bottom border-light-subtle">
+            <h5 class="offcanvas-title"><i class="bi bi-sliders me-2"></i>稽核詳細情況</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="glass-soft p-3 mb-3">
+                <div class="fw-bold mb-1">你可以放的內容（建議）</div>
+                <ul class="small-note mb-0">
+                    <li>稽核時間、稽核人員、稽核範圍（AD/OT/主機）</li>
+                    <li>本次高風險項目 Top 5（FR + 機台）</li>
+                    <li>合規對照（NIST 800-82 / IEC 62443）摘要</li>
+                    <li>待改善清單與證據連結（log、設定截圖、報表）</li>
+                </ul>
+            </div>
+
+            <div class="glass-soft p-3">
+                <div class="fw-bold mb-2">快速篩選（示意）</div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-ghost pill" id="filterHigh"><i class="bi bi-exclamation-octagon me-1"></i>只看高風險機台</button>
+                    <button class="btn btn-ghost pill" id="filterAll"><i class="bi bi-view-list me-1"></i>顯示全部</button>
+                </div>
+            </div>
+
+            <hr class="border-light-subtle">
+            <div class="small-note">
+                * 這個側欄之後很適合放：稽核證據、檢核清單、IEC62443 對應條款。
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: 詳細報表（示意） -->
+    <div class="modal fade" id="deviceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content text-bg-dark" style="border:1px solid rgba(255,255,255,.14); border-radius:16px;">
+                <div class="modal-header border-light-subtle">
+                    <h5 class="modal-title" id="deviceModalTitle">詳細報表</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="glass-soft p-3">
+                        <div class="small-note mb-2">
+                            這裡先放 UI 示意；之後可接後端回傳該機台的稽核證據、設定、log、PDF 連結等。
+                        </div>
+                        <pre class="mb-0 small mono" id="deviceModalBody" style="white-space: pre-wrap;"></pre>
+                    </div>
+                </div>
+                <div class="modal-footer border-light-subtle">
+                    <button class="btn btn-ghost pill" data-bs-dismiss="modal">關閉</button>
+                    <button class="btn btn-primary pill" disabled>下載/導出（之後接功能）</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ====== Demo data（之後換成 API 回傳即可）======
+        // 分數 0~100。危險等級：低(>=80) / 中(50~79) / 高(<50)
+        const devices = [
+            { id: "PC-001", type: "AD / Windows", fr: [82, 76, 91, 68, 73, 80, 77] },
+            { id: "SCADA-02", type: "SCADA", fr: [58, 62, 55, 49, 66, 70, 61] },
+            { id: "HMI-07", type: "HMI", fr: [88, 90, 84, 79, 83, 92, 86] },
+            { id: "PLC-12", type: "PLC", fr: [44, 52, 41, 38, 56, 49, 45] },
+            { id: "PC-014", type: "工程站", fr: [72, 69, 75, 71, 60, 66, 70] },
+            { id: "SCADA-11", type: "SCADA", fr: [91, 85, 88, 83, 80, 84, 86] },
+            { id: "HMI-03", type: "HMI", fr: [63, 57, 60, 55, 52, 59, 61] },
+        ];
+
+        const frNames = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+
+        function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+        function riskLevel(score) {
+            if (score >= 80) return { label: "低風險", cls: "risk-low", badge: "badge-low" };
+            if (score >= 50) return { label: "中風險", cls: "risk-med", badge: "badge-mid" };
+            return { label: "高風險", cls: "risk-high", badge: "badge-high" };
+        }
+
+        function computeDeviceOverall(d) { return avg(d.fr); }
+
+        function computeFRSummary(list) {
+            const sums = new Array(7).fill(0);
+            list.forEach(d => d.fr.forEach((v, i) => sums[i] += v));
+            return sums.map(s => s / list.length);
+        }
+
+        // ✅ Radar 分數標籤 plugin（不用額外套件）
+        const radarValueLabelsPlugin = {
+            id: "radarValueLabels",
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                const meta = chart.getDatasetMeta(0);
+                if (!meta?.data?.length) return;
+
+                const data = chart.data.datasets[0].data;
+
+                ctx.save();
+                ctx.font = "700 12px Segoe UI, system-ui, -apple-system, Arial";
+                ctx.fillStyle = "rgba(255,255,255,.92)";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                meta.data.forEach((point, i) => {
+                    const { x, y } = point.getProps(["x", "y"], true);
+                    // 往外偏移，避免壓到點
+                    ctx.fillText(String(data[i]), x, y - 14);
+                });
+
+                ctx.restore();
+            }
+        };
+
+        // ====== Radar chart ======
+        let radarChart = null;
+
+        function renderRadar(frAvg) {
+            const canvas = document.getElementById("frRadar");
+            if (!canvas) return;
+
+            if (radarChart) radarChart.destroy();
+
+            const values = frAvg.map(v => Math.round(v));
+
+            radarChart = new Chart(canvas, {
+                type: "radar",
+                data: {
+                    labels: frNames,
+                    datasets: [{
+                        label: "FR 平均分數",
+                        data: values,
+                        fill: true,
+                        backgroundColor: "rgba(59,130,246,0.25)",
+                        borderColor: "rgba(59,130,246,0.9)",
+                        pointBackgroundColor: "#3b82f6",
+                        pointBorderColor: "#fff",
+                        pointRadius: 4,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                backdropColor: "transparent",
+                                color: "rgba(255,255,255,.6)"
+                            },
+                            grid: { color: "rgba(255,255,255,.15)" },
+                            angleLines: { color: "rgba(255,255,255,.2)" },
+                            pointLabels: {
+                                color: "#fff",
+                                font: { size: 13, weight: "bold" }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.raw} 分` }
+                        }
+                    }
+                },
+                plugins: [radarValueLabelsPlugin]
+            });
+        }
+
+        // ====== KPI counts ======
+        function renderRiskKPI(list) {
+            const low = list.filter(d => riskLevel(computeDeviceOverall(d)).label === "低風險").length;
+            const med = list.filter(d => riskLevel(computeDeviceOverall(d)).label === "中風險").length;
+            const high = list.filter(d => riskLevel(computeDeviceOverall(d)).label === "高風險").length;
+
+            document.getElementById("lowCount").textContent = low;
+            document.getElementById("medCount").textContent = med;
+            document.getElementById("highCountBig").textContent = high;
+
+            document.getElementById("deviceCount").textContent = list.length;
+            document.getElementById("highCount").textContent = high;
+
+            const big = document.getElementById("deviceCountBig");
+            if (big) big.textContent = list.length;
+        }
+
+        // ====== Overall score + radar ======
+        function renderFRSummary(list) {
+            const frAvg = computeFRSummary(list);
+
+            // ✅ 雷達圖（含分數標示）
+            renderRadar(frAvg);
+
+            // ✅ 更新成熟度/風險
+            const overall = avg(frAvg);
+            const or = riskLevel(overall);
+            document.getElementById("overallScore").textContent = Math.round(overall);
+            const el = document.getElementById("overallRisk");
+            el.className = `badge-risk ${or.cls}`;
+            el.innerHTML = `<i class="bi bi-shield-exclamation"></i>${or.label}`;
+        }
+
+        // ====== Pie chart ======
+        function groupByType(list) {
+            const m = new Map();
+            list.forEach(d => m.set(d.type, (m.get(d.type) || 0) + 1));
+            return Array.from(m.entries()).map(([k, v]) => ({ label: k, value: v }));
+        }
+
+        let pieChart = null;
+
+        function renderPie(list) {
+            const grouped = groupByType(list);
+            const canvas = document.getElementById("typePie");
+            if (!canvas) return;
+
+            if (pieChart) pieChart.destroy();
+
+            pieChart = new Chart(canvas, {
+                type: 'pie',
+                data: {
+                    labels: grouped.map(d => d.label),
+                    datasets: [{
+                        data: grouped.map(d => d.value),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const val = context.raw;
+                                    const pct = Math.round((val / total) * 100);
+                                    return ` ${context.label}: ${val} 台 (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ====== Table ======
+        const tbody = document.getElementById("deviceTbody");
+        const shownCount = document.getElementById("shownCount");
+
+        function renderTable(list) {
+            tbody.innerHTML = list.map(d => {
+                const overall = computeDeviceOverall(d);
+                const overallRisk = riskLevel(overall);
+
+                const frCells = d.fr.map(s => (
+                    `<td class="text-center"><span class="score-box mono">${Math.round(s)}</span></td>`
+                )).join("");
+
+                return `
+              <tr>
+                <td><span class="badge bg-primary mono">${d.id}</span></td>
+                <td>${d.type}</td>
+                <td class="text-center"><span class="score-box mono">${Math.round(overall)}</span></td>
+                <td class="text-center">
+                  <span class="badge ${overallRisk.badge}">${overallRisk.label}</span>
+                </td>
+                ${frCells}
+                <td class="text-end">
+                  <a class="btn btn-outline-info btn-sm pill" href="detail.html?id=${encodeURIComponent(d.id)}">
+                    詳細報表
+                  </a>
+                </td>
+              </tr>
+            `;
+            }).join("");
+
+            shownCount.textContent = `顯示 ${list.length} 筆`;
+        }
+
+        // 安全地把 JSON 放到 onclick
+        function escapeForInlineJSON(obj) {
+            const s = JSON.stringify(obj);
+            return s
+                .replaceAll("\\", "\\\\")
+                .replaceAll("'", "\\'")
+                .replaceAll("\"", "&quot;");
+        }
+
+        // ====== Sorting + searching ======
+        function applySortAndFilter() {
+            const q = document.getElementById("searchBox").value.trim().toLowerCase();
+            const mode = document.getElementById("sortSelect").value;
+
+            let filtered = devices.filter(d => {
+                if (!q) return true;
+                return d.id.toLowerCase().includes(q) || d.type.toLowerCase().includes(q);
+            });
+
+            if (mode === "id") {
+                filtered.sort((a, b) => a.id.localeCompare(b.id));
+            } else if (mode === "scoreAsc") {
+                filtered.sort((a, b) => computeDeviceOverall(a) - computeDeviceOverall(b));
+            } else {
+                filtered.sort((a, b) => computeDeviceOverall(b) - computeDeviceOverall(a));
+            }
+
+            renderRiskKPI(filtered);
+            renderFRSummary(filtered);
+            renderPie(filtered);
+            renderTable(filtered);
+        }
+
+        // ====== Modal ======
+        function openDeviceModal(deviceLike) {
+            let device = deviceLike;
+            if (typeof deviceLike === "string") {
+                try { device = JSON.parse(deviceLike); } catch (e) { /* ignore */ }
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('deviceModal'));
+            document.getElementById('deviceModalTitle').textContent = `詳細報表：${device.id}`;
+
+            const overall = Math.round(computeDeviceOverall(device));
+            const body = {
+                id: device.id,
+                type: device.type,
+                overallScore: overall,
+                overallRisk: riskLevel(overall).label,
+                FR: device.fr.map((v, i) => ({
+                    name: frNames[i],
+                    score: Math.round(v),
+                    risk: riskLevel(v).label
+                }))
+            };
+
+            document.getElementById('deviceModalBody').textContent = JSON.stringify(body, null, 2);
+            modal.show();
+        }
+
+        // ====== Offcanvas filters ======
+        document.getElementById("filterHigh").addEventListener("click", () => {
+            const filtered = devices.filter(d => riskLevel(computeDeviceOverall(d)).label === "高風險");
+            const list = filtered.length ? filtered : devices;
+
+            renderRiskKPI(list);
+            renderFRSummary(list);
+            renderPie(list);
+            renderTable(list);
+        });
+
+        document.getElementById("filterAll").addEventListener("click", () => {
+            applySortAndFilter();
+        });
+
+        document.getElementById("searchBox").addEventListener("input", applySortAndFilter);
+        document.getElementById("sortSelect").addEventListener("change", applySortAndFilter);
+
+        // Init
+        applySortAndFilter();
+    </script>
+</body>
+</html>
