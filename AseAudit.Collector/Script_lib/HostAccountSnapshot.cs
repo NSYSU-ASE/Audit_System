@@ -13,10 +13,16 @@ public static class HostAccountSnapshot
 # ══════════════════════════════════════════════════════════════
 
 try {
+    $defaultNames = @(""Administrator"", ""Guest"", ""DefaultAccount"")
+
     $hostAccount = @{
         HostId             = $env:COMPUTERNAME
         Hostname           = $env:COMPUTERNAME
-        LoginRequirement   = @(Get-LocalUser | Select-Object Name, PasswordRequired, Enabled)
+        LoginRequirement   = @(
+            Get-LocalUser |
+            Where-Object { $defaultNames -notcontains $_.Name } |
+            Select-Object Name, PasswordRequired, Enabled
+        )
 
         # 預設帳號與 Administrator 狀態
         DefaultAccounts    = @(
