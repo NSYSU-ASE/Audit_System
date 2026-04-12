@@ -21,8 +21,7 @@ public static class JsonConverterRegistry
         new Dictionary<string, IScriptJsonConverter>
         {
             [nameof(EventStatusSnapshot)] = new EventStatusSnapshotConverter(),
-            [nameof(HostAccountSnapshot)] = new HostAccountSnapshotConverter(),
-            [nameof(HostStatusSnapshot)]  = new HostStatusSnapshotConverter(),
+            [nameof(HostAccountRuleSnapshot)] = new HostAccountRuleSnapshotConverter(),
 
             // ↓ 新增轉換器時在此加一行
         };

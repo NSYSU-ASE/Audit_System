@@ -2,27 +2,21 @@
 
 /// <summary>
 /// [Identity] 收集本機帳號、AD 加入狀態、預設帳號狀態、匿名存取設定。
-/// 輸出：JSON 對應 HostStatusSnapshotDto
+/// 輸出：JSON 對應 HostAccountRuleSnapshotDto
 /// </summary>
-public static class HostStatusSnapshot
+public static class HostAccountRuleSnapshot
 {
     public const string Content = @"
 # ══════════════════════════════════════════════════════════════
-#  HostStatusSnapshot — 本機狀態與安全設定收集
+#  HostAccountRuleSnapshot — 本機帳號規則收集
 #  收集 AD 加入狀態、預設帳號狀態、匿名存取設定
 # ══════════════════════════════════════════════════════════════
 
 try {
-    $hostStatus = @{
+    $hostAccountRule = @{
         HostId             = $env:COMPUTERNAME
         Hostname           = $env:COMPUTERNAME
         SystemInfo         = Get-WmiObject Win32_ComputerSystem | Select-Object Name, Domain, DomainRole
-
-        # 預設帳號與 Administrator 狀態
-        DefaultAccounts    = @(
-            Get-LocalUser -Name ""Administrator"", ""Guest"", ""DefaultAccount"" -ErrorAction SilentlyContinue |
-            Select-Object Name, Enabled, PasswordRequired
-        )
 
         # 匿名存取設定
         AnonymousAccess    = @{
@@ -32,11 +26,11 @@ try {
         }
     }
 
-    $hostStatus | ConvertTo-Json -Depth 3
+    $hostAccountRule | ConvertTo-Json -Depth 3
 }
 catch {
     @{
-        Error   = 'Failed to retrieve host status snapshot'
+        Error   = 'Failed to retrieve host account rule snapshot'
         Message = $_.Exception.Message
     } | ConvertTo-Json
 }

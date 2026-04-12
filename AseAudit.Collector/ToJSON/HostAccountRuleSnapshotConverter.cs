@@ -3,15 +3,15 @@ using System.Text.Json;
 namespace AseAudit.Collector.ToJSON;
 
 /// <summary>
-/// 將 HostStatusSnapshot 的巢狀 JSON 輸出攤平為單層結構，
+/// 將 HostAccountRuleSnapshot 的巢狀 JSON 輸出攤平為單層結構，
 /// 僅保留最內層欄位名稱，以符合資料庫扁平化儲存需求。
 ///
 /// 攤平規則：
 ///   純值屬性   → 直接保留（如 HostId, Hostname）
 ///   巢狀物件   → 子屬性提升至頂層（如 AnonymousAccess.RestrictAnonymousSAM → RestrictAnonymousSAM）
-///   陣列屬性   → 序列化為 JSON 字串存入單一欄位（如 DefaultAccounts → "[{...}, ...]"）
+///   陣列屬性   → 序列化為 JSON 字串存入單一欄位（如 LoginRequirement → "[{...}, ...]"）
 /// </summary>
-public class HostStatusSnapshotConverter : IScriptJsonConverter
+public class HostAccountRuleSnapshotConverter : IScriptJsonConverter
 {
     public string ToJson(string rawOutput, JsonSerializerOptions options)
     {

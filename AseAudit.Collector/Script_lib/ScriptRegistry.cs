@@ -37,8 +37,8 @@ public static class ScriptRegistry
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
             // (nameof(OsVersionSnapshot),          OsVersionSnapshot.Content),
-            (nameof(HostAccountSnapshot),         HostAccountSnapshot.Content),
-            (nameof(HostStatusSnapshot),          HostStatusSnapshot.Content),
+            (nameof(HostAccountRuleSnapshot),         HostAccountRuleSnapshot.Content),
+            (nameof(HostAccountSnapshot),          HostAccountSnapshot.Content),
             // (nameof(PasswordPolicySnapshot),      PasswordPolicySnapshot.Content),
             // (nameof(UserGroupSnapshot),           UserGroupSnapshot.Content),
             // (nameof(AccountAuthorizationSnapshot), AccountAuthorizationSnapshot.Content),
@@ -189,7 +189,7 @@ public static class ScriptRegistry
             // Identity
             // [nameof(OsVersionSnapshot)]      = OsVersionSnapshot.Content,
             [nameof(HostAccountSnapshot)]    = HostAccountSnapshot.Content,
-            [nameof(HostStatusSnapshot)]     = HostStatusSnapshot.Content,
+            [nameof(HostAccountRuleSnapshot)]     = HostAccountRuleSnapshot.Content,
             // [nameof(PasswordPolicySnapshot)] = PasswordPolicySnapshot.Content,
             // [nameof(UserGroupSnapshot)]      = UserGroupSnapshot.Content,
             // [nameof(AccountAuthorizationSnapshot)] = AccountAuthorizationSnapshot.Content,
