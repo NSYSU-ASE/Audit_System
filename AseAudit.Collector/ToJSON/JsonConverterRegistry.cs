@@ -1,4 +1,5 @@
 using AseAudit.Collector.Script_lib;
+using ASEAudit.Shared.Contracts;
 
 namespace AseAudit.Collector.ToJSON;
 
@@ -21,7 +22,8 @@ public static class JsonConverterRegistry
         new Dictionary<string, IScriptJsonConverter>
         {
             [nameof(EventStatusSnapshot)] = new EventStatusSnapshotConverter(),
-            [nameof(HostAccountRuleSnapshot)] = new HostAccountRuleSnapshotConverter(),
+            [HostAccountRuleSnapshotPayload.Script] = new HostAccountRuleSnapshotConverter(),
+            [HostAccountSnapshotPayload.Script] = new HostAccountSnapshotConverter(),
 
             // ↓ 新增轉換器時在此加一行
         };

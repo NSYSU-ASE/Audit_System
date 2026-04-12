@@ -1,65 +1,32 @@
 using System.Text.Json;
+using ASEAudit.Shared.Contracts;
 
 namespace AseAudit.Collector.ToJSON;
 
 /// <summary>
-/// 將 HostAccountSnapshot 的巢狀 JSON 輸出攤平為單層結構，
-/// 僅保留最內層欄位名稱，以符合資料庫扁平化儲存需求。
+/// 將 HostAccountSnapshot 的 PowerShell 原始 JSON 輸出，
+/// 以 <see cref="HostAccountSnapshotPayload"/> 為 schema 反序列化並重新輸出，
+/// 保證 JSON 結構與 Shared Contract 對齊，後續由 API 寫入
+/// 資料表 <see cref="HostAccountSnapshotPayload.TableName"/> (Identification_AM_Account)。
 ///
-/// 攤平規則：
-///   純值屬性   → 直接保留（如 HostId, Hostname）
-///   巢狀物件   → 子屬性提升至頂層（如 AnonymousAccess.RestrictAnonymousSAM → RestrictAnonymousSAM）
-///   陣列屬性   → 序列化為 JSON 字串存入單一欄位（如 LoginRequirement → "[{...}, ...]"）
+/// 輸出保留列表結構 (LoginRequirement / DefaultAccounts)，
+/// 由 Ingest 服務逐列展開寫入資料表。
 /// </summary>
 public class HostAccountSnapshotConverter : IScriptJsonConverter
 {
+    private static readonly JsonSerializerOptions _deserializeOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     public string ToJson(string rawOutput, JsonSerializerOptions options)
     {
-        using var doc = JsonDocument.Parse(rawOutput);
-        var flat = new Dictionary<string, object?>();
+        var payload = JsonSerializer.Deserialize<HostAccountSnapshotPayload>(rawOutput, _deserializeOptions)
+                      ?? new HostAccountSnapshotPayload();
 
-        Flatten(doc.RootElement, flat);
+        // 強制覆寫為常數，確保 Payload JSON 自我描述來源腳本
+        payload.ScriptName = HostAccountSnapshotPayload.Script;
 
-        return JsonSerializer.Serialize(flat, options);
-    }
-
-    private static void Flatten(JsonElement element, Dictionary<string, object?> result)
-    {
-        foreach (var prop in element.EnumerateObject())
-        {
-            switch (prop.Value.ValueKind)
-            {
-                case JsonValueKind.Object:
-                    // 巢狀物件 → 遞迴提升子屬性
-                    Flatten(prop.Value, result);
-                    break;
-
-                case JsonValueKind.Array:
-                    // 陣列 → 序列化為 JSON 字串
-                    result[prop.Name] = prop.Value.GetRawText();
-                    break;
-
-                case JsonValueKind.String:
-                    result[prop.Name] = prop.Value.GetString();
-                    break;
-
-                case JsonValueKind.Number:
-                    result[prop.Name] = prop.Value.GetRawText();
-                    break;
-
-                case JsonValueKind.True:
-                case JsonValueKind.False:
-                    result[prop.Name] = prop.Value.GetBoolean();
-                    break;
-
-                case JsonValueKind.Null:
-                    result[prop.Name] = null;
-                    break;
-
-                default:
-                    result[prop.Name] = prop.Value.GetRawText();
-                    break;
-            }
-        }
+        return JsonSerializer.Serialize(payload, options);
     }
 }

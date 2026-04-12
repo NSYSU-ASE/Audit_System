@@ -1,6 +1,7 @@
 using System.Text.Json;
 using AseAudit.Collector.Script_lib;
 using AseAudit.Collector.ToJSON;
+using ASEAudit.Shared.Contracts;
 
 namespace AseAudit.Collector
 {
@@ -25,8 +26,8 @@ namespace AseAudit.Collector
             var testScripts = new List<(string Name, string Content)>
             {
                 (nameof(EventStatusSnapshot), EventStatusSnapshot.Content),
-                (nameof(HostAccountRuleSnapshot), HostAccountRuleSnapshot.Content),
-                (nameof(HostAccountSnapshot), HostAccountSnapshot.Content)
+                (HostAccountRuleSnapshotPayload.Script, HostAccountRuleSnapshot.Content),
+                (HostAccountSnapshotPayload.Script, HostAccountSnapshot.Content)
             };
             var scriptResults = await _scriptEngine.RunModuleAsync(testScripts, stoppingToken);
 

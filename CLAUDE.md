@@ -90,8 +90,8 @@ Worker Service，部署於被稽核主機，定期蒐集系統資訊後回報 Se
 定義 Agent ↔ Server 之間的資料格式 (DTO)，確保 JSON 序列化一致。
 
 - `Contracts/` — API 傳輸 DTO
-  - `HostAccountSnapshotPayload.cs` — 帳號快照傳輸格式
-  - `HostStatusSnapshotPayload.cs` — 狀態快照傳輸格式
+  - `HostAccountSnapshotPayload.cs` — 帳號快照傳輸格式 (對應資料表 Identification_AM_Account)
+  - `HostAccountRuleSnapshotPayload.cs` — 帳號規則 (網域/匿名存取) 傳輸格式 (對應資料表 Identification_AM_rule)
 - `Scoring/` — 評分模型
   - `AuditItemResult.cs` — 單一稽核項目評分結果
   - `ScoreAggregator.cs` — 評分彙總

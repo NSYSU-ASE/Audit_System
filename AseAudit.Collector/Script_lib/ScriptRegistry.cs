@@ -1,3 +1,5 @@
+using ASEAudit.Shared.Contracts;
+
 namespace AseAudit.Collector.Script_lib;
 
 // ═══════════════════════════════════════════════════════════════
@@ -37,8 +39,8 @@ public static class ScriptRegistry
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
             // (nameof(OsVersionSnapshot),          OsVersionSnapshot.Content),
-            (nameof(HostAccountRuleSnapshot),         HostAccountRuleSnapshot.Content),
-            (nameof(HostAccountSnapshot),          HostAccountSnapshot.Content),
+            (HostAccountRuleSnapshotPayload.Script,   HostAccountRuleSnapshot.Content),
+            (HostAccountSnapshotPayload.Script,       HostAccountSnapshot.Content),
             // (nameof(PasswordPolicySnapshot),      PasswordPolicySnapshot.Content),
             // (nameof(UserGroupSnapshot),           UserGroupSnapshot.Content),
             // (nameof(AccountAuthorizationSnapshot), AccountAuthorizationSnapshot.Content),
@@ -188,8 +190,8 @@ public static class ScriptRegistry
         {
             // Identity
             // [nameof(OsVersionSnapshot)]      = OsVersionSnapshot.Content,
-            [nameof(HostAccountSnapshot)]    = HostAccountSnapshot.Content,
-            [nameof(HostAccountRuleSnapshot)]     = HostAccountRuleSnapshot.Content,
+            [HostAccountSnapshotPayload.Script]     = HostAccountSnapshot.Content,
+            [HostAccountRuleSnapshotPayload.Script] = HostAccountRuleSnapshot.Content,
             // [nameof(PasswordPolicySnapshot)] = PasswordPolicySnapshot.Content,
             // [nameof(UserGroupSnapshot)]      = UserGroupSnapshot.Content,
             // [nameof(AccountAuthorizationSnapshot)] = AccountAuthorizationSnapshot.Content,
