@@ -29,20 +29,22 @@ namespace AseAudit.Core.Entities
         public string MACAddress { get; set; } = string.Empty;
 
         [Required]
+        [Column("RestrictAnonymousSAM")]
+        public bool RestrictAnonymousSAM { get; set; }
+
+        [Required]
+        [Column("EveryoneIncludesAnonymous")]
+        public bool EveryoneIncludesAnonymous { get; set; }
+
+        [Required]
+        [Column("RestrictAnonymous")]
+        public bool RestrictAnonymous { get; set; }
+
         [Column("UserDomain")]
         [MaxLength(100)]
         public string UserDomain { get; set; } = string.Empty;
 
-        [Column("MinPasswordLength")]
-        public int? MinPasswordLength { get; set; }
-
-        [Column("PasswordComplexity")]
-        public int? PasswordComplexity { get; set; }
-
-        [Column("Passwordattempts")]
-        public int? Passwordattempts { get; set; }
-
-        [Column("accountlockoutduration")]
-        public int? AccountLockoutDuration { get; set; }
+        [Column("DomainRole")]
+        public int DomainRole { get; set; } // 加入網域的狀態
     }
 }
