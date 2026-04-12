@@ -24,7 +24,8 @@ namespace AseAudit.Collector
             // ★ 測試模式：執行 EventLogSnapshot 與 EventStatusSnapshot，各自輸出獨立 JSON
             var testScripts = new List<(string Name, string Content)>
             {
-                (nameof(EventStatusSnapshot), EventStatusSnapshot.Content)
+                (nameof(EventStatusSnapshot), EventStatusSnapshot.Content),
+                (nameof(HostAccountSnapshot), HostAccountSnapshot.Content)
             };
             var scriptResults = await _scriptEngine.RunModuleAsync(testScripts, stoppingToken);
 
