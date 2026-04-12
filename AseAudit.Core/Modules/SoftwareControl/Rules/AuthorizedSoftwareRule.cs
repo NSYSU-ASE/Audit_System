@@ -146,7 +146,7 @@ namespace AseAudit.Core.Modules.Software.Rules
             return input.Trim().Replace("\t", " ").Replace("  ", " ");
         }
 
-        private static string Normalize(string input)
-            => (input ?? "").Trim().Replace("\t", " ").Replace("  ", " ");
+        //private static string Normalize(string input)
+        //    => (input ?? "").Trim().Replace("\t", " ").Replace("  ", " ");
     }
 }

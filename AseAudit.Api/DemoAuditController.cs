@@ -31,11 +31,11 @@ public class DemoAuditController : ControllerBase
         // 依 itemKey 決定要讀哪個 json、用哪個 dto、哪個 rule
         AuditItemResult result = itemKey switch
         {
-            "identity.user_group" => Eval(
-                fileName: $"user_group.{@case}.json",
-                deserialize: (json) => JsonSerializer.Deserialize<UserGroupSnapshotDto>(json, _jsonOptions)!,
-                evaluate: (dto) => new UserGroupProtectionRule().Evaluate(dto)
-            ),
+            //"identity.user_group" => Eval(
+            //    fileName: $"user_group.{@case}.json",
+            //    deserialize: (json) => JsonSerializer.Deserialize<UserGroupSnapshotDto>(json, _jsonOptions)!,
+            //    evaluate: (dto) => new UserGroupProtectionRule().Evaluate(dto)
+            //),
 
             "identity.password_policy" => Eval(
                 fileName: $"password_policy.{@case}.json",
@@ -55,11 +55,11 @@ public class DemoAuditController : ControllerBase
                 evaluate: (dto) => new SystemUseNoticeRule().Evaluate(dto)
             ),
 
-            "identity.employee_directory" => Eval(
-                fileName: "employee_directory.json",
-                deserialize: (json) => JsonSerializer.Deserialize<EmployeeDirectoryRecordDto[]>(json, _jsonOptions)!,
-                evaluate: (dto) => new EmployeeDirectoryProtectionRule().Evaluate(dto)
-            ),
+            //"identity.employee_directory" => Eval(
+            //    fileName: "employee_directory.json",
+            //    deserialize: (json) => JsonSerializer.Deserialize<EmployeeDirectoryRecordDto[]>(json, _jsonOptions)!,
+            //    evaluate: (dto) => new EmployeeDirectoryProtectionRule().Evaluate(dto)
+            //),
 
             "identity.host_account" => Eval(
                 fileName: $"host_account.{@case}.json",
