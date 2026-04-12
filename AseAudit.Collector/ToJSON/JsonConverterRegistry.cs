@@ -22,6 +22,7 @@ public static class JsonConverterRegistry
         {
             [nameof(EventStatusSnapshot)] = new EventStatusSnapshotConverter(),
             [nameof(HostAccountSnapshot)] = new HostAccountSnapshotConverter(),
+            [nameof(HostStatusSnapshot)]  = new HostStatusSnapshotConverter(),
 
             // ↓ 新增轉換器時在此加一行
         };

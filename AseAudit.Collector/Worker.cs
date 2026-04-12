@@ -25,7 +25,8 @@ namespace AseAudit.Collector
             var testScripts = new List<(string Name, string Content)>
             {
                 (nameof(EventStatusSnapshot), EventStatusSnapshot.Content),
-                (nameof(HostAccountSnapshot), HostAccountSnapshot.Content)
+                (nameof(HostAccountSnapshot), HostAccountSnapshot.Content),
+                (nameof(HostStatusSnapshot), HostStatusSnapshot.Content)
             };
             var scriptResults = await _scriptEngine.RunModuleAsync(testScripts, stoppingToken);
 

@@ -38,6 +38,7 @@ public static class ScriptRegistry
         [
             // (nameof(OsVersionSnapshot),          OsVersionSnapshot.Content),
             (nameof(HostAccountSnapshot),         HostAccountSnapshot.Content),
+            (nameof(HostStatusSnapshot),          HostStatusSnapshot.Content),
             // (nameof(PasswordPolicySnapshot),      PasswordPolicySnapshot.Content),
             // (nameof(UserGroupSnapshot),           UserGroupSnapshot.Content),
             // (nameof(AccountAuthorizationSnapshot), AccountAuthorizationSnapshot.Content),
@@ -188,6 +189,7 @@ public static class ScriptRegistry
             // Identity
             // [nameof(OsVersionSnapshot)]      = OsVersionSnapshot.Content,
             [nameof(HostAccountSnapshot)]    = HostAccountSnapshot.Content,
+            [nameof(HostStatusSnapshot)]     = HostStatusSnapshot.Content,
             // [nameof(PasswordPolicySnapshot)] = PasswordPolicySnapshot.Content,
             // [nameof(UserGroupSnapshot)]      = UserGroupSnapshot.Content,
             // [nameof(AccountAuthorizationSnapshot)] = AccountAuthorizationSnapshot.Content,

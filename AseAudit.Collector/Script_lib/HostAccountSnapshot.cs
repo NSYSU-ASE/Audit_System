@@ -17,20 +17,12 @@ try {
         HostId             = $env:COMPUTERNAME
         Hostname           = $env:COMPUTERNAME
         LoginRequirement   = @(Get-LocalUser | Select-Object Name, PasswordRequired, Enabled)
-        SystemInfo         = Get-WmiObject Win32_ComputerSystem | Select-Object Name, Domain, DomainRole
 
         # 預設帳號與 Administrator 狀態
         DefaultAccounts    = @(
             Get-LocalUser -Name ""Administrator"", ""Guest"", ""DefaultAccount"" -ErrorAction SilentlyContinue |
             Select-Object Name, Enabled, PasswordRequired
         )
-
-        # 匿名存取設定
-        AnonymousAccess    = @{
-            RestrictAnonymousSAM      = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""RestrictAnonymousSAM"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty RestrictAnonymousSAM)
-            RestrictAnonymous         = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""RestrictAnonymous"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty RestrictAnonymous)
-            EveryoneIncludesAnonymous = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""EveryoneIncludesAnonymous"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty EveryoneIncludesAnonymous)
-        }
     }
 
     $hostAccount | ConvertTo-Json -Depth 3
