@@ -71,21 +71,18 @@ public sealed class DatabaseAuditIngestService : IAuditIngestService
 
     private async Task<int> HandleAccountSnapshotAsync(AuditSnapshotUpload upload, CancellationToken ct)
     {
-        var payload = upload.Payload.Deserialize<HostAccountSnapshotPayload>(DeserializeOptions)
+        // upload.Payload 是 envelope 內層 content（不含 ScriptName/Hostname），
+        // 直接反序列化成 Content 型別，再以 envelope 欄位組回強型別 Payload。
+        var content = upload.Payload.Deserialize<HostAccountSnapshotContent>(DeserializeOptions)
             ?? throw new ArgumentException(
-                $"Failed to deserialize Payload as {nameof(HostAccountSnapshotPayload)}.");
+                $"Failed to deserialize Payload as {nameof(HostAccountSnapshotContent)}.");
 
-        // Payload 為 init-only class；若 Hostname 遺漏則用 envelope 的 HostName 重建
-        if (string.IsNullOrWhiteSpace(payload.Hostname))
+        var payload = new HostAccountSnapshotPayload
         {
-            payload = new HostAccountSnapshotPayload
-            {
-                ScriptName = payload.ScriptName,
-                HostId     = payload.HostId,
-                Hostname   = upload.HostName,
-                Payload    = payload.Payload,
-            };
-        }
+            HostId   = upload.HostId ?? string.Empty,
+            Hostname = upload.HostName,
+            Payload  = content,
+        };
 
         var entities = HostAccountSnapshotMapper.ToEntities(payload).ToList();
         return await _accountRepo.AddRangeAsync(entities, ct);
@@ -93,20 +90,16 @@ public sealed class DatabaseAuditIngestService : IAuditIngestService
 
     private async Task<int> HandleRuleSnapshotAsync(AuditSnapshotUpload upload, CancellationToken ct)
     {
-        var payload = upload.Payload.Deserialize<HostAccountRuleSnapshotPayload>(DeserializeOptions)
+        var content = upload.Payload.Deserialize<HostAccountRuleSnapshotContent>(DeserializeOptions)
             ?? throw new ArgumentException(
-                $"Failed to deserialize Payload as {nameof(HostAccountRuleSnapshotPayload)}.");
+                $"Failed to deserialize Payload as {nameof(HostAccountRuleSnapshotContent)}.");
 
-        if (string.IsNullOrWhiteSpace(payload.Hostname))
+        var payload = new HostAccountRuleSnapshotPayload
         {
-            payload = new HostAccountRuleSnapshotPayload
-            {
-                ScriptName = payload.ScriptName,
-                HostId     = payload.HostId,
-                Hostname   = upload.HostName,
-                Payload    = payload.Payload,
-            };
-        }
+            HostId   = upload.HostId ?? string.Empty,
+            Hostname = upload.HostName,
+            Payload  = content,
+        };
 
         var entity = HostAccountRuleSnapshotMapper.ToEntity(payload);
         return await _ruleRepo.AddAsync(entity, ct);
