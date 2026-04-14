@@ -6,13 +6,13 @@ namespace ASEAudit.Shared.Contracts;
 /// 每筆 <see cref="LocalUserEntry"/> 展開後寫入資料表 <c>[dbo].[Identification_AM_Account]</c>。
 ///
 /// 欄位對應 (Payload → Entity <c>IdentificationAmAccount</c>)：
-///   Hostname                 → HostName
-///   LocalUserEntry.Name      → AccountName
-///   LocalUserEntry.Enabled   → Status (true = Enabled / false = Disabled)
-///   LocalUserEntry.PasswordRequired → PasswordRequired
+///   Hostname                         → HostName
+///   Payload.LoginRequirement[*].Name → AccountName
+///   Payload.*.Enabled                → Status (true = Enabled / false = Disabled)
+///   Payload.*.PasswordRequired       → PasswordRequired
 ///   (MACAddress 由 Server 端補齊)
 /// </summary>
-public sealed class HostAccountSnapshotPayload : IScriptPayload
+public sealed class HostAccountSnapshotPayload : ScriptPayload<HostAccountSnapshotContent>
 {
     /// <summary>Agent / Server 共用的腳本名稱常數 (單一真相來源)。</summary>
     public const string Script = "HostAccountSnapshot";
@@ -20,18 +20,16 @@ public sealed class HostAccountSnapshotPayload : IScriptPayload
     /// <summary>此 Payload 對應的資料表名稱，供 Ingest 層路由使用。</summary>
     public const string TableName = "Identification_AM_Account";
 
-    /// <summary>
-    /// 此 Payload 來源腳本名稱，由 Converter 輸出時強制寫入 (等於 <see cref="Script"/>)。
-    /// 接收端可直接由 Payload 本體識別來源，無需依賴外層 envelope。
-    /// </summary>
-    public string ScriptName { get; set; } = Script;
+    /// <inheritdoc />
+    public override string ScriptName { get; set; } = Script;
+}
 
-    /// <summary>主機識別碼 ($env:COMPUTERNAME)。</summary>
-    public string HostId { get; init; } = string.Empty;
-
-    /// <summary>主機名稱 ($env:COMPUTERNAME)，寫入 HostName 欄位。</summary>
-    public string Hostname { get; init; } = string.Empty;
-
+/// <summary>
+/// <see cref="HostAccountSnapshotPayload"/> 的實際稽核資料內容。
+/// 對應 PowerShell 輸出 JSON 中 <c>Payload</c> 物件。
+/// </summary>
+public sealed class HostAccountSnapshotContent : PayloadWrapper
+{
     /// <summary>
     /// 本機一般使用者帳號清單 (Get-LocalUser，排除內建預設帳號)。
     /// 每筆展開為 Identification_AM_Account 一列。

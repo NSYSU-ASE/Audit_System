@@ -16,22 +16,24 @@ try {
     $defaultNames = @(""Administrator"", ""Guest"", ""DefaultAccount"")
 
     $hostAccount = @{
-        HostId             = $env:COMPUTERNAME
-        Hostname           = $env:COMPUTERNAME
-        LoginRequirement   = @(
-            Get-LocalUser |
-            Where-Object { $defaultNames -notcontains $_.Name } |
-            Select-Object Name, PasswordRequired, Enabled
-        )
+        HostId   = $env:COMPUTERNAME
+        Hostname = $env:COMPUTERNAME
+        Payload  = @{
+            LoginRequirement = @(
+                Get-LocalUser |
+                Where-Object { $defaultNames -notcontains $_.Name } |
+                Select-Object Name, PasswordRequired, Enabled
+            )
 
-        # 預設帳號與 Administrator 狀態
-        DefaultAccounts    = @(
-            Get-LocalUser -Name ""Administrator"", ""Guest"", ""DefaultAccount"" -ErrorAction SilentlyContinue |
-            Select-Object Name, Enabled, PasswordRequired
-        )
+            # 預設帳號與 Administrator 狀態
+            DefaultAccounts  = @(
+                Get-LocalUser -Name ""Administrator"", ""Guest"", ""DefaultAccount"" -ErrorAction SilentlyContinue |
+                Select-Object Name, Enabled, PasswordRequired
+            )
+        }
     }
 
-    $hostAccount | ConvertTo-Json -Depth 3
+    $hostAccount | ConvertTo-Json -Depth 4
 }
 catch {
     @{

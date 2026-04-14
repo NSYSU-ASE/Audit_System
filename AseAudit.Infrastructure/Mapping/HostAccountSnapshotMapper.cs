@@ -13,10 +13,10 @@ public static class HostAccountSnapshotMapper
     {
         if (payload is null) throw new ArgumentNullException(nameof(payload));
 
-        foreach (var user in payload.LoginRequirement)
+        foreach (var user in payload.Payload.LoginRequirement)
             yield return BuildEntity(payload.Hostname, user);
 
-        foreach (var user in payload.DefaultAccounts)
+        foreach (var user in payload.Payload.DefaultAccounts)
             yield return BuildEntity(payload.Hostname, user);
     }
 

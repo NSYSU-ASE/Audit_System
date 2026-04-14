@@ -18,11 +18,11 @@ public static class HostAccountRuleSnapshotMapper
             HostName                  = payload.Hostname,
             // TODO: Required 欄位，待 Host Inventory 補齊；此階段先填空字串
             MACAddress                = string.Empty,
-            RestrictAnonymousSAM      = (payload.AnonymousAccess?.RestrictAnonymousSAM ?? 0) == 1,
-            RestrictAnonymous         = (payload.AnonymousAccess?.RestrictAnonymous ?? 0) == 1,
-            EveryoneIncludesAnonymous = (payload.AnonymousAccess?.EveryoneIncludesAnonymous ?? 0) == 1,
-            UserDomain                = payload.SystemInfo?.Domain ?? string.Empty,
-            DomainRole                = payload.SystemInfo?.DomainRole ?? 0,
+            RestrictAnonymousSAM      = (payload.Payload.AnonymousAccess?.RestrictAnonymousSAM ?? 0) == 1,
+            RestrictAnonymous         = (payload.Payload.AnonymousAccess?.RestrictAnonymous ?? 0) == 1,
+            EveryoneIncludesAnonymous = (payload.Payload.AnonymousAccess?.EveryoneIncludesAnonymous ?? 0) == 1,
+            UserDomain                = payload.Payload.SystemInfo?.Domain ?? string.Empty,
+            DomainRole                = payload.Payload.SystemInfo?.DomainRole ?? 0,
             // CreatedTime 由 DB 預設值 GETDATE() 填入
         };
     }

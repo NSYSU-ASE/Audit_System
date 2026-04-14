@@ -80,11 +80,10 @@ public sealed class DatabaseAuditIngestService : IAuditIngestService
         {
             payload = new HostAccountSnapshotPayload
             {
-                ScriptName       = payload.ScriptName,
-                HostId           = payload.HostId,
-                Hostname         = upload.HostName,
-                LoginRequirement = payload.LoginRequirement,
-                DefaultAccounts  = payload.DefaultAccounts,
+                ScriptName = payload.ScriptName,
+                HostId     = payload.HostId,
+                Hostname   = upload.HostName,
+                Payload    = payload.Payload,
             };
         }
 
@@ -103,10 +102,9 @@ public sealed class DatabaseAuditIngestService : IAuditIngestService
             payload = new HostAccountRuleSnapshotPayload
             {
                 ScriptName = payload.ScriptName,
-                HostId = payload.HostId,
-                Hostname = upload.HostName,
-                SystemInfo = payload.SystemInfo,
-                AnonymousAccess = payload.AnonymousAccess,
+                HostId     = payload.HostId,
+                Hostname   = upload.HostName,
+                Payload    = payload.Payload,
             };
         }
 

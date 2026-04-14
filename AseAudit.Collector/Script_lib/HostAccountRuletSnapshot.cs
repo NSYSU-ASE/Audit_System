@@ -14,19 +14,21 @@ public static class HostAccountRuleSnapshot
 
 try {
     $hostAccountRule = @{
-        HostId             = $env:COMPUTERNAME
-        Hostname           = $env:COMPUTERNAME
-        SystemInfo         = Get-WmiObject Win32_ComputerSystem | Select-Object Name, Domain, DomainRole
+        HostId   = $env:COMPUTERNAME
+        Hostname = $env:COMPUTERNAME
+        Payload  = @{
+            SystemInfo      = Get-WmiObject Win32_ComputerSystem | Select-Object Name, Domain, DomainRole
 
-        # 匿名存取設定
-        AnonymousAccess    = @{
-            RestrictAnonymousSAM      = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""RestrictAnonymousSAM"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty RestrictAnonymousSAM)
-            RestrictAnonymous         = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""RestrictAnonymous"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty RestrictAnonymous)
-            EveryoneIncludesAnonymous = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""EveryoneIncludesAnonymous"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty EveryoneIncludesAnonymous)
+            # 匿名存取設定
+            AnonymousAccess = @{
+                RestrictAnonymousSAM      = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""RestrictAnonymousSAM"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty RestrictAnonymousSAM)
+                RestrictAnonymous         = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""RestrictAnonymous"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty RestrictAnonymous)
+                EveryoneIncludesAnonymous = @(Get-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"" -Name ""EveryoneIncludesAnonymous"" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty EveryoneIncludesAnonymous)
+            }
         }
     }
 
-    $hostAccountRule | ConvertTo-Json -Depth 3
+    $hostAccountRule | ConvertTo-Json -Depth 4
 }
 catch {
     @{
