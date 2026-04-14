@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AseAudit.Core\AseAudit.Core.csproj" />
+    <ProjectReference Include="..\ASEAudit.Shared\ASEAudit.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
