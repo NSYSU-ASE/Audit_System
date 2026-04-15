@@ -1,4 +1,5 @@
 using AseAudit.Api.Services;
+using AseAudit.Api.Services.Ingest;
 using AseAudit.Infrastructure.Data;
 using AseAudit.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +19,8 @@ builder.Services.AddSwaggerGen();
 
 // Audit ingest pipeline (Collector -> Api -> DB)
 // DbContext 為 Scoped，下游 Repository / IngestService 必須同為 Scoped
-builder.Services.AddScoped<IIdentificationAmAccountRepository, IdentificationAmAccountRepository>();
-builder.Services.AddScoped<IIdentificationAmRuleRepository, IdentificationAmRuleRepository>();
+builder.Services.AddRepositories();
+builder.Services.AddSnapshotHandlers();
 builder.Services.AddScoped<IAuditIngestService, DatabaseAuditIngestService>();
 
 // 放寬 JSON 上傳大小上限，避免大型快照 (例如事件記錄) 被截斷
