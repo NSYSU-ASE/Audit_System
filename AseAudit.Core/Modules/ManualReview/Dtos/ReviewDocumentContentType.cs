@@ -12,3 +12,4 @@ namespace AseAudit.Core.Modules.ManualReview.Dtos
         Pdf = 1,
         Image = 2
     }
+}

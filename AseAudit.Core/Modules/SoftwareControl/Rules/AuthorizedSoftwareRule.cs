@@ -138,5 +138,6 @@ namespace AseAudit.Core.Modules.Software.Rules
             if (string.IsNullOrWhiteSpace(input)) return null;
             return input.Trim().Replace("\t", " ").Replace("  ", " ");
         }
+
     }
 }

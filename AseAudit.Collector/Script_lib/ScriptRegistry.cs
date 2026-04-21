@@ -1,3 +1,5 @@
+using ASEAudit.Shared.Contracts;
+
 namespace AseAudit.Collector.Script_lib;
 
 // ═══════════════════════════════════════════════════════════════
@@ -36,12 +38,13 @@ public static class ScriptRegistry
 
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            (nameof(OsVersionSnapshot),          OsVersionSnapshot.Content),
-            (nameof(HostAccountSnapshot),         HostAccountSnapshot.Content),
-            (nameof(PasswordPolicySnapshot),      PasswordPolicySnapshot.Content),
-            (nameof(UserGroupSnapshot),           UserGroupSnapshot.Content),
-            (nameof(AccountAuthorizationSnapshot), AccountAuthorizationSnapshot.Content),
-            (nameof(SessionIntegritySnapshot),    SessionIntegritySnapshot.Content),
+            // (nameof(OsVersionSnapshot),          OsVersionSnapshot.Content),
+            (HostAccountRuleSnapshotPayload.Script,   HostAccountRuleSnapshot.Content),
+            (HostAccountSnapshotPayload.Script,       HostAccountSnapshot.Content),
+            // (nameof(PasswordPolicySnapshot),      PasswordPolicySnapshot.Content),
+            // (nameof(UserGroupSnapshot),           UserGroupSnapshot.Content),
+            // (nameof(AccountAuthorizationSnapshot), AccountAuthorizationSnapshot.Content),
+            // (nameof(SessionIntegritySnapshot),    SessionIntegritySnapshot.Content),
         ];
     }
 
@@ -58,8 +61,8 @@ public static class ScriptRegistry
         // 
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            (nameof(InstalledProgramsSnapshot), InstalledProgramsSnapshot.Content),
-            (nameof(AntivirusStatusSnapshot),   AntivirusStatusSnapshot.Content),
+            // (nameof(InstalledProgramsSnapshot), InstalledProgramsSnapshot.Content),
+            // (nameof(AntivirusStatusSnapshot),   AntivirusStatusSnapshot.Content),
         ];
     }
 
@@ -89,12 +92,12 @@ public static class ScriptRegistry
         //
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            (nameof(FirewallPolicySnapshot),       FirewallPolicySnapshot.Content),
-            (nameof(NetworkInterfaceSnapshot),      NetworkInterfaceSnapshot.Content),
-            (nameof(NetworkSegmentationSnapshot),   NetworkSegmentationSnapshot.Content),
-            (nameof(ZoneBoundarySnapshot),          ZoneBoundarySnapshot.Content),
-            (nameof(PersonToPersonCommSnapshot),    PersonToPersonCommSnapshot.Content),
-            (nameof(DosProtectionSnapshot),         DosProtectionSnapshot.Content),
+            // (nameof(FirewallPolicySnapshot),       FirewallPolicySnapshot.Content),
+            // (nameof(NetworkInterfaceSnapshot),      NetworkInterfaceSnapshot.Content),
+            // (nameof(NetworkSegmentationSnapshot),   NetworkSegmentationSnapshot.Content),
+            // (nameof(ZoneBoundarySnapshot),          ZoneBoundarySnapshot.Content),
+            // (nameof(PersonToPersonCommSnapshot),    PersonToPersonCommSnapshot.Content),
+            // (nameof(DosProtectionSnapshot),         DosProtectionSnapshot.Content),
         ];
     }
 
@@ -102,9 +105,15 @@ public static class ScriptRegistry
     {
         // RE 3 #2 — 覆蓋行為稽核日誌
         // RE 4 #3 — 雙人核准稽核紀錄
+        //
+        // EventStatusSnapshot — 各項稽核記錄是否開啟狀態
+        // EventLogSnapshot    — 各類稽核事件日誌內容（含時間戳記、來源、類別、類型、事件ID、事件結果）
+        //
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            (nameof(SecurityEventLogSnapshot), SecurityEventLogSnapshot.Content),
+            // (nameof(SecurityEventLogSnapshot), SecurityEventLogSnapshot.Content),
+            (nameof(EventStatusSnapshot),      EventStatusSnapshot.Content),
+            // (nameof(EventLogSnapshot),         EventLogSnapshot.Content),
         ];
     }
 
@@ -115,7 +124,7 @@ public static class ScriptRegistry
         // RE 4 #2 — 防自我核准驗證
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            (nameof(PrivilegeOverrideSnapshot), PrivilegeOverrideSnapshot.Content),
+            // (nameof(PrivilegeOverrideSnapshot), PrivilegeOverrideSnapshot.Content),
         ];
     }
 
@@ -151,16 +160,16 @@ public static class ScriptRegistry
         //
         public static readonly IReadOnlyList<(string Name, string Content)> Scripts =
         [
-            (nameof(ListeningPortAccessSnapshot),      ListeningPortAccessSnapshot.Content),
-            (nameof(CommunicationIntegritySnapshot),   CommunicationIntegritySnapshot.Content),
-            (nameof(InputValidationSnapshot),           InputValidationSnapshot.Content),
-            (nameof(DeterministicOutputSnapshot),       DeterministicOutputSnapshot.Content),
-            (nameof(ErrorHandlingSnapshot),             ErrorHandlingSnapshot.Content),
-            (nameof(AuditInfoProtectionSnapshot),       AuditInfoProtectionSnapshot.Content),
-            (nameof(DataPersistenceSnapshot),           DataPersistenceSnapshot.Content),
-            (nameof(ApplicationPartitionSnapshot),      ApplicationPartitionSnapshot.Content),
-            (nameof(SystemBackupSnapshot),              SystemBackupSnapshot.Content),
-            (nameof(SystemRecoverySnapshot),            SystemRecoverySnapshot.Content),
+            // (nameof(ListeningPortAccessSnapshot),      ListeningPortAccessSnapshot.Content),
+            // (nameof(CommunicationIntegritySnapshot),   CommunicationIntegritySnapshot.Content),
+            // (nameof(InputValidationSnapshot),           InputValidationSnapshot.Content),
+            // (nameof(DeterministicOutputSnapshot),       DeterministicOutputSnapshot.Content),
+            // (nameof(ErrorHandlingSnapshot),             ErrorHandlingSnapshot.Content),
+            // (nameof(AuditInfoProtectionSnapshot),       AuditInfoProtectionSnapshot.Content),
+            // (nameof(DataPersistenceSnapshot),           DataPersistenceSnapshot.Content),
+            // (nameof(ApplicationPartitionSnapshot),      ApplicationPartitionSnapshot.Content),
+            // (nameof(SystemBackupSnapshot),              SystemBackupSnapshot.Content),
+            // (nameof(SystemRecoverySnapshot),            SystemRecoverySnapshot.Content),
         ];
     }
 
@@ -180,47 +189,52 @@ public static class ScriptRegistry
         new Dictionary<string, string>
         {
             // Identity
-            [nameof(OsVersionSnapshot)]      = OsVersionSnapshot.Content,
-            [nameof(HostAccountSnapshot)]    = HostAccountSnapshot.Content,
-            [nameof(PasswordPolicySnapshot)] = PasswordPolicySnapshot.Content,
-            [nameof(UserGroupSnapshot)]      = UserGroupSnapshot.Content,
-            [nameof(AccountAuthorizationSnapshot)] = AccountAuthorizationSnapshot.Content,
+            // [nameof(OsVersionSnapshot)]      = OsVersionSnapshot.Content,
+            [HostAccountSnapshotPayload.Script]     = HostAccountSnapshot.Content,
+            [HostAccountRuleSnapshotPayload.Script] = HostAccountRuleSnapshot.Content,
+            // [nameof(PasswordPolicySnapshot)] = PasswordPolicySnapshot.Content,
+            // [nameof(UserGroupSnapshot)]      = UserGroupSnapshot.Content,
+            // [nameof(AccountAuthorizationSnapshot)] = AccountAuthorizationSnapshot.Content,
 
             // SoftwareControl
-            [nameof(InstalledProgramsSnapshot)] = InstalledProgramsSnapshot.Content,
-            [nameof(AntivirusStatusSnapshot)]   = AntivirusStatusSnapshot.Content,
+            // [nameof(InstalledProgramsSnapshot)] = InstalledProgramsSnapshot.Content,
+            // [nameof(AntivirusStatusSnapshot)]   = AntivirusStatusSnapshot.Content,
 
             // Identity (SR 3.8)
-            [nameof(SessionIntegritySnapshot)] = SessionIntegritySnapshot.Content,
+            // [nameof(SessionIntegritySnapshot)] = SessionIntegritySnapshot.Content,
 
             // Firewall
-            [nameof(FirewallPolicySnapshot)]      = FirewallPolicySnapshot.Content,
-            [nameof(NetworkInterfaceSnapshot)]     = NetworkInterfaceSnapshot.Content,
-            [nameof(NetworkSegmentationSnapshot)]  = NetworkSegmentationSnapshot.Content,
-            [nameof(ZoneBoundarySnapshot)]         = ZoneBoundarySnapshot.Content,
-            [nameof(PersonToPersonCommSnapshot)]   = PersonToPersonCommSnapshot.Content,
-            [nameof(DosProtectionSnapshot)]        = DosProtectionSnapshot.Content,
+            // [nameof(FirewallPolicySnapshot)]      = FirewallPolicySnapshot.Content,
+            // [nameof(NetworkInterfaceSnapshot)]     = NetworkInterfaceSnapshot.Content,
+            // [nameof(NetworkSegmentationSnapshot)]  = NetworkSegmentationSnapshot.Content,
+            // [nameof(ZoneBoundarySnapshot)]         = ZoneBoundarySnapshot.Content,
+            // [nameof(PersonToPersonCommSnapshot)]   = PersonToPersonCommSnapshot.Content,
+            // [nameof(DosProtectionSnapshot)]        = DosProtectionSnapshot.Content,
 
             // SystemEvent
-            [nameof(SecurityEventLogSnapshot)]  = SecurityEventLogSnapshot.Content,
+            // [nameof(SecurityEventLogSnapshot)]  = SecurityEventLogSnapshot.Content,
 
             // AuditProcess
-            [nameof(PrivilegeOverrideSnapshot)] = PrivilegeOverrideSnapshot.Content,
+            // [nameof(PrivilegeOverrideSnapshot)] = PrivilegeOverrideSnapshot.Content,
 
             // DataManagement
-            [nameof(ListeningPortAccessSnapshot)]    = ListeningPortAccessSnapshot.Content,
-            [nameof(CommunicationIntegritySnapshot)] = CommunicationIntegritySnapshot.Content,
-            [nameof(InputValidationSnapshot)]         = InputValidationSnapshot.Content,
-            [nameof(DeterministicOutputSnapshot)]     = DeterministicOutputSnapshot.Content,
-            [nameof(ErrorHandlingSnapshot)]            = ErrorHandlingSnapshot.Content,
-            [nameof(AuditInfoProtectionSnapshot)]     = AuditInfoProtectionSnapshot.Content,
-            [nameof(DataPersistenceSnapshot)]          = DataPersistenceSnapshot.Content,
-            [nameof(ApplicationPartitionSnapshot)]    = ApplicationPartitionSnapshot.Content,
-            [nameof(SystemBackupSnapshot)]             = SystemBackupSnapshot.Content,
-            [nameof(SystemRecoverySnapshot)]           = SystemRecoverySnapshot.Content,
+            // [nameof(ListeningPortAccessSnapshot)]    = ListeningPortAccessSnapshot.Content,
+            // [nameof(CommunicationIntegritySnapshot)] = CommunicationIntegritySnapshot.Content,
+            // [nameof(InputValidationSnapshot)]         = InputValidationSnapshot.Content,
+            // [nameof(DeterministicOutputSnapshot)]     = DeterministicOutputSnapshot.Content,
+            // [nameof(ErrorHandlingSnapshot)]            = ErrorHandlingSnapshot.Content,
+            // [nameof(AuditInfoProtectionSnapshot)]     = AuditInfoProtectionSnapshot.Content,
+            // [nameof(DataPersistenceSnapshot)]          = DataPersistenceSnapshot.Content,
+            // [nameof(ApplicationPartitionSnapshot)]    = ApplicationPartitionSnapshot.Content,
+            // [nameof(SystemBackupSnapshot)]             = SystemBackupSnapshot.Content,
+            // [nameof(SystemRecoverySnapshot)]           = SystemRecoverySnapshot.Content,
 
             // SourceManagement
-            [nameof(ServiceAccountSnapshot)] = ServiceAccountSnapshot.Content,
+            // [nameof(ServiceAccountSnapshot)] = ServiceAccountSnapshot.Content,
+
+            // SystemEvent (new)
+            [nameof(EventStatusSnapshot)]  = EventStatusSnapshot.Content,
+            // [nameof(EventLogSnapshot)]     = EventLogSnapshot.Content,
 
             // ↓ 新增腳本時在此加一行
         };

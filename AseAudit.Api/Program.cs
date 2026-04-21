@@ -1,21 +1,14 @@
-using Microsoft.Data.SqlClient;
-using System.Data;
-
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IDbConnection>(sp =>
-{
-    var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
-    Console.WriteLine(">>> DefaultConnection = " + connStr);
-    return new SqlConnection(connStr);
-});
-
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
