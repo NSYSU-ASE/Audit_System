@@ -18,8 +18,11 @@ public partial class EventStatusSnapshotConverter : IScriptJsonConverter
     [GeneratedRegex(@"\s{2,}")]
     private static partial Regex MultipleSpaces();
 
-    public string ToJson(string rawOutput, JsonSerializerOptions options)
+    public string ToJson(string rawOutput, HostInfo hostInfo, JsonSerializerOptions options)
     {
+        // EventStatusSnapshot 尚未使用 Contract Payload 格式，hostInfo 暫不參與組裝；
+        // 主機識別由 SendJson 的 envelope (hostName) 提供。
+        _ = hostInfo;
         var parsed = Parse(rawOutput);
         return JsonSerializer.Serialize(parsed, options);
     }
