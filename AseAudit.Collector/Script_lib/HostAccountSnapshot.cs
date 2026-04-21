@@ -1,39 +1,38 @@
 namespace AseAudit.Collector.Script_lib;
 
 /// <summary>
-/// [Identity] 收集本機帳號、AD 加入狀態、預設帳號狀態、匿名存取設定。
-/// 輸出：JSON 對應 HostAccountSnapshotDto
+/// [Identity] 收集本機帳號與預設帳號狀態。
+/// 腳本僅輸出 Payload 內容；主機識別 (HostId / Hostname) 由 <see cref="HostInfoSnapshot"/> 共同收集，
+/// 於 <see cref="ToJSON.HostAccountSnapshotConverter"/> 組裝成完整 Contract Payload。
+///
+/// 輸出 JSON 對應 <c>HostAccountSnapshotContent</c>：
+/// <code>
+/// { "LoginRequirement": [...], "DefaultAccounts": [...] }
+/// </code>
 /// </summary>
 public static class HostAccountSnapshot
 {
     public const string Content = @"
 # ══════════════════════════════════════════════════════════════
-#  HostAccountSnapshot — 本機帳號與安全設定收集
-#  收集本機帳號、AD 加入狀態、預設帳號狀態、匿名存取設定
+#  HostAccountSnapshot — 本機帳號與預設帳號狀態收集 (Payload only)
 # ══════════════════════════════════════════════════════════════
 
 try {
     $defaultNames = @(""Administrator"", ""Guest"", ""DefaultAccount"")
 
-    $hostAccount = @{
-        HostId   = $env:COMPUTERNAME
-        Hostname = $env:COMPUTERNAME
-        Payload  = @{
-            LoginRequirement = @(
-                Get-LocalUser |
-                Where-Object { $defaultNames -notcontains $_.Name } |
-                Select-Object Name, PasswordRequired, Enabled
-            )
+    @{
+        LoginRequirement = @(
+            Get-LocalUser |
+            Where-Object { $defaultNames -notcontains $_.Name } |
+            Select-Object Name, PasswordRequired, Enabled
+        )
 
-            # 預設帳號與 Administrator 狀態
-            DefaultAccounts  = @(
-                Get-LocalUser -Name ""Administrator"", ""Guest"", ""DefaultAccount"" -ErrorAction SilentlyContinue |
-                Select-Object Name, Enabled, PasswordRequired
-            )
-        }
-    }
-
-    $hostAccount | ConvertTo-Json -Depth 4
+        # 預設帳號與 Administrator 狀態
+        DefaultAccounts  = @(
+            Get-LocalUser -Name ""Administrator"", ""Guest"", ""DefaultAccount"" -ErrorAction SilentlyContinue |
+            Select-Object Name, Enabled, PasswordRequired
+        )
+    } | ConvertTo-Json -Depth 4
 }
 catch {
     @{

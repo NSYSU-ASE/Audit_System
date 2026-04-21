@@ -5,14 +5,17 @@ using ASEAudit.Shared.Contracts;
 namespace AseAudit.Collector.ToJSON;
 
 /// <summary>
-/// 將 HostAccountRuleSnapshot 的 PowerShell 原始 JSON 輸出，
-/// 以 <see cref="HostAccountRuleSnapshotPayload"/> 為 schema 反序列化並重新輸出，
-/// 保證 JSON 結構與 Shared Contract 對齊，後續由 API 寫入
-/// 資料表 <see cref="HostAccountRuleSnapshotPayload.TableName"/> (Identification_AM_rule) 單列。
+/// 將 HostAccountRuleSnapshot 的 PowerShell 原始輸出 (僅 Payload 內容) 組裝為
+/// 完整的 <see cref="HostAccountRuleSnapshotPayload"/>：先反序列化為
+/// <see cref="HostAccountRuleSnapshotContent"/>，再填入 <see cref="HostInfo"/>
+/// 取得的 HostId / Hostname，確保 JSON 結構與 Shared Contract 對齊。
 ///
 /// 由於 PowerShell 以 <c>@(Get-ItemProperty ...)</c> 強制陣列包裝，
 /// 匿名存取欄位原始 JSON 會是 <c>[1]</c> 或 <c>[]</c>；
 /// 透過 <see cref="NullableIntArrayOrScalarConverter"/> 自動拆封為純量 / null。
+///
+/// 後續由 API 將其寫入資料表 <see cref="HostAccountRuleSnapshotPayload.TableName"/>
+/// (Identification_AM_rule) 單列。
 /// </summary>
 public class HostAccountRuleSnapshotConverter : IScriptJsonConverter
 {
@@ -22,13 +25,18 @@ public class HostAccountRuleSnapshotConverter : IScriptJsonConverter
         Converters = { new NullableIntArrayOrScalarConverter() }
     };
 
-    public string ToJson(string rawOutput, JsonSerializerOptions options)
+    public string ToJson(string rawOutput, HostInfo hostInfo, JsonSerializerOptions options)
     {
-        var payload = JsonSerializer.Deserialize<HostAccountRuleSnapshotPayload>(rawOutput, _deserializeOptions)
-                      ?? new HostAccountRuleSnapshotPayload();
+        var content = JsonSerializer.Deserialize<HostAccountRuleSnapshotContent>(rawOutput, _deserializeOptions)
+                      ?? new HostAccountRuleSnapshotContent();
 
-        // 強制覆寫為常數，確保 Payload JSON 自我描述來源腳本
-        payload.ScriptName = HostAccountRuleSnapshotPayload.Script;
+        var payload = new HostAccountRuleSnapshotPayload
+        {
+            HostId = hostInfo.HostId,
+            Hostname = hostInfo.Hostname,
+            Payload = content,
+            ScriptName = HostAccountRuleSnapshotPayload.Script
+        };
 
         return JsonSerializer.Serialize(payload, options);
     }

@@ -27,17 +27,18 @@ public sealed class HostAccountSnapshotHandler : ISnapshotHandler
 
     public async Task<int> HandleAsync(AuditSnapshotUpload upload, CancellationToken cancellationToken)
     {
-        // upload.Payload 是 envelope 內層 content（不含 ScriptName/Hostname），
-        // 直接反序列化成 Content 型別，再以 envelope 欄位組回強型別 Payload。
-        var content = upload.Payload.Deserialize<HostAccountSnapshotContent>(DeserializeOptions)
+        // Collector 的 HostAccountSnapshotConverter 輸出完整 HostAccountSnapshotPayload
+        // (ScriptName/HostId/Hostname/Payload)，envelope.Payload 即為該物件。
+        // 以完整型別反序列化後，envelope 欄位覆寫 HostId/Hostname 作為可信來源。
+        var wire = upload.Payload.Deserialize<HostAccountSnapshotPayload>(DeserializeOptions)
             ?? throw new ArgumentException(
-                $"Failed to deserialize Payload as {nameof(HostAccountSnapshotContent)}.");
+                $"Failed to deserialize Payload as {nameof(HostAccountSnapshotPayload)}.");
 
         var payload = new HostAccountSnapshotPayload
         {
-            HostId   = upload.HostId ?? string.Empty,
-            Hostname = upload.HostName,
-            Payload  = content,
+            HostId   = string.IsNullOrEmpty(upload.HostId) ? wire.HostId : upload.HostId,
+            Hostname = string.IsNullOrEmpty(upload.HostName) ? wire.Hostname : upload.HostName,
+            Payload  = wire.Payload,
         };
 
         var entities = HostAccountSnapshotMapper.ToEntities(payload).ToList();

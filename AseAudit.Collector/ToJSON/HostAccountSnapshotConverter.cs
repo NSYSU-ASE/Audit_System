@@ -4,13 +4,13 @@ using ASEAudit.Shared.Contracts;
 namespace AseAudit.Collector.ToJSON;
 
 /// <summary>
-/// 將 HostAccountSnapshot 的 PowerShell 原始 JSON 輸出，
-/// 以 <see cref="HostAccountSnapshotPayload"/> 為 schema 反序列化並重新輸出，
-/// 保證 JSON 結構與 Shared Contract 對齊，後續由 API 寫入
-/// 資料表 <see cref="HostAccountSnapshotPayload.TableName"/> (Identification_AM_Account)。
+/// 將 HostAccountSnapshot 的 PowerShell 原始輸出 (僅 Payload 內容) 組裝為
+/// 完整的 <see cref="HostAccountSnapshotPayload"/>：先反序列化為
+/// <see cref="HostAccountSnapshotContent"/>，再填入 <see cref="HostInfo"/>
+/// 取得的 HostId / Hostname，確保 JSON 結構與 Shared Contract 對齊。
 ///
-/// 輸出保留列表結構 (LoginRequirement / DefaultAccounts)，
-/// 由 Ingest 服務逐列展開寫入資料表。
+/// 後續由 API 將其寫入資料表 <see cref="HostAccountSnapshotPayload.TableName"/>
+/// (Identification_AM_Account)。
 /// </summary>
 public class HostAccountSnapshotConverter : IScriptJsonConverter
 {
@@ -19,13 +19,18 @@ public class HostAccountSnapshotConverter : IScriptJsonConverter
         PropertyNameCaseInsensitive = true
     };
 
-    public string ToJson(string rawOutput, JsonSerializerOptions options)
+    public string ToJson(string rawOutput, HostInfo hostInfo, JsonSerializerOptions options)
     {
-        var payload = JsonSerializer.Deserialize<HostAccountSnapshotPayload>(rawOutput, _deserializeOptions)
-                      ?? new HostAccountSnapshotPayload();
+        var content = JsonSerializer.Deserialize<HostAccountSnapshotContent>(rawOutput, _deserializeOptions)
+                      ?? new HostAccountSnapshotContent();
 
-        // 強制覆寫為常數，確保 Payload JSON 自我描述來源腳本
-        payload.ScriptName = HostAccountSnapshotPayload.Script;
+        var payload = new HostAccountSnapshotPayload
+        {
+            HostId = hostInfo.HostId,
+            Hostname = hostInfo.Hostname,
+            Payload = content,
+            ScriptName = HostAccountSnapshotPayload.Script
+        };
 
         return JsonSerializer.Serialize(payload, options);
     }
