@@ -3,6 +3,8 @@ using AseAudit.Api.Services.Ingest;
 using AseAudit.Infrastructure.Data;
 using AseAudit.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddRepositories();
 builder.Services.AddSnapshotHandlers();
 builder.Services.AddScoped<IAuditIngestService, DatabaseAuditIngestService>();
+builder.Services.AddScoped<IdentityRepository>();
 
 // 放寬 JSON 上傳大小上限，避免大型快照 (例如事件記錄) 被截斷
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
@@ -31,7 +34,11 @@ builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = 64 * 1024 * 1024; // 64 MB
 });
-
+builder.Services.AddScoped<IDbConnection>(sp =>
+{
+    var connStr = builder.Configuration.GetConnectionString("AuditDb");
+    return new SqlConnection(connStr);
+});
 var app = builder.Build();
 
 // 啟動時自動確認資料庫與資料表是否存在，若不存在則依 Entity 定義自動建立

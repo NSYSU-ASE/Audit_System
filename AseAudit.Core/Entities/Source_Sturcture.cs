@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace AseAudit.Core.Eetities
+namespace AseAudit.Core.Entities
 {
     public class AuditSourceModule
     {
