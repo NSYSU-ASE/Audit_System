@@ -24,6 +24,7 @@ public static class JsonConverterRegistry
             [nameof(EventStatusSnapshot)] = new EventStatusSnapshotConverter(),
             [HostAccountRuleSnapshotPayload.Script] = new HostAccountRuleSnapshotConverter(),
             [HostAccountSnapshotPayload.Script] = new HostAccountSnapshotConverter(),
+            [FirewallRuleSnapshotPayload.Script] = new FirewallRuleSnapshotConverter(),
 
             // ↓ 新增轉換器時在此加一行
         };

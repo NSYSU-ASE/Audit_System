@@ -53,9 +53,13 @@ namespace AseAudit.Core.Entities
         [MaxLength(100)]
         public string? Direction { get; set; }
 
-        [Column("Port")]
+        [Column("LocalPort")]
         [MaxLength(100)]
         public string? Port { get; set; }
+
+        [Column("RemotePort")]
+        [MaxLength(100)]
+        public string? RemotePort { get; set; }
 
         [Column("Protocol")]
         [MaxLength(100)]
