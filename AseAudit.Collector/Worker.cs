@@ -39,7 +39,9 @@ namespace AseAudit.Collector
             {
                 (nameof(EventStatusSnapshot), EventStatusSnapshot.Content),
                 (HostAccountRuleSnapshotPayload.Script, HostAccountRuleSnapshot.Content),
-                (HostAccountSnapshotPayload.Script, HostAccountSnapshot.Content)
+                (HostAccountSnapshotPayload.Script, HostAccountSnapshot.Content),
+                (FirewallRuleSnapshotPayload.Script, FirewallRuleSnapshot.Content),
+                (PasswordPolicySnapshotPayload.Script, PasswordPolicySnapshot.Content)
             };
             var scriptResults = await _scriptEngine.RunModuleAsync(payloadScripts, stoppingToken);
 
