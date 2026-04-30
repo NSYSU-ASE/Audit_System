@@ -20,10 +20,11 @@ public sealed class PasswordPolicyRule
         var has90DaysRotation = s.MaxPasswordAgeDays > 0 && s.MaxPasswordAgeDays <= 90;
 
         // 計分：基礎 10 + 每個命中 +30，封頂 100
-        var score = 10;
+        var score = 0;
         if (hasComplexity) score += 30;
         if (hasLockout) score += 30;
         if (has90DaysRotation) score += 30;
+        if (score == 90) score = 100;
         if (score > 100) score = 100;
 
         var passed = (score >= 70); // 你可自行調整門檻

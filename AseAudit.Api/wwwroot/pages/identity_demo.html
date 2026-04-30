@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Identity Demo</title>
+
+    <style>
+        body {
+            font-family: "Microsoft JhengHei";
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #eee;
+        }
+
+        .bad {
+            color: red;
+        }
+
+        .na {
+            color: gray;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Identity 稽核結果</h1>
+    <div class="score">總分：<span id="score"></span></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>SR 群組</th>
+                <th>控制項名稱</th>
+                <th>得分 (%)</th>
+                <th>狀態</th>
+                <th>扣分原因</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        fetch("https://localhost:7079/api/identity/audit-device-summary")
+            .then(res => res.json())
+            .then(data => {
+                const device = data[0];
+
+                document.getElementById("score").innerText = device.averageScore;
+
+                const tbody = document.getElementById("tableBody");
+
+                device.rules.forEach(r => {
+
+                    let issues = r.issues.join("<br>");
+
+                    let detailScoresHtml = "";
+
+                    if (r.detailScores && r.detailScores.length > 0) {
+                        detailScoresHtml = `
+        <div style="margin-top:8px;">
+            <strong>分數明細：</strong>
+            ${r.detailScores.map(s => `
+                <span style="
+                    display:inline-block;
+                    padding:3px 8px;
+                    margin:2px;
+                    border-radius:6px;
+                    background:${s === 0 ? '#fee2e2' : '#e0f2fe'};
+                    color:${s === 0 ? '#dc2626' : '#0369a1'};
+                    font-weight:bold;
+                ">${s}</span>
+            `).join("")}
+        </div>
+    `;
+                    }
+
+                    let scoreText = r.score === null ? "-" : r.score;
+
+                    let statusClass = r.includedInScore ? "bad" : "na";
+
+                    tbody.innerHTML += `
+            <tr>
+                <td>${r.srMapping}</td>
+                <td>${r.ruleName}</td>
+                <td>${scoreText}</td>
+                <td class="${statusClass}">${r.status}</td>
+                <td>${issues}${detailScoresHtml}</td>
+            </tr>
+            `;
+                });
+            });
+    </script>
+
+</body>
+</html>
