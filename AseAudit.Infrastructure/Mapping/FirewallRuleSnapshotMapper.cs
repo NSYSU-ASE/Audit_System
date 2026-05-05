@@ -13,7 +13,7 @@ public static class FirewallRuleSnapshotMapper
     {
         if (payload is null) throw new ArgumentNullException(nameof(payload));
 
-        return payload.Payload.Rules
+        return (payload.Payload.Rules ?? [])
             .Select(rule => new FireWallRule
             {
                 HostName      = payload.Hostname,
