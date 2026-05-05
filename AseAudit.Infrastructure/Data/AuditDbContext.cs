@@ -14,6 +14,7 @@ namespace AseAudit.Infrastructure.Data
         }
 
         /// <summary>帳號管理資料表</summary>
+
         public DbSet<IdentificationAmAccount> IdentificationAmAccounts { get; set; }
 
         /// <summary>帳號管理規則資料表（密碼政策等）</summary>
