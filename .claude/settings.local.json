@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Willy/.config/superpowers/worktrees/Audit_System/firewall-pipeline/**)",
+      "Bash(dotnet build *)"
+    ]
+  }
+}
