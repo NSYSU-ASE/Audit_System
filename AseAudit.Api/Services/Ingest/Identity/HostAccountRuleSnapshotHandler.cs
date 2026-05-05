@@ -27,6 +27,9 @@ public sealed class HostAccountRuleSnapshotHandler : ISnapshotHandler
 
     public async Task<int> HandleAsync(AuditSnapshotUpload upload, CancellationToken cancellationToken)
     {
+        if (!upload.Success)
+            return 0;
+
         // Collector 的 HostAccountRuleSnapshotConverter 輸出完整 HostAccountRuleSnapshotPayload
         // (ScriptName/HostId/Hostname/Payload)，envelope.Payload 即為該物件。
         // 以完整型別反序列化後，envelope 欄位覆寫 HostId/Hostname 作為可信來源。

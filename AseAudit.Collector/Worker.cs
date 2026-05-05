@@ -35,14 +35,9 @@ namespace AseAudit.Collector
                 hostInfo.HostId, hostInfo.Hostname);
 
             // ── ② 執行各 payload 腳本（各自只產出 Payload 內容） ───
-            var payloadScripts = new List<(string Name, string Content)>
-            {
-                (nameof(EventStatusSnapshot), EventStatusSnapshot.Content),
-                (HostAccountRuleSnapshotPayload.Script, HostAccountRuleSnapshot.Content),
-                (HostAccountSnapshotPayload.Script, HostAccountSnapshot.Content),
-                (FirewallRuleSnapshotPayload.Script, FirewallRuleSnapshot.Content),
-                (PasswordPolicySnapshotPayload.Script, PasswordPolicySnapshot.Content)
-            };
+            var payloadScripts = ScriptRegistry.All
+                .Select(kv => (kv.Key, kv.Value))
+                .ToList();
             var scriptResults = await _scriptEngine.RunModuleAsync(payloadScripts, stoppingToken);
 
             var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
