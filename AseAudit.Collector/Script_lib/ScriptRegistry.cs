@@ -12,5 +12,6 @@ public static class ScriptRegistry
             [HostAccountRuleSnapshotPayload.Script] = HostAccountRuleSnapshot.Content,
             [PasswordPolicySnapshotPayload.Script]  = PasswordPolicySnapshot.Content,
             [nameof(EventStatusSnapshot)]           = EventStatusSnapshot.Content,
+            [FirewallRuleSnapshotPayload.Script]    = FirewallRuleSnapshot.Content,
         };
 }
