@@ -41,11 +41,11 @@ builder.Services.AddScoped<IDbConnection>(sp =>
 });
 var app = builder.Build();
 
-// 啟動時自動確認資料庫與資料表是否存在，若不存在則依 Entity 定義自動建立
+// 啟動時自動套用尚未執行的 EF Core Migrations（新增資料表/欄位皆透過 migration 管理）
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 // Configure the HTTP request pipeline.
