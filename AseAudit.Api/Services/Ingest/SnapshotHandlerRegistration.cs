@@ -1,3 +1,4 @@
+using AseAudit.Api.Services.Ingest.Firewall;
 using AseAudit.Api.Services.Ingest.Identity;
 
 namespace AseAudit.Api.Services.Ingest;
@@ -14,9 +15,8 @@ public static class SnapshotHandlerRegistration
         services.AddScoped<ISnapshotHandler, HostAccountSnapshotHandler>();
         services.AddScoped<ISnapshotHandler, HostAccountRuleSnapshotHandler>();
 
-        // 未來新增 Script 時於此加一行：
-        // services.AddScoped<ISnapshotHandler, PasswordPolicySnapshotHandler>();
-        // services.AddScoped<ISnapshotHandler, FirewallPolicySnapshotHandler>();
+        // Firewall 模組
+        services.AddScoped<ISnapshotHandler, FirewallRuleSnapshotHandler>();
 
         return services;
     }

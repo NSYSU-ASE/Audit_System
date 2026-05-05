@@ -15,8 +15,8 @@ public static class RepositoryRegistration
         services.AddScoped<IIdentificationAmAccountRepository, IdentificationAmAccountRepository>();
         services.AddScoped<IIdentificationAmRuleRepository, IdentificationAmRuleRepository>();
 
-        // 未來新增 Repository 時於此加一行：
-        // services.AddScoped<IXxxRepository, XxxRepository>();
+        // Firewall 模組
+        services.AddScoped<IFireWallRuleRepository, FireWallRuleRepository>();
 
         return services;
     }
