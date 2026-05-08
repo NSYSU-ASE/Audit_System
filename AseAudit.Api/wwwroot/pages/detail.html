@@ -259,6 +259,11 @@
             box-shadow: 0 10px 28px rgba(0,0,0,.28);
         }
 
+            .score-pill.na {
+                background: rgba(148,163,184,.45);
+                color: rgba(255,255,255,.72);
+            }
+
         .dark-field {
             background: rgba(0,0,0,.22) !important;
             border: 1px solid rgba(255,255,255,.16) !important;
@@ -276,6 +281,26 @@
             --bs-table-striped-bg: rgba(255,255,255,.04);
             --bs-table-hover-bg: rgba(255,255,255,.06);
             border-color: rgba(255,255,255,.10);
+        }
+
+        .status-pass {
+            color: #86efac;
+            font-weight: 900;
+        }
+
+        .status-partial {
+            color: #fef08a;
+            font-weight: 900;
+        }
+
+        .status-fail {
+            color: #fecaca;
+            font-weight: 900;
+        }
+
+        .status-na {
+            color: rgba(255,255,255,.55);
+            font-weight: 900;
         }
 
         @media (max-width: 991px) {
@@ -317,7 +342,7 @@
             <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                 <div>
                     <div class="fw-bold fs-5">機台資訊</div>
-                    <div class="small-note">保留雷達圖，並列出 FR1~FR7 的扣分原因（可編輯後匯出）</div>
+                    <div class="small-note">保留雷達圖，並列出 IAM~RES 的扣分原因（可編輯後匯出）</div>
                 </div>
 
                 <div class="d-flex flex-wrap gap-2">
@@ -390,12 +415,12 @@
         <div class="glass p-3 p-lg-4 mt-3">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div>
-                    <div class="fw-bold fs-5">FR 雷達圖</div>
+                    <div class="fw-bold fs-5">模組雷達圖</div>
                     <div class="small-note">分數直接標示在圖上（更直觀）</div>
                 </div>
                 <div class="glass-soft px-3 py-2 d-flex align-items-center gap-3">
                     <div>
-                        <div class="small-note">FR 平均</div>
+                        <div class="small-note">模組平均</div>
                         <div class="kpi mono" id="frAvg">--</div>
                     </div>
                 </div>
@@ -410,7 +435,7 @@
         <div class="glass p-3 p-lg-4 mt-3 mb-4">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div>
-                    <div class="fw-bold fs-5">扣分原因（FR1 ~ FR7）</div>
+                    <div class="fw-bold fs-5">扣分原因（IAM ~ RES）</div>
                     <div class="small-note">只保留「得分(%) + 原因」，不再顯示扣分數</div>
                 </div>
                 <div class="mono small-note" id="rowCount">共 0 筆</div>
@@ -420,7 +445,7 @@
                 <table class="table table-dark table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th style="width:90px;">FR</th>
+                            <th style="width:90px;">項目</th>
                             <th class="text-center" style="width:140px;">得分 (%)</th>
                             <th>扣分原因（可編輯）</th>
                         </tr>
@@ -430,7 +455,52 @@
             </div>
 
             <div class="small-note mt-2">
-                匯出 CSV / Excel 會包含：機台編號、種類、總分、風險等級、FR、得分、扣分原因。
+                匯出 CSV / Excel 會包含：機台編號、種類、總分、風險等級、項目、得分、扣分原因。
+            </div>
+        </div>
+
+        <div class="glass p-3 p-lg-4 mt-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <div class="fw-bold fs-5">7 大模組雷達圖</div>
+                    <div class="small-note">有接入資料的模組顯示實際分數；尚未接入的模組以 -- 表示。</div>
+                </div>
+                <div class="glass-soft px-3 py-2 d-flex align-items-center gap-3">
+                    <div>
+                        <div class="small-note">七大模組平均</div>
+                        <div class="kpi mono" id="moduleAvg">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-soft p-3 mt-3" style="height:360px;">
+                <canvas id="moduleRadar"></canvas>
+            </div>
+        </div>
+
+        <div class="glass p-3 p-lg-4 mt-3 mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <div class="fw-bold fs-5">稽核項目明細</div>
+                    <div class="small-note">對應報告第二項：模組 / SR 群組 / 控制內容 / 得分 / 狀態 / 評分原因。</div>
+                </div>
+                <div class="mono small-note" id="detailRowCount">共 0 筆</div>
+            </div>
+
+            <div class="table-responsive mt-3">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:130px;">模組</th>
+                            <th style="width:180px;">SR 群組</th>
+                            <th style="width:220px;">控制項名稱</th>
+                            <th class="text-center" style="width:120px;">得分 (%)</th>
+                            <th style="width:110px;">狀態</th>
+                            <th>評分原因</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailTbody"></tbody>
+                </table>
             </div>
         </div>
 
@@ -442,52 +512,33 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // ====== Demo data（之後換成 API 回傳即可）======
-        const devices = [
-            {
-                id: "HMI-03", type: "HMI",
-                fr: [63, 57, 60, 55, 52, 59, 61],
-                reasons: [
-                    "未啟用密碼複雜度/密碼週期政策",
-                    "帳號權限未分級，存在共用帳號",
-                    "缺少變更紀錄/稽核軌跡保存",
-                    "遠端存取缺少 MFA / 限制來源",
-                    "資產標籤不完整，維護責任不明確",
-                    "系統更新/修補流程未文件化",
-                    "備援/還原演練紀錄不足"
-                ]
-            },
-            {
-                id: "PC-001", type: "AD / Windows",
-                fr: [82, 76, 91, 68, 73, 80, 77],
-                reasons: [
-                    "密碼策略未套用到所有 OU",
-                    "離職帳號停用流程延遲",
-                    "稽核策略未完整啟用",
-                    "RDP 存取未限制來源網段",
-                    "資產責任人欄位缺漏",
-                    "修補窗口與回復計畫未對齊",
-                    "備份未做離線/異地保護"
-                ]
-            }
-        ];
+        const frKeys = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const frNames = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
+        let currentDevice = null;
+        let currentReport = null;
+        let moduleChart = null;
 
-        const frNames = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
-        function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+        function avg(arr) {
+            const nums = arr.filter(v => typeof v === "number" && !Number.isNaN(v));
+            return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
+        }
+
+        function fmtScore(score) {
+            if (score === null || score === undefined || Number.isNaN(Number(score))) return "--";
+            const n = Number(score);
+            return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
+        }
 
         function riskLevel(score) {
+            if (score === null || score === undefined || Number.isNaN(Number(score))) return { key: "mid", label: "--" };
             if (score >= 80) return { key: "low", label: "低風險" };
-            if (score >= 50) return { key: "mid", label: "中風險" };
+            if (score >= 70) return { key: "mid", label: "中風險" };
             return { key: "high", label: "高風險" };
         }
 
         function getQueryParam(name) {
             const url = new URL(window.location.href);
             return url.searchParams.get(name);
-        }
-        function findDeviceById(id) {
-            if (!id) return devices[0];
-            return devices.find(d => d.id === id) || devices[0];
         }
         function escapeHTML(str) {
             return String(str ?? "")
@@ -496,6 +547,15 @@
                 .replaceAll(">", "&gt;")
                 .replaceAll('"', "&quot;")
                 .replaceAll("'", "&#039;");
+        }
+
+        function displayFrLabel(value) {
+            const raw = String(value ?? "");
+            const match = raw.match(/FR[1-7]/i);
+            if (!match) return raw;
+            const key = match[0].toUpperCase();
+            const idx = frKeys.indexOf(key);
+            return idx >= 0 ? raw.replace(match[0], frNames[idx]) : raw;
         }
 
         // ====== Radar value labels plugin ======
@@ -507,6 +567,7 @@
                 if (!meta?.data?.length) return;
 
                 const data = chart.data.datasets[0].data;
+                const rawScores = chart.data.datasets[0].rawScores || data;
 
                 ctx.save();
                 ctx.font = "800 12px Segoe UI, system-ui, -apple-system, Arial";
@@ -516,7 +577,7 @@
 
                 meta.data.forEach((point, i) => {
                     const { x, y } = point.getProps(["x", "y"], true);
-                    ctx.fillText(String(data[i]), x, y - 14);
+                    ctx.fillText(rawScores[i] == null ? "--" : String(data[i]), x, y - 14);
                 });
 
                 ctx.restore();
@@ -529,7 +590,10 @@
             if (!canvas) return;
             if (radarChart) radarChart.destroy();
 
-            const values = scores.map(v => Math.round(v));
+            const values = scores.map(v => {
+                const n = Number(v);
+                return Number.isFinite(n) ? Math.round(n) : 0;
+            });
 
             radarChart = new Chart(canvas, {
                 type: "radar",
@@ -537,6 +601,7 @@
                     labels: frNames,
                     datasets: [{
                         data: values,
+                        rawScores: scores,
                         fill: true,
                         backgroundColor: "rgba(59,130,246,0.22)",
                         borderColor: "rgba(59,130,246,0.95)",
@@ -605,28 +670,36 @@
             if (r.key === "high") high.classList.add("active");
         }
 
+        function statusClass(status) {
+            if (status === "通過") return "status-pass";
+            if (status === "部分通過") return "status-partial";
+            if (status === "未通過") return "status-fail";
+            return "status-na";
+        }
+
         function renderDevice(device) {
             document.getElementById("devId").textContent = device.id;
             document.getElementById("devType").textContent = device.type;
 
-            const overall = Math.round(avg(device.fr));
-            document.getElementById("devOverall").textContent = overall;
+            const overall = avg(device.fr);
+            document.getElementById("devOverall").textContent = fmtScore(overall);
 
             renderRiskUI(overall);
 
             renderRadar(device.fr);
-            document.getElementById("frAvg").textContent = Math.round(avg(device.fr));
+            document.getElementById("frAvg").textContent = fmtScore(overall);
 
             const tbody = document.getElementById("frTbody");
             tbody.innerHTML = device.fr.map((score, i) => {
-                const s = Math.round(score);
-                const reason = (device.reasons && device.reasons[i]) ? device.reasons[i] : "（示意）此項尚未符合要求，需補強設定與證據。";
+                const s = score === null || score === undefined ? "--" : fmtScore(score);
+                const reason = (device.reasons && device.reasons[i]) ? device.reasons[i] : "--";
+                const scoreClass = s === "--" ? "score-pill mono na" : "score-pill mono";
                 return `
               <tr>
                 <td class="fw-bold">${frNames[i]}</td>
-                <td class="text-center"><span class="score-pill mono">${s}</span></td>
+                <td class="text-center"><span class="${scoreClass}">${s}</span></td>
                 <td>
-                  <textarea class="form-control dark-field reason" data-fr="${frNames[i]}" rows="2">${escapeHTML(reason)}</textarea>
+                  <textarea class="form-control dark-field reason" data-fr="${frKeys[i]}" rows="2">${escapeHTML(reason)}</textarea>
                   <div class="small-note mt-1">（可直接編輯，匯出會帶出你改的內容）</div>
                 </td>
               </tr>
@@ -636,23 +709,185 @@
             document.getElementById("rowCount").textContent = `共 ${device.fr.length} 筆`;
         }
 
+        function renderModules(report) {
+            currentReport = report;
+            const modules = report.modules || [];
+            const labels = modules.map(m => displayFrLabel(String(m.name || "").replace("模組", "")));
+            const scores = modules.map(m => typeof m.score === "number" ? m.score : 0);
+            const availableAvg = avg(modules.map(m => m.score));
+
+            document.getElementById("moduleAvg").textContent = fmtScore(availableAvg);
+
+            const canvas = document.getElementById("moduleRadar");
+            if (canvas) {
+                if (moduleChart) moduleChart.destroy();
+                moduleChart = new Chart(canvas, {
+                    type: "radar",
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: scores,
+                            fill: true,
+                            backgroundColor: "rgba(59,130,246,0.22)",
+                            borderColor: "rgba(59,130,246,0.95)",
+                            pointBackgroundColor: "#3b82f6",
+                            pointBorderColor: "#fff",
+                            pointRadius: 4,
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                min: 0,
+                                max: 100,
+                                ticks: { stepSize: 20, backdropColor: "transparent", color: "rgba(255,255,255,.6)" },
+                                grid: { color: "rgba(255,255,255,.15)" },
+                                angleLines: { color: "rgba(255,255,255,.2)" },
+                                pointLabels: { color: "#fff", font: { size: 13, weight: "bold" } }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => ` ${ctx.label}: ${fmtScore(modules[ctx.dataIndex]?.score)} 分`
+                                }
+                            }
+                        }
+                    },
+                    plugins: [{
+                        id: "moduleValueLabels",
+                        afterDatasetsDraw(chart) {
+                            const { ctx } = chart;
+                            const meta = chart.getDatasetMeta(0);
+                            if (!meta?.data?.length) return;
+                            ctx.save();
+                            ctx.font = "800 12px Segoe UI, system-ui, -apple-system, Arial";
+                            ctx.fillStyle = "rgba(255,255,255,.92)";
+                            ctx.textAlign = "center";
+                            ctx.textBaseline = "middle";
+                            meta.data.forEach((point, i) => {
+                                const { x, y } = point.getProps(["x", "y"], true);
+                                ctx.fillText(fmtScore(modules[i]?.score), x, y - 14);
+                            });
+                            ctx.restore();
+                        }
+                    }]
+                });
+            }
+
+            const rows = modules.flatMap(module => {
+                const items = module.items?.length ? module.items : [{
+                    sr: "--",
+                    title: "尚未接入資料",
+                    score: null,
+                    status: "--",
+                    reason: "--"
+                }];
+
+                return items.map(item => ({
+                    module: module.name,
+                    sr: item.sr,
+                    title: item.title,
+                    score: item.score,
+                    status: item.status,
+                    reason: item.reason
+                }));
+            });
+
+            document.getElementById("detailTbody").innerHTML = rows.map(row => {
+                const scoreText = fmtScore(row.score);
+                const scoreClass = scoreText === "--" ? "score-pill mono na" : "score-pill mono";
+                return `
+                    <tr>
+                        <td>${escapeHTML(displayFrLabel(row.module))}</td>
+                        <td>${escapeHTML(displayFrLabel(row.sr))}</td>
+                        <td>${escapeHTML(row.title)}</td>
+                        <td class="text-center"><span class="${scoreClass}">${escapeHTML(scoreText)}</span></td>
+                        <td class="${statusClass(row.status)}">${escapeHTML(row.status || "--")}</td>
+                        <td>${escapeHTML(row.reason || "--")}</td>
+                    </tr>
+                `;
+            }).join("");
+
+            document.getElementById("detailRowCount").textContent = `共 ${rows.length} 筆`;
+        }
+
+        function buildDeviceFromReport(report) {
+            const scores = Array.isArray(report.frScores)
+                ? report.frScores.slice(0, 7)
+                : [];
+
+            const findings = (report.modules || [])
+                .flatMap(module => module.items || [])
+                .filter(item => item.sr && item.reason && item.reason !== "--");
+
+            const reasonsByFr = new Map();
+            findings.forEach(item => {
+                const frMatch = String(item.sr).match(/^FR[1-7]/i);
+                const key = frMatch ? frMatch[0].toUpperCase() : "FR1";
+                const existing = reasonsByFr.get(key);
+                const text = item.reason || "--";
+                reasonsByFr.set(key, existing ? `${existing}；${text}` : text);
+            });
+
+            const reasons = frKeys.map(fr => reasonsByFr.get(fr) || "--");
+
+            while (scores.length < 7) scores.push(null);
+
+            return {
+                id: report.target?.deviceId || report.target?.buildingName || "K18",
+                type: report.target?.deviceType || "--",
+                fr: scores.slice(0, 7),
+                reasons: reasons.slice(0, 7)
+            };
+        }
+
+        async function loadAuditResult() {
+            const period = getQueryParam("period") || "2025-12";
+            const building = getQueryParam("building") || getQueryParam("b") || "K18";
+            const deviceId = getQueryParam("deviceId") || getQueryParam("id");
+
+            const url = new URL("/api/identity/audit-zone-k18", window.location.origin);
+            url.searchParams.set("period", period);
+            url.searchParams.set("buildingCode", building);
+            if (deviceId) url.searchParams.set("deviceId", deviceId);
+
+            const res = await fetch(url, {
+                method: "POST"
+            });
+
+            if (!res.ok) {
+                throw new Error(`Identity audit API failed: ${res.status}`);
+            }
+
+            const report = await res.json();
+            currentDevice = buildDeviceFromReport(report);
+            renderDevice(currentDevice);
+            renderModules(report);
+        }
+
         function collectRowsForExport(device) {
             const reasonsMap = new Map();
             document.querySelectorAll("textarea[data-fr]").forEach(t => {
                 reasonsMap.set(t.getAttribute("data-fr"), t.value.trim());
             });
 
-            const overall = Math.round(avg(device.fr));
+            const overall = avg(device.fr);
             const r = riskLevel(overall);
 
             return device.fr.map((score, i) => {
                 const fr = frNames[i];
-                const s = Math.round(score);
-                const reason = reasonsMap.get(fr) || "";
+                const frKey = frKeys[i];
+                const s = score === null || score === undefined ? "--" : fmtScore(score);
+                const reason = reasonsMap.get(frKey) || "";
                 return {
                     device_id: device.id,
                     device_type: device.type,
-                    overall_score: overall,
+                    overall_score: fmtScore(overall),
                     overall_risk: r.label,
                     fr: fr,
                     score_percent: s,
@@ -714,12 +949,13 @@
         }
 
         // Init
-        const id = getQueryParam("id");
-        const currentDevice = findDeviceById(id);
-        renderDevice(currentDevice);
+        loadAuditResult().catch(err => {
+            console.error("loadAuditResult failed:", err);
+            alert("detail.html 讀取或寫入稽核結果失敗，請看 Console / Network");
+        });
 
-        document.getElementById("btnExportCSV").addEventListener("click", () => exportCSV(currentDevice));
-        document.getElementById("btnExportXLS").addEventListener("click", () => exportXLS(currentDevice));
+        document.getElementById("btnExportCSV").addEventListener("click", () => currentDevice && exportCSV(currentDevice));
+        document.getElementById("btnExportXLS").addEventListener("click", () => currentDevice && exportXLS(currentDevice));
 
         document.getElementById("btnDailyReport").addEventListener("click", generateDailyReport);
 
@@ -742,20 +978,47 @@
             const scoreEls = document.querySelectorAll(".score-pill");
 
             frEls.forEach((t, idx) => {
-                const fr = t.getAttribute("data-fr") || `FR${idx + 1}`;
+                const fr = displayFrLabel(t.getAttribute("data-fr") || `FR${idx + 1}`);
                 const score = scoreEls[idx]?.textContent?.trim() || "--";
                 const reason = t.value?.trim() || "";
                 rows.push({ fr, score, reason });
             });
 
-            // ✅ Demo：先用 FR index 對應到 SR 群組（之後你有真正 SR 結果 JSON 再換成 API 回傳）
-            const srGroups = [
-                { sr: "SR1.1 / SR1.1RE(1)", title: "AD 管理與帳號識別", score: rows[0]?.score ?? "--", reason: rows[0]?.reason ?? "" },
-                { sr: "SR1.3 / SR1.4", title: "AD 帳號比對黃頁", score: rows[1]?.score ?? "--", reason: rows[1]?.reason ?? "" },
-                { sr: "SR1.5 / SR1.7 / SR1.11", title: "密碼政策 / 嘗試限制 / ALM log", score: rows[2]?.score ?? "--", reason: rows[2]?.reason ?? "" },
-                { sr: "SR1.10", title: "鑑別回饋", score: rows[3]?.score ?? "--", reason: rows[3]?.reason ?? "" },
-                { sr: "SR1.12", title: "系統使用通知", score: rows[4]?.score ?? "--", reason: rows[4]?.reason ?? "" }
-            ];
+            const detailRows = currentReport
+                ? (currentReport.modules || []).flatMap(module => {
+                    const items = module.items?.length ? module.items : [{
+                        sr: "--",
+                        title: "尚未接入資料",
+                        score: null,
+                        status: "--",
+                        reason: "--"
+                    }];
+
+                    return items.map(item => ({
+                        module: displayFrLabel(module.name),
+                        sr: displayFrLabel(item.sr || "--"),
+                        title: item.title || "--",
+                        score: fmtScore(item.score),
+                        status: item.status || "--",
+                        reason: item.reason || "--"
+                    }));
+                })
+                : rows.map(row => ({
+                    module: "身分識別模組",
+                    sr: row.fr,
+                    title: row.fr,
+                    score: row.score,
+                    status: "--",
+                    reason: row.reason
+                }));
+
+            const moduleRows = currentReport
+                ? (currentReport.modules || []).map(module => ({
+                    module: displayFrLabel(module.name),
+                    score: fmtScore(module.score),
+                    status: module.score == null ? "--" : riskLevel(module.score).label
+                }))
+                : [];
 
             // HTML escape（避免報告內文字破版）
             const esc = (s) => String(s ?? "")
@@ -896,8 +1159,8 @@
 
         <div class="topbar">
           <div>
-            <h1>日月光智慧資安稽核工具｜每日稽核報告（FR1 身分識別模組）</h1>
-            <p class="sub">本報告為每日稽核摘要，內容包含 SR 控制項群組得分與扣分原因（可追溯）。</p>
+            <h1>日月光智慧資安稽核工具｜詳細稽核報告</h1>
+            <p class="sub">本報告內容由資料庫中的 rules 運算結果產生；尚未接入資料的模組以 -- 標示。</p>
           </div>
           <div class="meta">
             稽核日期：<b>${esc(dateStr)}</b><br/>
@@ -909,21 +1172,21 @@
         </div>
 
         <div class="section">
-          <div class="section-title">一、SR 控制項評分（今日）</div>
+          <div class="section-title">一、七大模組總覽</div>
           <table>
             <thead>
               <tr>
-                <th style="width:190px;">SR 群組</th>
-                <th>控制內容</th>
+                <th>模組</th>
                 <th class="score">得分(%)</th>
+                <th style="width:130px;">風險等級</th>
               </tr>
             </thead>
             <tbody>
-              ${srGroups.map(g => `
+              ${moduleRows.map(g => `
                 <tr>
-                  <td><b>${esc(g.sr)}</b></td>
-                  <td>${esc(g.title)}</td>
+                  <td><b>${esc(g.module)}</b></td>
                   <td class="score">${esc(g.score)}</td>
+                  <td class="score">${esc(g.status)}</td>
                 </tr>
               `).join("")}
             </tbody>
@@ -931,20 +1194,26 @@
         </div>
 
         <div class="section">
-          <div class="section-title">二、扣分原因（明細）</div>
+          <div class="section-title">二、稽核項目明細與評分原因</div>
           <table>
             <thead>
               <tr>
+                <th style="width:130px;">模組</th>
                 <th style="width:190px;">SR 群組</th>
+                <th>控制內容</th>
                 <th class="score">得分(%)</th>
-                <th>扣分原因</th>
+                <th style="width:110px;">狀態</th>
+                <th>評分原因</th>
               </tr>
             </thead>
             <tbody>
-              ${srGroups.map(g => `
+              ${detailRows.map(g => `
                 <tr>
+                  <td><b>${esc(g.module)}</b></td>
                   <td><b>${esc(g.sr)}</b></td>
+                  <td>${esc(g.title)}</td>
                   <td class="score">${esc(g.score)}</td>
+                  <td class="score">${esc(g.status)}</td>
                   <td class="reason">${esc(g.reason || "（無）")}</td>
                 </tr>
               `).join("")}
@@ -955,9 +1224,9 @@
         <div class="section">
           <div class="section-title">三、改善建議（可作為追蹤項）</div>
           <ol style="margin:6px 0 0 18px; font-size:12px; color:#111827;">
-            <li>針對低分 SR 群組優先補強：密碼複雜度 / 嘗試限制 / 定期更換。</li>
-            <li>將鑑別回饋訊息統一（避免帳號枚舉），並保留稽核軌跡。</li>
-            <li>每日報告留存，供稽核追溯與改善成效檢核。</li>
+            <li>優先補齊顯示 -- 的模組資料來源，讓七大模組可完整計分。</li>
+            <li>針對未通過或低分 SR 群組補強設定、流程與佐證文件。</li>
+            <li>計算結果已寫回資料庫，可供後續稽核追溯與改善成效檢核。</li>
           </ol>
         </div>
 

@@ -154,6 +154,30 @@
             font-size: .85rem;
         }
 
+        .pie-legend {
+            display: grid;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .pie-legend-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.05);
+            font-weight: 800;
+        }
+
+        .pie-legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+        }
+
         /* index3 的分數小藍框 */
         .score-box {
             background: #2563eb;
@@ -257,8 +281,8 @@
                 <div class="glass p-3 p-lg-4 h-100">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="fw-bold fs-5">總機台數圓餅圖（機台種類占比）</div>
-                            <div class="small-note">以本次稽核清單統計</div>
+                            <div class="fw-bold fs-5">風險比例圓餅圖（低 / 中 / 高）</div>
+                            <div class="small-note">以本次稽核成熟度分數統計</div>
                         </div>
                         <button class="btn btn-ghost pill" data-bs-toggle="offcanvas" data-bs-target="#detailsCanvas">
                             <i class="bi bi-list-ul me-1"></i>查看詳細
@@ -268,6 +292,7 @@
                     <div class="mt-3 glass-soft p-3" style="height:260px;">
                         <canvas id="typePie"></canvas>
                     </div>
+                    <div class="pie-legend" id="riskPieLegend"></div>
 
                     <div class="mt-3 d-grid gap-2">
                         <button class="btn btn-primary pill">
@@ -289,7 +314,7 @@
                 <div class="glass p-3 p-lg-4">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                         <div>
-                            <div class="fw-bold fs-5">功能需求（FR1 ~ FR7）得分與風險</div>
+                            <div class="fw-bold fs-5">功能模組（IAM ~ RES）得分與風險</div>
                             <div class="small-note">分數直接標示在雷達圖上（更直觀）</div>
                         </div>
 
@@ -331,7 +356,7 @@
                                 <span class="input-group-text bg-transparent text-white-50" style="border:1px solid rgba(255,255,255,.18)">
                                     <i class="bi bi-search"></i>
                                 </span>
-                                <input id="searchBox" type="text" class="form-control dark-field" placeholder="搜尋機台編號 / 類型...">
+                <input id="searchBox" type="text" class="form-control dark-field" placeholder="搜尋機台編號...">
                             </div>
 
                             <select id="sortSelect" class="form-select dark-field" style="max-width: 260px;">
@@ -347,16 +372,15 @@
                             <thead>
                                 <tr>
                                     <th>機台編號</th>
-                                    <th>類型</th>
                                     <th class="text-center">成熟度</th>
                                     <th class="text-center">風險</th>
-                                    <th class="text-center">FR1</th>
-                                    <th class="text-center">FR2</th>
-                                    <th class="text-center">FR3</th>
-                                    <th class="text-center">FR4</th>
-                                    <th class="text-center">FR5</th>
-                                    <th class="text-center">FR6</th>
-                                    <th class="text-center">FR7</th>
+                                    <th class="text-center" title="身分識別">IAM</th>
+                                    <th class="text-center" title="軟體識別">SWI</th>
+                                    <th class="text-center" title="防火牆">FWL</th>
+                                    <th class="text-center" title="系統事件">EVT</th>
+                                    <th class="text-center" title="稽核流程">AUD</th>
+                                    <th class="text-center" title="資料管理">DAT</th>
+                                    <th class="text-center" title="資源管理">RES</th>
                                     <th class="text-end">操作</th>
                                 </tr>
                             </thead>
@@ -435,9 +459,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // ====== Demo data（之後換成 API 回傳即可）======
-        // 分數 0~100。危險等級：低(>=80) / 中(50~79) / 高(<50)
-        const devices = [
+        // ====== Fallback demo data（API 讀不到時才使用）======
+        // 分數 0~100。危險等級：低(>=80) / 中(70~79) / 高(<70)
+        const demoDevices = [
             { id: "PC-001", type: "AD / Windows", fr: [82, 76, 91, 68, 73, 80, 77] },
             { id: "SCADA-02", type: "SCADA", fr: [58, 62, 55, 49, 66, 70, 61] },
             { id: "HMI-07", type: "HMI", fr: [88, 90, 84, 79, 83, 92, 86] },
@@ -446,14 +470,26 @@
             { id: "SCADA-11", type: "SCADA", fr: [91, 85, 88, 83, 80, 84, 86] },
             { id: "HMI-03", type: "HMI", fr: [63, 57, 60, 55, 52, 59, 61] },
         ];
+        let devices = [];
 
-        const frNames = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const frNames = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
 
-        function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+        function avg(arr) {
+            const nums = arr.filter(v => typeof v === "number" && Number.isFinite(v));
+            return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
+        }
+
+        function fmtScore(score) {
+            if (score === null || score === undefined || Number.isNaN(Number(score))) return "--";
+            return String(Math.round(Number(score)));
+        }
 
         function riskLevel(score) {
+            if (score === null || score === undefined || Number.isNaN(Number(score))) {
+                return { label: "--", cls: "risk-med", badge: "badge-mid", color: "rgba(255,255,255,.35)" };
+            }
             if (score >= 80) return { label: "低風險", cls: "risk-low", badge: "badge-low" };
-            if (score >= 50) return { label: "中風險", cls: "risk-med", badge: "badge-mid" };
+            if (score >= 70) return { label: "中風險", cls: "risk-med", badge: "badge-mid" };
             return { label: "高風險", cls: "risk-high", badge: "badge-high" };
         }
 
@@ -461,8 +497,14 @@
 
         function computeFRSummary(list) {
             const sums = new Array(7).fill(0);
-            list.forEach(d => d.fr.forEach((v, i) => sums[i] += v));
-            return sums.map(s => s / list.length);
+            const counts = new Array(7).fill(0);
+            list.forEach(d => d.fr.forEach((v, i) => {
+                if (typeof v === "number" && Number.isFinite(v)) {
+                    sums[i] += v;
+                    counts[i] += 1;
+                }
+            }));
+            return sums.map((s, i) => counts[i] ? s / counts[i] : null);
         }
 
         // ✅ Radar 分數標籤 plugin（不用額外套件）
@@ -473,7 +515,7 @@
                 const meta = chart.getDatasetMeta(0);
                 if (!meta?.data?.length) return;
 
-                const data = chart.data.datasets[0].data;
+                const data = chart.data.datasets[0].rawScores || chart.data.datasets[0].data;
 
                 ctx.save();
                 ctx.font = "700 12px Segoe UI, system-ui, -apple-system, Arial";
@@ -484,7 +526,7 @@
                 meta.data.forEach((point, i) => {
                     const { x, y } = point.getProps(["x", "y"], true);
                     // 往外偏移，避免壓到點
-                    ctx.fillText(String(data[i]), x, y - 14);
+                ctx.fillText(data[i] == null ? "--" : String(data[i]), x, y - 14);
                 });
 
                 ctx.restore();
@@ -500,15 +542,19 @@
 
             if (radarChart) radarChart.destroy();
 
-            const values = frAvg.map(v => Math.round(v));
+            const values = frAvg.map(v => {
+                const n = Number(v);
+                return Number.isFinite(n) ? Math.round(n) : null;
+            });
 
             radarChart = new Chart(canvas, {
                 type: "radar",
                 data: {
                     labels: frNames,
                     datasets: [{
-                        label: "FR 平均分數",
-                        data: values,
+                        label: "模組平均分數",
+                        data: values.map(v => v ?? 0),
+                        rawScores: values,
                         fill: true,
                         backgroundColor: "rgba(59,130,246,0.25)",
                         borderColor: "rgba(59,130,246,0.9)",
@@ -576,40 +622,93 @@
             // ✅ 更新成熟度/風險
             const overall = avg(frAvg);
             const or = riskLevel(overall);
-            document.getElementById("overallScore").textContent = Math.round(overall);
+            document.getElementById("overallScore").textContent = fmtScore(overall);
             const el = document.getElementById("overallRisk");
             el.className = `badge-risk ${or.cls}`;
             el.innerHTML = `<i class="bi bi-shield-exclamation"></i>${or.label}`;
         }
 
         // ====== Pie chart ======
-        function groupByType(list) {
-            const m = new Map();
-            list.forEach(d => m.set(d.type, (m.get(d.type) || 0) + 1));
-            return Array.from(m.entries()).map(([k, v]) => ({ label: k, value: v }));
+        const riskSlices = [
+            { key: "low", label: "低風險", color: "#16a34a" },
+            { key: "mid", label: "中風險", color: "#facc15" },
+            { key: "high", label: "高風險", color: "#dc2626" }
+        ];
+
+        function riskKey(score) {
+            if (score >= 80) return "low";
+            if (score >= 70) return "mid";
+            return "high";
         }
+
+        function groupByRisk(list) {
+            const counts = { low: 0, mid: 0, high: 0 };
+            list.forEach(d => {
+                const overall = computeDeviceOverall(d);
+                if (overall !== null) counts[riskKey(overall)] += 1;
+            });
+
+            const total = Object.values(counts).reduce((a, b) => a + b, 0);
+            return riskSlices.map(slice => ({
+                ...slice,
+                value: counts[slice.key],
+                pct: total ? Math.round((counts[slice.key] / total) * 100) : 0
+            }));
+        }
+
+        const piePercentageLabelsPlugin = {
+            id: "piePercentageLabels",
+            afterDatasetsDraw(chart) {
+                const dataset = chart.data.datasets[0];
+                const total = dataset.data.reduce((a, b) => a + b, 0);
+                if (!total) return;
+
+                const { ctx } = chart;
+                const meta = chart.getDatasetMeta(0);
+
+                ctx.save();
+                ctx.font = "900 13px Segoe UI, system-ui, -apple-system, Arial";
+                ctx.fillStyle = "rgba(255,255,255,.96)";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                meta.data.forEach((arc, i) => {
+                    const value = dataset.data[i];
+                    if (!value) return;
+
+                    const pct = Math.round((value / total) * 100);
+                    const pos = arc.tooltipPosition();
+                    ctx.fillText(`${pct}%`, pos.x, pos.y);
+                });
+
+                ctx.restore();
+            }
+        };
 
         let pieChart = null;
 
         function renderPie(list) {
-            const grouped = groupByType(list);
+            const grouped = groupByRisk(list);
             const canvas = document.getElementById("typePie");
             if (!canvas) return;
 
             if (pieChart) pieChart.destroy();
 
             pieChart = new Chart(canvas, {
-                type: 'pie',
+                type: 'doughnut',
                 data: {
                     labels: grouped.map(d => d.label),
                     datasets: [{
                         data: grouped.map(d => d.value),
+                        backgroundColor: grouped.map(d => d.color),
+                        borderColor: "rgba(255,255,255,.75)",
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: "58%",
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -623,13 +722,26 @@
                             }
                         }
                     }
-                }
+                },
+                plugins: [piePercentageLabelsPlugin]
             });
+
+            const legend = document.getElementById("riskPieLegend");
+            if (legend) {
+                legend.innerHTML = grouped.map(d => `
+                    <div class="pie-legend-row">
+                        <span class="pie-legend-dot" style="background:${d.color}"></span>
+                        <span>${d.label}</span>
+                        <span class="mono">${d.value} 台｜${d.pct}%</span>
+                    </div>
+                `).join("");
+            }
         }
 
         // ====== Table ======
         const tbody = document.getElementById("deviceTbody");
         const shownCount = document.getElementById("shownCount");
+        let currentPeriod = "2025-12";
 
         function renderTable(list) {
             tbody.innerHTML = list.map(d => {
@@ -637,20 +749,19 @@
                 const overallRisk = riskLevel(overall);
 
                 const frCells = d.fr.map(s => (
-                    `<td class="text-center"><span class="score-box mono">${Math.round(s)}</span></td>`
+                    `<td class="text-center"><span class="score-box mono">${fmtScore(s)}</span></td>`
                 )).join("");
 
                 return `
               <tr>
                 <td><span class="badge bg-primary mono">${d.id}</span></td>
-                <td>${d.type}</td>
-                <td class="text-center"><span class="score-box mono">${Math.round(overall)}</span></td>
+                <td class="text-center"><span class="score-box mono">${fmtScore(overall)}</span></td>
                 <td class="text-center">
                   <span class="badge ${overallRisk.badge}">${overallRisk.label}</span>
                 </td>
                 ${frCells}
                 <td class="text-end">
-                  <a class="btn btn-outline-info btn-sm pill" href="detail.html?id=${encodeURIComponent(d.id)}">
+                  <a class="btn btn-outline-info btn-sm pill" href="detail.html?building=${encodeURIComponent(d.buildingCode || "K18")}&deviceId=${encodeURIComponent(d.id)}&period=${encodeURIComponent(currentPeriod)}">
                     詳細報表
                   </a>
                 </td>
@@ -677,15 +788,15 @@
 
             let filtered = devices.filter(d => {
                 if (!q) return true;
-                return d.id.toLowerCase().includes(q) || d.type.toLowerCase().includes(q);
+                return d.id.toLowerCase().includes(q);
             });
 
             if (mode === "id") {
                 filtered.sort((a, b) => a.id.localeCompare(b.id));
             } else if (mode === "scoreAsc") {
-                filtered.sort((a, b) => computeDeviceOverall(a) - computeDeviceOverall(b));
+                filtered.sort((a, b) => (computeDeviceOverall(a) ?? -1) - (computeDeviceOverall(b) ?? -1));
             } else {
-                filtered.sort((a, b) => computeDeviceOverall(b) - computeDeviceOverall(a));
+                filtered.sort((a, b) => (computeDeviceOverall(b) ?? -1) - (computeDeviceOverall(a) ?? -1));
             }
 
             renderRiskKPI(filtered);
@@ -704,15 +815,14 @@
             const modal = new bootstrap.Modal(document.getElementById('deviceModal'));
             document.getElementById('deviceModalTitle').textContent = `詳細報表：${device.id}`;
 
-            const overall = Math.round(computeDeviceOverall(device));
+            const overall = computeDeviceOverall(device);
             const body = {
                 id: device.id,
-                type: device.type,
-                overallScore: overall,
+                overallScore: fmtScore(overall),
                 overallRisk: riskLevel(overall).label,
                 FR: device.fr.map((v, i) => ({
                     name: frNames[i],
-                    score: Math.round(v),
+                    score: fmtScore(v),
                     risk: riskLevel(v).label
                 }))
             };
@@ -739,8 +849,63 @@
         document.getElementById("searchBox").addEventListener("input", applySortAndFilter);
         document.getElementById("sortSelect").addEventListener("change", applySortAndFilter);
 
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        async function loadDevicesFromDb() {
+            const period = getQueryParam("period") || "2025-12";
+            currentPeriod = period;
+            const building = getQueryParam("building") || getQueryParam("b") || getQueryParam("id");
+            const url = new URL("/api/dashboard/building", window.location.origin);
+            url.searchParams.set("period", period);
+            if (building) url.searchParams.set("buildingCode", building);
+
+            const syncUrl = new URL("/api/identity/audit-zone-k18", window.location.origin);
+            syncUrl.searchParams.set("period", period);
+            syncUrl.searchParams.set("buildingCode", building || "K18");
+            await fetch(syncUrl, { method: "POST" });
+
+            const res = await fetch(url);
+            if (!res.ok) {
+                throw new Error(`Dashboard building API failed: ${res.status}`);
+            }
+
+            const payload = await res.json();
+            const rawDevices = payload.devices || [];
+            const hasRealHostDevices = rawDevices.some(d => !String(d.id || "").startsWith("DEV-"));
+            const visibleDevices = hasRealHostDevices
+                ? rawDevices.filter(d => !String(d.id || "").startsWith("DEV-"))
+                : rawDevices;
+
+            devices = visibleDevices.map(d => ({
+                id: d.id || "--",
+                type: d.type || "--",
+                buildingCode: d.buildingCode || building || "K18",
+                buildingName: d.buildingName || "",
+                areaName: d.areaName || "",
+                fr: (d.fr || []).map((v, i) => {
+                    if (v === null || v === undefined) return null;
+                    const n = Number(v);
+                    if (hasRealHostDevices && !String(d.id || "").startsWith("DEV-") && i > 0 && n === 0) return null;
+                    return n;
+                })
+            }));
+
+            if (devices.length === 0) {
+                devices = demoDevices;
+            }
+
+            applySortAndFilter();
+        }
+
         // Init
-        applySortAndFilter();
+        loadDevicesFromDb().catch(err => {
+            console.error("loadDevicesFromDb failed:", err);
+            devices = demoDevices;
+            applySortAndFilter();
+        });
     </script>
 </body>
 </html>

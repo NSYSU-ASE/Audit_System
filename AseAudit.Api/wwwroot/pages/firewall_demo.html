@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Firewall Demo</title>
+
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 12px 0 8px;
+        }
+
+        select, button {
+            padding: 8px 10px;
+            font: inherit;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+        }
+
+        .note {
+            color: #666;
+            margin-top: 6px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eee;
+        }
+
+        .bad {
+            color: red;
+        }
+
+        .ok {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 3px 8px;
+            margin: 2px;
+            border-radius: 6px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: bold;
+        }
+
+        .evidence {
+            margin-top: 8px;
+            color: #333;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Firewall 稽核結果</h1>
+    <div class="score">總分：<span id="score">--</span></div>
+    <div class="note" id="summary">只列出可由 FireWallRule 直接推估的項目；跳板主機、Access 表、Domain table 先不列入。</div>
+
+    <div class="toolbar">
+        <label for="hostSelect">主機：</label>
+        <select id="hostSelect"></select>
+        <button id="reloadBtn">重新讀取</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>SR 群組</th>
+                <th>控制項名稱</th>
+                <th>得分 (%)</th>
+                <th>狀態</th>
+                <th>扣分原因 / 證據</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        const apiBase = `${location.origin}/api/firewall/audit`;
+
+        function escapeHTML(str) {
+            return String(str ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function fmtScore(score) {
+            if (score === null || score === undefined || Number.isNaN(Number(score))) return "--";
+            const n = Number(score);
+            return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
+        }
+
+        async function loadHosts() {
+            const res = await fetch(apiBase);
+            if (!res.ok) throw new Error(`Firewall API failed: ${res.status}`);
+
+            const data = await res.json();
+            const select = document.getElementById("hostSelect");
+            select.innerHTML = "";
+
+            const hosts = data.hosts || [];
+            hosts.forEach(host => {
+                const option = document.createElement("option");
+                option.value = host.hostName;
+                option.textContent = `${host.hostName}（${host.totalFirewallRules} rules）`;
+                select.appendChild(option);
+            });
+
+            if (hosts.length === 0) {
+                document.getElementById("score").textContent = "--";
+                document.getElementById("summary").textContent = data.note || "目前沒有 FireWallRule 資料。";
+                document.getElementById("tableBody").innerHTML = "";
+                return;
+            }
+
+            await loadHost(select.value);
+        }
+
+        async function loadHost(hostName) {
+            const url = `${apiBase}?hostName=${encodeURIComponent(hostName)}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Firewall host API failed: ${res.status}`);
+
+            const data = await res.json();
+            render(data);
+        }
+
+        function render(data) {
+            document.getElementById("score").textContent = fmtScore(data.averageScore);
+            document.getElementById("summary").textContent =
+                `主機：${data.hostName}｜防火牆規則：${data.totalFirewallRules} 筆｜已納入計分：${data.includedRuleCount} 項`;
+
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = (data.rules || []).map(rule => {
+                const evidence = (rule.evidence || []).length
+                    ? `<div class="evidence"><strong>證據：</strong><br>${rule.evidence.map(x => `• ${escapeHTML(x)}`).join("<br>")}</div>`
+                    : "";
+
+                const cls = rule.status === "通過" ? "ok" : "bad";
+
+                return `
+                    <tr>
+                        <td>${escapeHTML(rule.srMapping)}</td>
+                        <td>${escapeHTML(rule.ruleName)}</td>
+                        <td><span class="pill">${fmtScore(rule.score)}</span></td>
+                        <td class="${cls}">${escapeHTML(rule.status)}</td>
+                        <td>${escapeHTML(rule.reason)}${evidence}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        document.getElementById("hostSelect").addEventListener("change", (event) => {
+            loadHost(event.target.value).catch(err => {
+                console.error(err);
+                alert("Firewall demo 讀取失敗，請看 Console / Network");
+            });
+        });
+
+        document.getElementById("reloadBtn").addEventListener("click", () => {
+            loadHosts().catch(err => {
+                console.error(err);
+                alert("Firewall demo 讀取失敗，請看 Console / Network");
+            });
+        });
+
+        loadHosts().catch(err => {
+            console.error(err);
+            alert("Firewall demo 讀取失敗，請看 Console / Network");
+        });
+    </script>
+
+</body>
+</html>

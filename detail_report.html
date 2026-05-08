@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>智慧資安稽核工具 - 詳細報表</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b1220; --card:rgba(255,255,255,.08); --card2:rgba(255,255,255,.06);
+      --stroke:rgba(255,255,255,.14); --txt:rgba(255,255,255,.92); --muted:rgba(255,255,255,.62);
+      --low:#0ea5e9; --mid:#facc15; --high:#dc2626;
+    }
+    body{
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(99,102,241,.25), transparent 60%),
+                  radial-gradient(1200px 600px at 90% 30%, rgba(16,185,129,.18), transparent 55%),
+                  linear-gradient(180deg,#070b14 0%,#0b1220 60%,#070b14 100%);
+      color:var(--txt); min-height:100vh; font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    }
+    body *{-webkit-text-fill-color:currentColor;}
+    .glass{background:var(--card);border:1px solid var(--stroke);backdrop-filter:blur(12px);border-radius:18px;}
+    .glass-soft{background:var(--card2);border:1px solid var(--stroke);backdrop-filter:blur(10px);border-radius:16px;}
+    .glass,.glass-soft,.chip,.table,.table-dark,.table-dark>:not(caption)>*>*{color:var(--txt);}
+    .table-dark thead th{color:rgba(255,255,255,.92);}
+    .table-dark tbody td{color:rgba(255,255,255,.86);}
+    .brand{letter-spacing:.5px;font-weight:800;}
+    .chip{font-size:.85rem;padding:.35rem .6rem;border-radius:999px;border:1px solid var(--stroke);background:rgba(255,255,255,.06);color:var(--muted);white-space:nowrap;}
+    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
+    .pill{border-radius:999px;}.small-note{color:rgba(255,255,255,.55);font-size:.85rem;}.kpi{font-size:2.2rem;font-weight:900;line-height:1;letter-spacing:.3px;}
+    .btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.86);}.btn-ghost:hover{background:rgba(255,255,255,.10);color:rgba(255,255,255,.95);}
+    .info-card{padding:16px 18px;border-radius:18px;}.info-card.centered{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:120px;}.info-card.centered .small-note{font-size:.9rem;opacity:.85;margin-bottom:10px;}
+    .id-badge{background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.35);color:rgba(255,255,255,.95);padding:8px 12px;border-radius:999px;font-weight:900;}.type-tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.78);padding:7px 10px;border-radius:999px;font-weight:800;}.big-id,.big-type{font-size:1.25rem!important;padding:10px 16px!important;border-radius:999px!important;}.big-score{font-size:3.2rem;font-weight:1000;line-height:1;letter-spacing:.5px;}
+    .risk-stack{display:grid;grid-template-rows:auto auto;gap:12px;height:100%;}.risk-banner{border-radius:18px;padding:14px 16px;border:1px solid rgba(255,255,255,.12);box-shadow:0 16px 48px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:82px;}.risk-banner .title{font-weight:900;}.risk-banner .big{font-size:1.55rem;font-weight:1000;display:flex;align-items:center;gap:8px;white-space:nowrap;}.risk-banner.low{background:linear-gradient(135deg,rgba(14,165,233,.88),rgba(37,99,235,.58));}.risk-banner.mid{background:linear-gradient(135deg,rgba(250,204,21,.92),rgba(250,204,21,.60));color:#1f2937;}.risk-banner.high{background:linear-gradient(135deg,rgba(220,38,38,.90),rgba(220,38,38,.58));}
+    .risk-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}.risk-mini{border-radius:16px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:58px;opacity:.88;}.risk-mini .label{font-weight:900;font-size:.95rem;white-space:nowrap;}.risk-mini .dot{width:10px;height:10px;border-radius:999px;box-shadow:0 0 0 4px rgba(255,255,255,.06);}.risk-mini.low .dot{background:var(--low);}.risk-mini.mid .dot{background:var(--mid);}.risk-mini.high .dot{background:var(--high);}.risk-mini.active{opacity:1;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22);box-shadow:0 14px 40px rgba(0,0,0,.30);transform:translateY(-1px);}
+    .score-pill{background:rgba(37,99,235,.95);color:#fff;border-radius:12px;padding:8px 12px;min-width:70px;text-align:center;font-weight:900;display:inline-block;box-shadow:0 10px 28px rgba(0,0,0,.28);}.score-pill.na{background:rgba(148,163,184,.45);color:rgba(255,255,255,.72);}
+    .dark-field{background:rgba(0,0,0,.22)!important;border:1px solid rgba(255,255,255,.16)!important;color:rgba(255,255,255,.92)!important;}.reason{min-height:44px;resize:vertical;border-radius:14px!important;}.table-dark{--bs-table-bg:rgba(255,255,255,.03);--bs-table-striped-bg:rgba(255,255,255,.04);--bs-table-hover-bg:rgba(255,255,255,.06);border-color:rgba(255,255,255,.10);}
+    @media(max-width:991px){.risk-mini-grid{grid-template-columns:1fr}.risk-banner{min-height:74px}}
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <div class="glass p-3 px-lg-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-4" style="width:44px;height:44px;background:rgba(99,102,241,.22);border:1px solid rgba(255,255,255,.14)"><i class="bi bi-file-earmark-text fs-4"></i></div>
+      <div><div class="brand fs-4">智慧資安稽核工具</div><div class="small-note">詳細報表（單一機台 / 7 大模組）</div></div>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap"><span class="chip"><i class="bi bi-calendar3 me-1"></i>本次稽核：2026-05-06</span><a class="chip text-decoration-none" href="index.html"><i class="bi bi-arrow-left me-1"></i>回主頁</a></div>
+  </div>
+
+  <div class="glass p-3 p-lg-4 mt-3">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+      <div><div class="fw-bold fs-5">機台資訊</div><div class="small-note">目前已依 DTO / Rule 與人工交叉稽核資料補齊各模組預設結果。</div></div>
+      <div class="d-flex flex-wrap gap-2"><button class="btn btn-ghost pill" id="btnExportCSV"><i class="bi bi-filetype-csv me-1"></i>匯出 CSV</button><button class="btn btn-primary pill" id="btnExportXLS"><i class="bi bi-file-earmark-excel me-1"></i>匯出 Excel</button><button class="btn btn-danger pill" id="btnDailyReport"><i class="bi bi-file-earmark-pdf me-1"></i>生成每日報告 PDF</button></div>
+    </div>
+    <div class="row g-3 mt-2">
+      <div class="col-12 col-lg-3"><div class="glass-soft info-card centered h-100"><div class="small-note">機台編號</div><span class="id-badge mono big-id" id="devId">--</span></div></div>
+      <div class="col-12 col-lg-3"><div class="glass-soft info-card centered h-100"><div class="small-note">種類</div><span class="type-tag big-type" id="devType">--</span></div></div>
+      <div class="col-12 col-lg-3"><div class="glass-soft info-card centered h-100"><div class="small-note">七大模組平均</div><div class="mono big-score" id="devOverall">--</div></div></div>
+      <div class="col-12 col-lg-3"><div class="risk-stack"><div id="riskBanner" class="risk-banner mid"><div><div class="title">風險等級</div></div><div class="big" id="riskBig"><i class="bi bi-shield-exclamation"></i><span>中風險</span></div></div><div class="risk-mini-grid"><div id="miniLow" class="risk-mini low"><div class="label">低風險</div><div class="dot"></div></div><div id="miniMid" class="risk-mini mid"><div class="label">中風險</div><div class="dot"></div></div><div id="miniHigh" class="risk-mini high"><div class="label">高風險</div><div class="dot"></div></div></div></div></div>
+    </div>
+  </div>
+
+  <div class="glass p-3 p-lg-4 mt-3">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2"><div><div class="fw-bold fs-5">7 大模組雷達圖</div><div class="small-note">模組分數由各控制項目預設結果平均計算。</div></div><div class="glass-soft px-3 py-2 d-flex align-items-center gap-3"><div><div class="small-note">七大模組平均</div><div class="kpi mono" id="moduleAvg">--</div></div></div></div>
+    <div class="glass-soft p-3 mt-3" style="height:360px;"><canvas id="moduleRadar"></canvas></div>
+  </div>
+
+  <div class="glass p-3 p-lg-4 mt-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2"><div><div class="fw-bold fs-5">稽核項目明細</div><div class="small-note">對應報告第二項：模組 / SR 群組 / 控制內容 / 得分 / 狀態 / 評分原因。</div></div><div class="mono small-note" id="rowCount">共 0 筆</div></div>
+    <div class="table-responsive mt-3">
+      <table class="table table-dark table-hover align-middle mb-0">
+        <thead><tr><th style="width:130px;">模組</th><th style="width:170px;">SR 群組</th><th style="width:220px;">控制項名稱</th><th class="text-center" style="width:120px;">得分 (%)</th><th style="width:110px;">狀態</th><th>評分原因</th></tr></thead>
+        <tbody id="detailTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // =========================================================
+  // Demo data：單一機台 HMI-03
+  // - 目前依 Modules 內 DTO / Rules 與人工交叉稽核資料補齊預設結果。
+  // - 模組分數會在下方依 items 平均自動計算，避免手動改分後總分不同步。
+  // =========================================================
+  const audit = {
+    date: "2026-05-06",
+    device: { id: "HMI-03", type: "HMI" },
+    modules: [
+      {
+        key: "Identity",
+        name: "身分識別模組",
+        score: 50,
+        items: [
+          { sr:"SR1.1 / SR1.1RE(1)", title:"AD 管理與帳號識別", score:40, status:"部分通過", reason:"本機未加入 AD，帳號不受 AD 系統集中管理；登入帳號未具備本機系統管理員權限，因此未落入越權最高風險情境。依 PPT 流程，帳號不受 AD 管理但不具有越權權限屬部分得分，因此評為 40 分。" },
+          { sr:"SR1.3 / SR1.4", title:"AD 帳號比對黃頁", score:50, status:"部分通過", reason:"登入帳號可對應到 AD 帳號，但無法從黃頁/責任資料庫完整辨識使用者身份與在職狀態，導致帳號使用行為難以追蹤與稽核。依 PPT 流程，有 AD 系統但無法辨識使用者屬部分得分，因此評為 50 分。" },
+          { sr:"SR1.5 / SR1.7 / SR1.11", title:"密碼政策 / 嘗試限制 / ALM log", score:60, status:"部分通過", reason:"已設定密碼複雜度與登入嘗試限制，各取得 30 分；但密碼更換週期未符合 90 天要求，且 ALM 登入紀錄佐證不足。依 PPT 流程，三項密碼與登入控管中僅完成兩項，因此評為 60 分。" },
+          { sr:"SR1.10", title:"鑑別回饋", score:50, status:"部分通過", reason:"登入密碼輸入時已有遮蔽，但錯誤訊息仍可能讓使用者判斷帳號是否存在或輸入錯誤類型。依 PPT 顯示政策，僅部分符合鑑別回饋要求，因此評為 50 分。" },
+          { sr:"SR1.12", title:"系統使用通知 / 警告標語", score:50, status:"部分通過", reason:"監控電腦與 Switch 已貼部分資安警語，但標語內容未完整對應規則要求，缺少未授權操作法律責任、授權使用範圍與管理人員設定紀錄。依 PPT 顯示政策，標語與規則不符且通知覆蓋不完整，因此評為 50 分。" },
+          { sr:"SR2.1 / SR2.1RE(1) / SR2.1RE(2)", title:"使用者群組權限", score:50, status:"部分通過", reason:"帳號已有群組設定，但使用者未完全對應到正確圖控群組，可能造成帳號權限與實際職責不一致。依 PPT 流程，有群組設定但使用者不在對應群組屬部分得分，因此評為 50 分。" }
+        ]
+      },
+      {
+        key: "SoftwareControl",
+        name: "軟體識別模組",
+        score: 43.33,
+        items: [
+          { sr:"SR1.2", title:"授權軟體白名單比對", score:0, status:"未通過", reason:"偵測到未授權/不在白名單的應用程式：AnyDesk、TeamViewer、Nmap、Wireshark。依 PPT 流程，授權軟體白名單比對出現非授權軟體即不得分，因此評為 0 分。可能造成惡意程式或後門風險，並成為橫向移動或持久化攻擊跳板。" },
+          { sr:"SR2.3 / SR2.4", title:"IPGuard 安裝與使用控制", score:30, status:"部分通過", reason:"已安裝防毒軟體，但未安裝 IPGuard。依 PPT 流程，防毒已安裝但 IPGuard 未安裝屬部分得分，因此評為 30 分。可能無法限制使用者安裝或執行未授權軟體，也無法有效管控 USB、外接儲存裝置或檔案拷貝行為。" },
+          { sr:"SR6.2", title:"防毒軟體版本/狀態檢查", score:100, status:"通過", reason:"防毒軟體已安裝且狀態正常，版本符合基準要求。依 PPT 流程，防毒已安裝且無異常即可得分，因此評為 100 分。" }
+        ]
+      },
+      {
+        key:"Firewall",
+        name:"防火牆模組",
+        score:67,
+        items:[
+          { sr:"SR1.3 / SR2.6 / SR3.8 / SR5.1RE / SR5.2RE / SR5.3", title:"防火牆設定檢查", score:67, status:"部分通過", reason:"已採用防火牆預設拒絕策略，且防火牆白名單與跳板主機清單一致；但 Access / Domain table 對應資料仍有缺口，部分跳板主機或設備網段無法完整比對。依 FirewallPolicyRule 三項檢查通過二項，因此評為 67 分。" },
+          { sr:"SR2.6", title:"跳板主機連線檢查", score:100, status:"通過", reason:"HMI-03 連線路徑已記錄由中央跳板主機連線到現場監控主機，符合使用跳板主機存取 OT / 控制系統的要求。依 JumpHostConnectionRule，ViaJumpHost 為 true，因此評為 100 分。" }
+        ]
+      },
+      {
+        key:"DataManagement",
+        name:"資料管理模組",
+        score:70,
+        items:[
+          { sr:"SR3.1 / SR3.9 / SR4.2 / SR5.4", title:"圖控資料與應用分割檢查", score:50, status:"部分通過", reason:"圖控主機已將作業系統與應用程式放在 C 槽，歷史資料、Log、資料與設定檔放在 D 槽；但尚未完整切分系統、應用、資料與 Log 四類分區。依 ApplicationPartitionRule，已有部分分區但未完整分離，因此評為 50 分。" },
+          { sr:"SR3.6 / SR7.3", title:"控制系統備份檢查", score:100, status:"通過", reason:"已建立硬碟、OS 與圖控專案資料定期備份機制，備份排程與備份範圍已定義，實際 RPO 符合自訂基準。依 BackupPolicyRule，備份機制、排程與 RPO 均符合，因此評為 100 分。" },
+          { sr:"SR7.3 RE(1)", title:"備份查證檢查", score:50, status:"部分通過", reason:"已執行備份還原驗證，但人工審核紀錄顯示部分還原測試未量化 RTO 或未附完整測試截圖。依 BackupVerificationRule，已查證但 RTO 佐證不足，因此評為 50 分。" },
+          { sr:"SR7.4", title:"控制系統復原及重建檢查", score:50, status:"部分通過", reason:"已建立復原程序，但安全狀態回復機制與異常後重建步驟未完整文件化。依 RecoveryRebuildRule，僅具備部分復原 / 重建能力，因此評為 50 分。" },
+          { sr:"SR3.5 / SR4.1 / SR4.2", title:"圖控資料輸入與機密性人工審查", score:100, status:"通過", reason:"人工審核確認圖控 Data Entry 物件有輸入格式、上下限與防呆設計，錯誤輸入會顯示 Type mismatch 或 Value entered is not within limits；受保護資料於傳輸與退役清除流程已附佐證。符合交叉稽核標準，因此評為 100 分。" }
+        ]
+      },
+      {
+        key:"ResourceManagement",
+        name:"資源管理模組",
+        score:75,
+        items:[
+          { sr:"SR7.2", title:"資源使用監控檢查", score:100, status:"通過", reason:"Windows 資源檢視器可監控 CPU 與 Memory，且已設定資源監控門檻。依 ResourceUsageMonitoringRule，具備監控功能並完整設定 CPU / Memory 門檻，因此評為 100 分。" },
+          { sr:"SR7.5", title:"緊急電源檢查", score:50, status:"部分通過", reason:"現場具備 UPS / 備援電源資料，但保養紀錄與人工審查佐證尚未完整附檔。依 EmergencyPowerProtectionRule，已有緊急電源但缺少完整人工審查佐證，因此評為 50 分。" },
+          { sr:"SR7.6", title:"網路及安全組態檢查", score:50, status:"部分通過", reason:"部分拓譜圖資產已建立安全基準、Zone assignment 與資產納管資料，但仍有設備缺少安全組態或納管紀錄。依 NetworkSecurityBaselineRule，拓譜資產僅部分完成安全組態納管，因此評為 50 分。" },
+          { sr:"SR7.8", title:"控制系統組件清冊檢查", score:100, status:"通過", reason:"控制系統組件清冊已建立，且可對應拓譜圖中的主要資產、設備名稱、版本與供應商資訊。依 ComponentInventoryRule，拓譜資產皆可對應組件清冊，因此評為 100 分。" }
+        ]
+      },
+      {
+        key:"SystemEvent",
+        name:"系統事件模組",
+        score:75,
+        items:[
+          { sr:"SR2.5 / SR2.8 / SR2.9 / SR2.10", title:"使用控制 / 事件紀錄檢查", score:100, status:"通過", reason:"Alarm File 與 Windows 事件紀錄皆已啟用且正常記錄；已開啟磁碟空間不足警告，且具備異常排除流程與執行紀錄；設備也已設定螢幕保護或自動登出機制。依 SystemEventControlRule，SR2.8 前置條件通過，上半支線 50 分、下半支線 50 分，合計評為 100 分。" },
+          { sr:"SR2.11", title:"時間戳記與標準時間同步", score:50, status:"部分通過", reason:"稽核主機與被稽核主機已進行標準時間同步檢查，但部分截圖缺少同步來源或校時紀錄。此項屬人工佐證檢查，部分符合交叉稽核標準，因此評為 50 分。" }
+        ]
+      },
+      {
+        key:"ManualReview",
+        name:"稽核流程模組",
+        score:100,
+        items:[
+          { sr:"SR3.3", title:"稽核流程 / 交叉稽核紀錄", score:100, status:"通過", reason:"已由專責人員完成人工交叉稽核，報告包含稽核人員、被稽核設備、檢查日期、佐證截圖與審核結論；稽核紀錄可回溯且符合交叉稽核標準，因此評為 100 分。" },
+          { sr:"Manual Review", title:"人工審查文件完整性", score:100, status:"通過", reason:"ReviewDocument 已收齊圖片與 PDF 類型佐證，檔案可對應 HMI-03 與各控制項，且 FileExists 狀態正常。稽核流程模組可支援交叉稽核查核，因此評為 100 分。" }
+        ]
+      }
+    ]
+  };
+
+  audit.modules.forEach(module => {
+    const scores = (module.items || []).map(item => item.score).filter(score => typeof score === "number" && !Number.isNaN(score));
+    module.score = scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null;
+  });
+
+  const moduleLabels = audit.modules.map(m => m.name.replace("模組", ""));
+  const moduleScoresForChart = audit.modules.map(m => m.score ?? 0);
+
+  function escapeHTML(str){return String(str ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");}
+  function avgAvailable(values){ const nums = values.filter(v => typeof v === "number" && !Number.isNaN(v)); return nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : null; }
+  function fmtScore(v){ return (typeof v === "number" && !Number.isNaN(v)) ? (Number.isInteger(v) ? String(v) : v.toFixed(2)) : "--"; }
+  function riskLevel(score){ if(score === null) return {key:"mid",label:"未完成"}; if(score >= 80) return {key:"low",label:"低風險"}; if(score >= 50) return {key:"mid",label:"中風險"}; return {key:"high",label:"高風險"}; }
+  function statusClass(status){ if(status === "通過") return "text-info"; if(status === "部分通過") return "text-warning"; if(status === "未通過") return "text-danger"; return "text-secondary"; }
+
+  const overall = avgAvailable(audit.modules.map(m => m.score));
+  document.getElementById("devId").textContent = audit.device.id;
+  document.getElementById("devType").textContent = audit.device.type;
+  document.getElementById("devOverall").textContent = overall === null ? "--" : overall.toFixed(2);
+  document.getElementById("moduleAvg").textContent = overall === null ? "--" : overall.toFixed(2);
+
+  function renderRiskUI(score){
+    const r = riskLevel(score); const banner = document.getElementById("riskBanner"); const big = document.getElementById("riskBig");
+    banner.classList.remove("low","mid","high"); banner.classList.add(r.key);
+    const icon = r.key === "low" ? "bi-shield-check" : r.key === "mid" ? "bi-shield-exclamation" : "bi-shield-x";
+    big.style.color = r.key === "mid" ? "#111827" : "rgba(255,255,255,.96)";
+    big.innerHTML = `<i class="bi ${icon}"></i><span>${r.label}</span>`;
+    ["miniLow","miniMid","miniHigh"].forEach(id => document.getElementById(id).classList.remove("active"));
+    if(r.key === "low") document.getElementById("miniLow").classList.add("active");
+    if(r.key === "mid") document.getElementById("miniMid").classList.add("active");
+    if(r.key === "high") document.getElementById("miniHigh").classList.add("active");
+  }
+  renderRiskUI(overall);
+
+  const radarValueLabelsPlugin = { id:"radarValueLabels", afterDatasetsDraw(chart){ const {ctx}=chart; const meta=chart.getDatasetMeta(0); if(!meta?.data?.length)return; const data=chart.data.datasets[0].data; ctx.save(); ctx.font="800 12px Segoe UI, system-ui"; ctx.fillStyle="rgba(255,255,255,.92)"; ctx.textAlign="center"; ctx.textBaseline="middle"; meta.data.forEach((point,i)=>{ const {x,y}=point.getProps(["x","y"],true); const label = audit.modules[i].score === null ? "--" : fmtScore(data[i]); ctx.fillText(label,x,y-14); }); ctx.restore(); }};
+  new Chart(document.getElementById("moduleRadar"), { type:"radar", data:{ labels:moduleLabels, datasets:[{ data:moduleScoresForChart, fill:true, backgroundColor:"rgba(59,130,246,.22)", borderColor:"rgba(59,130,246,.95)", pointBackgroundColor:"#3b82f6", pointBorderColor:"#fff", pointRadius:4, pointHoverRadius:5 }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ r:{ min:0, max:100, ticks:{ stepSize:20, backdropColor:"transparent", color:"rgba(255,255,255,.6)" }, grid:{color:"rgba(255,255,255,.15)"}, angleLines:{color:"rgba(255,255,255,.2)"}, pointLabels:{ color:"#fff", font:{size:13,weight:"bold"} } } }, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>` ${ctx.label}: ${audit.modules[ctx.dataIndex].score === null ? "--" : fmtScore(ctx.raw)} 分`}} } }, plugins:[radarValueLabelsPlugin] });
+
+  function getAllDetailRows(){
+    return audit.modules.flatMap(m => {
+      if(!m.items || m.items.length === 0){ return []; }
+      return m.items.map(i => ({ module:m.name, ...i }));
+    });
+  }
+  function renderDetailTable(){
+    const rows = getAllDetailRows();
+    document.getElementById("detailTbody").innerHTML = rows.map(r => `
+      <tr>
+        <td class="fw-bold">${escapeHTML(r.module)}</td>
+        <td>${escapeHTML(r.sr)}</td>
+        <td>${escapeHTML(r.title)}</td>
+        <td class="text-center"><span class="score-pill mono ${r.score === null ? "na" : ""}">${fmtScore(r.score)}</span></td>
+        <td class="fw-bold ${statusClass(r.status)}">${escapeHTML(r.status)}</td>
+        <td style="white-space:pre-wrap;">${escapeHTML(r.reason)}</td>
+      </tr>`).join("");
+    document.getElementById("rowCount").textContent = `共 ${rows.length} 筆`;
+  }
+  renderDetailTable();
+
+  function collectRowsForExport(){
+    return getAllDetailRows().map(r => ({ device_id:audit.device.id, device_type:audit.device.type, module:r.module, sr_group:r.sr, control_name:r.title, score_percent:fmtScore(r.score), status:r.status, scoring_reason:r.reason }));
+  }
+  function downloadBlob(filename,mimeType,content){ const blob=new Blob([content],{type:mimeType}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href); }
+  function exportCSV(){ const rows=collectRowsForExport(); const headers=Object.keys(rows[0]); const esc=v=>{ const s=String(v??""); return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s; }; const csv=[headers.join(","),...rows.map(r=>headers.map(h=>esc(r[h])).join(","))].join("\n"); downloadBlob(`${audit.device.id}_audit_detail.csv`,"text/csv;charset=utf-8","\uFEFF"+csv); }
+  function exportXLS(){ const rows=collectRowsForExport(); const headers=Object.keys(rows[0]); const table=`<table border="1"><thead><tr>${headers.map(h=>`<th>${escapeHTML(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${headers.map(h=>`<td>${escapeHTML(r[h])}</td>`).join("")}</tr>`).join("")}</tbody></table>`; const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>${table}</body></html>`; downloadBlob(`${audit.device.id}_audit_detail.xls`,"application/vnd.ms-excel;charset=utf-8",html); }
+
+  function generateDailyReport(){
+    const r = riskLevel(overall);
+    const moduleRows = audit.modules.map(m => ({ module:m.name, score:m.score, status:riskLevel(m.score).label }));
+    const detailRows = getAllDetailRows();
+    const passCount = detailRows.filter(x => x.status === "通過").length;
+    const partialCount = detailRows.filter(x => x.status === "部分通過").length;
+    const failCount = detailRows.filter(x => x.status === "未通過").length;
+    const highRiskCount = detailRows.filter(x => x.score < 50).length;
+    const midRiskCount = detailRows.filter(x => x.score >= 50 && x.score < 80).length;
+    const lowRiskCount = detailRows.filter(x => x.score >= 80).length;
+    const todayText = audit.date.replaceAll("-", " 年 ").replace(/ 年 (\d{2})$/, " 月 $1 日");
+
+    function reportStatusClass(status){
+      if(status === "通過") return "status-pass";
+      if(status === "部分通過") return "status-partial";
+      if(status === "未通過") return "status-fail";
+      return "status-na";
+    }
+    function reportRiskClass(score){
+      if(score >= 80) return "risk-low";
+      if(score >= 50) return "risk-mid";
+      return "risk-high";
+    }
+    function reportRiskText(score){
+      if(score >= 80) return "低";
+      if(score >= 50) return "中";
+      return "高";
+    }
+    function buildRadarSvg(){
+      const size = 440;
+      const cx = 220;
+      const cy = 220;
+      const maxR = 130;
+      const modules = audit.modules.map(m => ({ label:m.name.replace("模組",""), score:m.score ?? 0 }));
+      const n = modules.length;
+      const point = (i, radius) => {
+        const angle = -Math.PI / 2 + (Math.PI * 2 * i / n);
+        return { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
+      };
+      const polygon = radius => modules.map((_, i) => {
+        const p = point(i, radius);
+        return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+      }).join(" ");
+      const dataPoints = modules.map((m, i) => {
+        const p = point(i, maxR * m.score / 100);
+        return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+      }).join(" ");
+      const grid = [20,40,60,80,100].map(v => `<polygon points="${polygon(maxR * v / 100)}" fill="none" stroke="#c8d5e3" stroke-width="1"/><text x="${cx + 4}" y="${(cy - maxR * v / 100 + 4).toFixed(1)}" font-size="10" fill="#6b7c93">${v}</text>`).join("");
+      const axes = modules.map((m, i) => {
+        const end = point(i, maxR);
+        const label = point(i, maxR + 34);
+        const value = point(i, maxR * m.score / 100);
+        return `<line x1="${cx}" y1="${cy}" x2="${end.x.toFixed(1)}" y2="${end.y.toFixed(1)}" stroke="#d7e0ea" stroke-width="1"/><circle cx="${value.x.toFixed(1)}" cy="${value.y.toFixed(1)}" r="3.5" fill="#153e6f"/><text x="${label.x.toFixed(1)}" y="${label.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="12" fill="#153e6f" font-weight="700">${escapeHTML(m.label)}</text><text x="${label.x.toFixed(1)}" y="${(label.y + 15).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="#5f7188">${fmtScore(m.score)}</text>`;
+      }).join("");
+      return `<svg class="radar-svg" viewBox="0 0 ${size} ${size}" role="img" aria-label="七大模組雷達圖"><rect width="${size}" height="${size}" rx="8" fill="#ffffff"/><g>${grid}${axes}<polygon points="${dataPoints}" fill="rgba(21,62,111,.18)" stroke="#153e6f" stroke-width="2.5"/><circle cx="${cx}" cy="${cy}" r="2.5" fill="#153e6f"/></g></svg>`;
+    }
+    const radarSvg = buildRadarSvg();
+    const detailModuleGroups = audit.modules
+      .map(module => ({ module, rows: detailRows.filter(row => row.module === module.name) }))
+      .filter(group => group.rows.length);
+    const detailPageGroups = detailModuleGroups.flatMap(({ module, rows }) => {
+      const chunks = [];
+      for(let i = 0; i < rows.length; i += 3) chunks.push(rows.slice(i, i + 3));
+      return chunks.map((chunkRows, index) => ({ module, rows: chunkRows, part: index + 1, totalParts: chunks.length }));
+    });
+    const detailPages = detailPageGroups.map(({ module, rows, part, totalParts }, pageIndex) => {
+      return `<section class="page detail-page">
+        <div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">5. 詳細稽核明細｜${escapeHTML(module.name)}</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report</div></div>
+        <div class="line-module"><div class="module-heading">${escapeHTML(module.name)}<span>${escapeHTML(fmtScore(module.score))} / 100${totalParts > 1 ? `｜${part}/${totalParts}` : ""}</span></div>
+          <div class="line-list">
+            ${rows.map(row => `<article class="line-row">
+              <div class="line-row-head">
+                <div><div class="line-title">${escapeHTML(row.title)}</div><div class="line-sr">${escapeHTML(row.sr)}</div></div>
+                <div class="line-score">${escapeHTML(fmtScore(row.score))}</div>
+                <div class="${reportStatusClass(row.status)} line-status">${escapeHTML(row.status)}</div>
+              </div>
+              <div class="line-reason">${escapeHTML(row.reason)}</div>
+            </article>`).join("")}
+          </div>
+        </div>
+        <div class="footer"><div>智慧資安稽核工具</div><div>Page ${pageIndex + 5}</div></div>
+      </section>`;
+    }).join("");
+    const reportHtml = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>每日稽核報告_${escapeHTML(audit.device.id)}_${escapeHTML(audit.date)}</title><style>
+      :root{--ink:#111827;--muted:#aeb4bd;--line:#111827;--head:#1f5f95;--head2:#eaf2fb;--stripe:#5a8ec4;--ok:#dcecff;--warn:#fff1d4;--bad:#f6ddd8;--risk-red:#9e2018;--risk-yellow:#b87900;--risk-blue:#0f5f96;}
+      body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",Arial,sans-serif;margin:0;background:#303030;color:var(--ink);}
+      .page{position:relative;width:1280px;min-height:720px;margin:0 auto 18px auto;background:#fff;padding:50px 58px 38px 58px;box-sizing:border-box;box-shadow:0 8px 24px rgba(0,0,0,.38);border-top:4px solid #111827;overflow:hidden;}
+      .page::after{content:"AUDIT REPORT";position:absolute;right:28px;top:16px;font-size:46px;letter-spacing:3px;color:#b8bcc3;font-weight:300;z-index:0}.page>*{position:relative;z-index:1}
+      .report-kicker{letter-spacing:4px;color:#cbd5e1;font-size:14px;font-weight:700;margin-top:72px}.cover-title{font-size:48px;color:#111827;font-weight:900;letter-spacing:2px;margin:118px 0 22px}.cover-sub{font-size:18px;line-height:1.8;color:#7b8797;margin-bottom:72px}.cover-table{width:72%;margin:0 auto;border-collapse:collapse;font-size:17px}.cover-table th{width:160px;background:#1f5f95;color:#fff;text-align:left;font-weight:800}.cover-table td{background:#eef4fb;color:#111827}.cover-table th,.cover-table td{border:2px solid #111827;padding:12px 14px}
+      .topbar{padding-bottom:10px;margin-bottom:18px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px}.doc-title{font-size:34px;color:#111827;font-weight:900;letter-spacing:.5px;margin:0}.doc-sub{font-size:12px;color:#6b7280;text-align:right}.stripe{height:8px;width:168px;background:repeating-linear-gradient(90deg,#111827 0 8px,#718096 8px 12px);margin-bottom:10px}
+      .section{margin-top:18px;page-break-inside:avoid}.section-title{font-size:28px;color:#111827;font-weight:900;margin:0 0 14px}.sub-title{font-size:20px;background:#edf3f9;color:#111827;padding:8px 12px;margin:14px 0 10px;font-weight:800}
+      p{font-size:16px;line-height:1.75;margin:8px 0 12px}table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.45}th,td{border:2px solid #111827;padding:8px 10px;vertical-align:top}th{background:#1f5f95;text-align:center;color:#fff;font-weight:900;font-size:17px}tbody tr:nth-child(even) td{background:#eef4fb}.score{font-weight:900;text-align:center;width:82px;white-space:nowrap}.reason{white-space:pre-wrap;color:#111827}.status-pass{background:var(--ok)!important;color:#0f5f96;font-weight:900}.status-partial{background:var(--warn)!important;color:#8a5d00;font-weight:900}.status-fail{background:var(--bad)!important;color:#9e2018;font-weight:900}.status-na{background:#eef1f5!important;color:#65758a;font-weight:900}.risk-cell{text-align:center;vertical-align:middle}.risk-badge{display:inline-flex;align-items:center;justify-content:center;min-width:56px;padding:5px 12px;border-radius:2px;font-weight:900;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.risk-low{background:var(--risk-blue)!important;color:#fff!important}.risk-mid{background:var(--risk-yellow)!important;color:#fff!important}.risk-high{background:var(--risk-red)!important;color:#fff!important}
+      .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}.summary-stack{display:grid;gap:14px}.stat-table td:first-child{width:150px}.metric{font-size:34px;color:#1f5f95;font-weight:900}.radar-card{border:2px solid #111827;background:#f7fafc;padding:10px}.radar-svg{width:100%;max-height:410px;height:auto;display:block}.note-box{border:2px solid #8ea9c7;background:#f5f9fe;padding:12px 14px;color:#425c7b;font-size:14px;line-height:1.7}
+      .method-page .topbar{margin-bottom:8px;padding-bottom:4px}.method-page .doc-title{font-size:30px}.method-page .sub-title{font-size:18px;margin:8px 0 6px;padding:6px 10px;background:#fff}.method-page table{font-size:14px;line-height:1.3}.method-page th,.method-page td{padding:6px 9px}.method-page th{font-size:15px}.method-page .principle-table td{padding:7px 10px}
+      .principle-table{page-break-inside:avoid;break-inside:avoid}.principle-table tr{page-break-inside:avoid;break-inside:avoid}.detail-page{overflow:hidden}.line-module{margin:0 0 18px}.module-heading{background:#fff;color:#aeb4bd;font-size:22px;font-weight:900;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border:2px solid #111827;margin-bottom:12px}.module-heading span{font-size:16px;color:#7b8797}.line-list{display:grid;gap:10px}.line-row{border:2px solid #111827;break-inside:avoid;page-break-inside:avoid;background:#fff}.line-row-head{display:grid;grid-template-columns:1fr 92px 132px;align-items:stretch;border-bottom:2px solid #111827}.line-row-head>div{padding:9px 12px}.line-row-head>div+div{border-left:2px solid #111827}.line-row:nth-child(even){background:#f8fbff}.line-sr{font-size:13px;color:#111827;margin-top:3px}.line-title{font-size:17px;color:#111827;font-weight:900}.line-score{text-align:center;font-size:26px;font-weight:900;display:flex;align-items:center;justify-content:center}.line-status{text-align:center;display:flex;align-items:center;justify-content:center;font-size:15px}.line-reason{font-size:14px;line-height:1.65;white-space:pre-wrap;color:#111827;padding:10px 14px}
+      .footer{position:absolute;left:58px;right:58px;bottom:24px;border-top:2px solid #cbd5e1;padding-top:8px;color:#4b5563;font-size:11px;display:flex;justify-content:space-between;gap:12px}.print-actions{width:1280px;margin:12px auto;display:flex;gap:10px;justify-content:flex-end}.no-print button,button{border:1px solid #d1d5db;background:#111827;color:#fff;padding:8px 12px;border-radius:2px;cursor:pointer;font-weight:800;font-size:12px}button.secondary{background:#fff;color:#111827}
+      @page{size:A4 landscape;margin:8mm}@media print{body{background:#fff}.page{width:auto;min-height:190mm;margin:0;padding:12mm 14mm;box-shadow:none;page-break-after:always}.method-page{padding-top:8mm;padding-bottom:8mm}.method-page table{font-size:12px;line-height:1.2}.method-page th,.method-page td{padding:4px 7px}.page:last-of-type{page-break-after:auto}.page::after{right:12mm;top:8mm}.footer{left:14mm;right:14mm;bottom:8mm}.detail-page{page-break-after:always}.line-row,.principle-table,.principle-table tr{break-inside:avoid;page-break-inside:avoid}.no-print{display:none!important}}
+    </style></head><body>
+      <div class="print-actions no-print"><button class="secondary" onclick="window.close()">關閉</button><button onclick="window.print()">列印 / 另存 PDF</button></div>
+      <section class="page">
+        <div class="report-kicker">OT / ICS CYBERSECURITY AUDIT REPORT</div>
+        <h1 class="cover-title">工控環境資安稽核報告</h1>
+        <p class="cover-sub">依 IEC 62443-3-3 控制需求編製之 OT / ICS 稽核報告，適用於系統測試、版面驗證、流程演練與 PDF 輸出。</p>
+        <table class="cover-table"><tbody>
+          <tr><th>受稽核對象</th><td>日月光智慧資安稽核工具（${escapeHTML(audit.device.id)}）</td></tr>
+          <tr><th>場景範圍</th><td>SCADA / PLC / HMI / 工程站 / 歷史資料庫 / 遠端維護 VPN</td></tr>
+          <tr><th>文件日期</th><td>${escapeHTML(todayText)}</td></tr>
+          <tr><th>編製單位</th><td>OT / ICS Cybersecurity Audit Team</td></tr>
+        </tbody></table>
+      </section>
+
+      <section class="page">
+        <div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">執行摘要</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report<br/>${escapeHTML(audit.device.id)}｜${escapeHTML(audit.device.type)}</div></div>
+        <div class="sub-title">1.1 執行摘要</div>
+        <table><tbody>
+          <tr><th style="width:220px;">整體判定</th><td>${detailRows.length} 項控制發現，高風險 ${highRiskCount} 項、中風險 ${midRiskCount} 項、低風險 ${lowRiskCount} 項</td></tr>
+          <tr><td class="status-pass">符合</td><td>${passCount} 項</td></tr>
+          <tr><td class="status-partial">部分符合</td><td>${partialCount} 項</td></tr>
+          <tr><td class="status-fail">不符合</td><td>${failCount} 項</td></tr>
+        </tbody></table>
+        <div class="sub-title">1.2 文件資訊</div>
+        <table><tbody>
+          <tr><th style="width:220px;">文件名稱</th><td>工控環境資安稽核報告（測試資料）</td></tr>
+          <tr><th>報告日期</th><td>${escapeHTML(audit.date)}</td></tr>
+          <tr><th>場景類型</th><td>製造工廠 OT / ICS 環境</td></tr>
+          <tr><th>適用標準</th><td>IEC 62443-3-3</td></tr>
+          <tr><th>稽核對象</th><td>${escapeHTML(audit.device.id)}（${escapeHTML(audit.device.type)}）</td></tr>
+        </tbody></table>
+        <div class="footer"><div>智慧資安稽核工具</div><div>Page 1</div></div>
+      </section>
+
+      <section class="page">
+        <div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">管理摘要</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report</div></div>
+        <div class="summary-grid">
+          <div>
+            <div class="sub-title">1.3 統計摘要</div>
+            <table class="stat-table"><tbody>
+              <tr><th>指標</th><th>數量</th></tr>
+              <tr><td>控制項總數</td><td>${detailRows.length}</td></tr>
+              <tr><td class="status-pass">符合</td><td>${passCount}</td></tr>
+              <tr><td class="status-partial">部分符合</td><td>${partialCount}</td></tr>
+              <tr><td class="status-fail">不符合</td><td>${failCount}</td></tr>
+              <tr><td>七大模組平均</td><td><span class="metric">${escapeHTML(fmtScore(overall))}</span> / 100</td></tr>
+              <tr><td>風險等級</td><td class="risk-cell"><span class="risk-badge ${reportRiskClass(overall)}">${escapeHTML(r.label)}</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="radar-card">${radarSvg}</div>
+        </div>
+        <div class="footer"><div>智慧資安稽核工具</div><div>Page 2</div></div>
+      </section>
+
+      <section class="page method-page">
+        <div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">3. 稽核方法與判定原則</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report</div></div>
+        <div class="sub-title">3.1 評估依據</div>
+        <table><thead><tr><th style="width:130px;">功能需求</th><th style="width:210px;">主題</th><th>主要參照條文</th></tr></thead><tbody>
+          <tr><td>FR1</td><td>帳密管理</td><td>SR 1.1, SR 1.1 RE(1), SR 1.3, SR 1.5, SR 1.7, SR 1.10, SR 1.11, SR 1.12</td></tr>
+          <tr><td>FR2</td><td>使用控制</td><td>SR 2.1, SR 2.1 RE(1), SR 2.3, SR 2.4, SR 2.5, SR 2.8, SR 2.9, SR 2.10, SR 2.11</td></tr>
+          <tr><td>FR3</td><td>系統完整性</td><td>SR 3.3, SR 3.5, SR 3.8, SR 3.9</td></tr>
+          <tr><td>FR4</td><td>資料保密性</td><td>SR 4.1, SR 4.2</td></tr>
+          <tr><td>FR5</td><td>限制資料流</td><td>SR 5.1 RE, SR 5.2 RE, SR 5.3, SR 5.4</td></tr>
+          <tr><td>FR6</td><td>即時事件回應</td><td>SR 6.2</td></tr>
+          <tr><td>FR7</td><td>資源可用性</td><td>SR 7.2, SR 7.3, SR 7.4, SR 7.5, SR 7.6, SR 7.8</td></tr>
+        </tbody></table>
+        <div class="sub-title">3.2 判定原則</div>
+        <table class="principle-table"><thead><tr><th style="width:220px;">狀態</th><th>定義</th></tr></thead><tbody>
+          <tr><td class="status-pass">符合</td><td>已有制度、技術控制與可追溯證據，且執行結果與控制目的相符。</td></tr>
+          <tr><td class="status-partial">部分符合</td><td>已建立部分制度或技術機制，但執行範圍、落實程度或證據完整性不足。</td></tr>
+          <tr><td class="status-fail">不符合</td><td>尚未建立控制、控制失效、長期未執行，或風險已實際暴露。</td></tr>
+        </tbody></table>
+        <div class="footer"><div>智慧資安稽核工具</div><div>Page 3</div></div>
+      </section>
+
+      <section class="page">
+        <div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">4. 模組總覽</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report</div></div>
+        <div class="sub-title">4.1 七大模組總分</div>
+        <table><thead><tr><th>模組</th><th class="score">得分(%)</th><th style="width:120px;">風險等級</th></tr></thead><tbody>${moduleRows.map(m=>`<tr><td><b>${escapeHTML(m.module)}</b></td><td class="score">${escapeHTML(fmtScore(m.score))}</td><td class="risk-cell"><span class="risk-badge ${reportRiskClass(m.score)}">${escapeHTML(reportRiskText(m.score))}</span></td></tr>`).join("")}</tbody></table>
+        <div class="footer"><div>智慧資安稽核工具</div><div>Page 4</div></div>
+      </section>
+
+      ${detailPages}
+    </body></html>`;
+    const w = window.open("", "_blank", "width=1100,height=760");
+    if(!w){ alert("瀏覽器阻擋彈出視窗，請允許 Pop-up 後再試一次。"); return; }
+    w.document.open(); w.document.write(reportHtml); w.document.close();
+    w.onload = () => setTimeout(() => w.print(), 300);
+  }
+
+  document.getElementById("btnExportCSV").addEventListener("click", exportCSV);
+  document.getElementById("btnExportXLS").addEventListener("click", exportXLS);
+  document.getElementById("btnDailyReport").addEventListener("click", generateDailyReport);
+</script>
+</body>
+</html>

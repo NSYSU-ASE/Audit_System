@@ -702,7 +702,7 @@
         <!-- FR maturity -->
         <div class="glass p-3 p-lg-4 mt-3">
             <div class="d-flex align-items-center justify-content-between">
-                <div class="fw-bold fs-5">成熟度（FR1 ~ FR7）</div>
+                <div class="fw-bold fs-5">成熟度（IAM ~ RES）</div>
             </div>
             <div class="row g-3 mt-1" id="frGrid"></div>
         </div>
@@ -775,7 +775,8 @@
         // =========================
         // Demo data
         // =========================
-        const FR_NAMES = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const FR_KEYS = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const FR_NAMES = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
 
         const BIG_BUILDINGS = ["K11", "K3/K4", "K12", "K27", "K5", "K7", "K8", "K15", "K9", "K21", "K22", "K24", "K25", "K18"];
         const SMALL_BUILDINGS = ["K16", "K1/K2", "K13B", "K17", "K9B", "K26", "K14B", "K14C"];
@@ -933,6 +934,11 @@
 
         function escapeQuotes(s) {
             return String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+        }
+
+        function displayFrLabel(fr) {
+            const idx = FR_KEYS.indexOf(String(fr));
+            return idx >= 0 ? FR_NAMES[idx] : fr;
         }
 
         function toIndex(region, period) {
@@ -1152,7 +1158,7 @@
                 data: {
                     labels: FR_NAMES,
                     datasets: [{
-                        label: "FR 平均分數",
+                        label: "模組平均分數",
                         data: values,
                         fill: true,
                         backgroundColor: "rgba(59,130,246,0.25)",
@@ -1214,7 +1220,7 @@
             tl.className = "ylab";
             tl.style.justifyContent = "center";
             tl.style.opacity = ".78";
-            tl.textContent = "FR \\ 棟別";
+            tl.textContent = "項目 \\ 棟別";
             grid.appendChild(tl);
 
             buildingIds.forEach(id => {
@@ -1296,7 +1302,7 @@
                     return `
                         <span class="pillFR ${it.level}">
                           <span class="dot2"></span>
-                          <span class="mono">${it.fr}</span>
+                          <span class="mono">${displayFrLabel(it.fr)}</span>
                         </span>
                       `;
                 }).join("");
@@ -1424,11 +1430,19 @@
                 }
 
                 // 棟別/精進方向/風險地圖
-                // 先保留空白或之後再接 area / building API
                 const buildingMeta = document.getElementById("buildingMeta");
+                const siteNow = {
+                    buildingFR: data.buildingFR || {}
+                };
+                const totalBuildings = Object.keys(siteNow.buildingFR).length;
+
                 if (buildingMeta) {
-                    buildingMeta.textContent = "先接 main API，其他區塊後續再串";
+                    buildingMeta.textContent = `棟別 ${totalBuildings}｜${FR_NAMES.length} 項`;
                 }
+
+                const bigIds = renderRiskMap(els.bigMap, els.bigCount, siteNow, BIG_BUILDINGS);
+                const smallIds = renderRiskMap(els.smallMap, els.smallCount, siteNow, SMALL_BUILDINGS);
+                renderImprove(bigIds, smallIds);
 
             } catch (err) {
                 console.error("loadMainFromApi failed:", err);
@@ -1446,7 +1460,7 @@
                 <div class="col-12 col-md-6 col-xl-3">
                     <div class="fr-mini">
                         <div class="d-flex align-items-center justify-content-between">
-                            <div class="name">FR${i + 1}</div>
+                            <div class="name">${FR_NAMES[i]}</div>
                             <div class="trend flat" style="padding:.35rem .6rem;">
                                 <i class="bi bi-dash"></i><span class="mono">(0)</span>
                             </div>

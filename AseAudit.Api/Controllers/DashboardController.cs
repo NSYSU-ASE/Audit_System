@@ -72,12 +72,11 @@ SELECT
     a.OwnerName,
     AVG(CAST((ar.FR1 + ar.FR2 + ar.FR3 + ar.FR4 + ar.FR5 + ar.FR6 + ar.FR7) / 7.0 AS FLOAT)) AS AvgScore
 FROM dbo.Area a
-INNER JOIN dbo.Building b ON a.AreaId = b.AreaId
-INNER JOIN dbo.Device d ON b.BuildingId = d.BuildingId
-INNER JOIN dbo.AuditResult ar ON d.DeviceId = ar.DeviceId
-WHERE ar.AuditPeriod = @Period
-GROUP BY a.AreaName, a.OwnerName
-ORDER BY a.AreaName;";
+LEFT JOIN dbo.Building b ON a.AreaId = b.AreaId
+LEFT JOIN dbo.Device d ON b.BuildingId = d.BuildingId
+LEFT JOIN dbo.AuditResult ar ON d.DeviceId = ar.DeviceId AND ar.AuditPeriod = @Period
+GROUP BY a.AreaId, a.AreaName, a.OwnerName
+ORDER BY a.AreaId;";
 
                 using var regionCmd = new SqlCommand(regionSql, conn);
                 regionCmd.Parameters.AddWithValue("@Period", period);
@@ -97,12 +96,168 @@ ORDER BY a.AreaName;";
                     }
                 }
 
+                // 3. 棟別 FR 平均，供風險地圖使用
+                const string buildingSql = @"
+SELECT
+    b.BuildingName,
+    AVG(CAST(ar.FR1 AS FLOAT)) AS FR1,
+    AVG(CAST(ar.FR2 AS FLOAT)) AS FR2,
+    AVG(CAST(ar.FR3 AS FLOAT)) AS FR3,
+    AVG(CAST(ar.FR4 AS FLOAT)) AS FR4,
+    AVG(CAST(ar.FR5 AS FLOAT)) AS FR5,
+    AVG(CAST(ar.FR6 AS FLOAT)) AS FR6,
+    AVG(CAST(ar.FR7 AS FLOAT)) AS FR7
+FROM dbo.Building b
+LEFT JOIN dbo.Device d ON b.BuildingId = d.BuildingId
+LEFT JOIN dbo.AuditResult ar ON d.DeviceId = ar.DeviceId AND ar.AuditPeriod = @Period
+GROUP BY b.BuildingId, b.BuildingName
+ORDER BY b.BuildingId;";
+
+                using var buildingCmd = new SqlCommand(buildingSql, conn);
+                buildingCmd.Parameters.AddWithValue("@Period", period);
+
+                var buildingFr = new Dictionary<string, List<int>>();
+
+                using (var reader = buildingCmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var buildingName = reader["BuildingName"]?.ToString();
+                        if (string.IsNullOrWhiteSpace(buildingName))
+                        {
+                            continue;
+                        }
+
+                        var values = new List<int>();
+                        for (int i = 1; i <= 7; i++)
+                        {
+                            var value = reader[$"FR{i}"] == DBNull.Value
+                                ? 0
+                                : Convert.ToDouble(reader[$"FR{i}"]);
+                            values.Add((int)Math.Round(value));
+                        }
+
+                        buildingFr[buildingName] = values;
+                    }
+                }
+
                 return Ok(new
                 {
                     period,
                     siteAvg = (int)Math.Round(siteAvg),
                     fr = frList,
-                    regions
+                    regions,
+                    buildingFR = buildingFr
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    detail = ex.ToString()
+                });
+            }
+        }
+
+        [HttpGet("building")]
+        public IActionResult GetBuilding(
+            [FromQuery] string period = "2025-12",
+            [FromQuery] string? buildingCode = null)
+        {
+            try
+            {
+                using var conn = (SqlConnection)_dbConnection;
+                conn.Open();
+
+                const string sql = @"
+SELECT
+    d.DeviceId,
+    COALESCE(NULLIF(d.DeviceType, N''), N'--') AS DeviceType,
+    b.BuildingCode,
+    b.BuildingName,
+    a.AreaName,
+    ar.FR1,
+    ar.FR2,
+    ar.FR3,
+    ar.FR4,
+    ar.FR5,
+    ar.FR6,
+    ar.FR7,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM dbo.Identification_AM_Account ia
+            WHERE ia.HostName = d.HostName
+        )
+        THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT)
+    END AS HasIdentityData
+FROM dbo.Building b
+INNER JOIN dbo.Area a ON b.AreaId = a.AreaId
+INNER JOIN dbo.Device d ON b.BuildingId = d.BuildingId
+LEFT JOIN dbo.AuditResult ar ON d.DeviceId = ar.DeviceId AND ar.AuditPeriod = @Period
+WHERE (
+    @BuildingCode IS NULL
+    OR b.BuildingCode = @BuildingCode
+    OR b.BuildingName = @BuildingCode
+)
+AND NOT (
+    d.DeviceId LIKE N'DEV-%-001'
+    AND EXISTS (
+        SELECT 1
+        FROM dbo.Device identityDevice
+        INNER JOIN dbo.Identification_AM_Account ia ON ia.HostName = identityDevice.HostName
+        WHERE identityDevice.BuildingId = b.BuildingId
+    )
+    AND NOT EXISTS (
+        SELECT 1
+        FROM dbo.Identification_AM_Account ia
+        WHERE ia.HostName = d.HostName
+    )
+)
+ORDER BY d.DeviceId;";
+
+                using var cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Period", period);
+                cmd.Parameters.AddWithValue("@BuildingCode",
+                    string.IsNullOrWhiteSpace(buildingCode) ? DBNull.Value : buildingCode);
+
+                var devices = new List<object>();
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var hasIdentityData = Convert.ToBoolean(reader["HasIdentityData"]);
+                    var fr = new List<int?>();
+                    for (var i = 1; i <= 7; i++)
+                    {
+                        if (reader[$"FR{i}"] == DBNull.Value)
+                        {
+                            fr.Add(null);
+                            continue;
+                        }
+
+                        var value = Convert.ToInt32(reader[$"FR{i}"]);
+                        fr.Add(hasIdentityData && i > 1 && value == 0 ? null : value);
+                    }
+
+                    devices.Add(new
+                    {
+                        id = reader["DeviceId"]?.ToString(),
+                        type = reader["DeviceType"]?.ToString(),
+                        buildingCode = reader["BuildingCode"]?.ToString(),
+                        buildingName = reader["BuildingName"]?.ToString(),
+                        areaName = reader["AreaName"]?.ToString(),
+                        fr
+                    });
+                }
+
+                return Ok(new
+                {
+                    period,
+                    buildingCode,
+                    devices
                 });
             }
             catch (Exception ex)

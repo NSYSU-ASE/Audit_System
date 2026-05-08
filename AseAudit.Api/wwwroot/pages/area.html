@@ -675,7 +675,7 @@
         <!-- FR maturity cards -->
         <div class="glass p-3 p-lg-4 mt-3">
             <div class="d-flex align-items-center justify-content-between">
-                <div class="fw-bold fs-5">個別成熟度（FR1 ~ FR7）</div>
+                <div class="fw-bold fs-5">個別成熟度（IAM ~ RES）</div>
                 <div class="muted" id="frHint">目前：Zone II 平均</div>
             </div>
             <div class="row g-3 mt-1" id="frGrid"></div>
@@ -685,7 +685,7 @@
         <div class="glass p-3 p-lg-4 mt-3">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div class="fw-bold fs-5">該區風險地圖（Zone II）</div>
-                <div class="muted mono" id="buildingMeta">棟別 6｜FR 7</div>
+                <div class="muted mono" id="buildingMeta">棟別 6｜項目 7</div>
             </div>
 
             <div class="legendRow">
@@ -741,7 +741,8 @@
         // =========================
         // Data (Zone II demo)
         // =========================
-        const FR_NAMES = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const FR_KEYS = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const FR_NAMES = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
         const ZONE_BUILDINGS = ["K18", "K21", "K22", "K24", "K25", "K26"];
 
         // 以 2025-12 示範（你之後可接 API 或從 querystring 帶 period）
@@ -816,6 +817,11 @@
             if (v >= 80) return "green";
             if (v >= 70) return "yellow";
             return "red";
+        }
+
+        function displayFrLabel(fr) {
+            const idx = FR_KEYS.indexOf(String(fr));
+            return idx >= 0 ? FR_NAMES[idx] : fr;
         }
 
         // querystring：?region=Zone II&period=2025-12
@@ -926,7 +932,7 @@
                 data: {
                     labels: FR_NAMES,
                     datasets: [{
-                        label: "FR 平均分數",
+                        label: "模組平均分數",
                         data: values,
                         fill: true,
                         backgroundColor: "rgba(59,130,246,0.25)",
@@ -1109,7 +1115,7 @@
             els.improveGrid.innerHTML = items.map((it, idx) => {
                 const pills = `
               <span class="pillFR ${it.level}">
-                <span class="dot2"></span>${it.fr}
+                <span class="dot2"></span>${displayFrLabel(it.fr)}
               </span>
             `;
                 return `
@@ -1146,7 +1152,7 @@
             grid.style.gridTemplateColumns = `${firstCol}px repeat(${ZONE_BUILDINGS.length}, ${colW}px)`;
 
             // Header row
-            grid.appendChild(makeXLab("FR \\ 棟別", null, true));
+            grid.appendChild(makeXLab("項目 \\ 棟別", null, true));
             ZONE_BUILDINGS.forEach(b => {
                 const el = makeXLab(b, b, false);
                 if (selectedBuilding === b) el.classList.add("active");
