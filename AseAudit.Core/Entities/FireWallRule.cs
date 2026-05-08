@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace AseAudit.Core.Entities
 {
     /// <summary>
-    /// ¹ïÀ³¸ê®Æªí [dbo].[FireWallRule] ¡X ¨¾¤õÀð³W«h
+    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æªï¿½ [dbo].[FireWallRule] ï¿½X ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½h
     /// </summary>
     [Table("FireWallRule")]
     public class FireWallRule
@@ -29,11 +29,11 @@ namespace AseAudit.Core.Entities
 
         [Required]
         [Column("RuleName")]
-        [MaxLength(100)]
+        [MaxLength(256)]
         public string RuleName { get; set; } = string.Empty;
 
         [Column("DisplayName")]
-        [MaxLength(100)]
+        [MaxLength(512)]
         public string? DisplayName { get; set; }
 
         [Column("Status")]

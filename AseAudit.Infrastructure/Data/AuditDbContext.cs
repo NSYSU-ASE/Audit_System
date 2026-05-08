@@ -14,10 +14,14 @@ namespace AseAudit.Infrastructure.Data
         }
 
         /// <summary>帳號管理資料表</summary>
+
         public DbSet<IdentificationAmAccount> IdentificationAmAccounts { get; set; }
 
         /// <summary>帳號管理規則資料表（密碼政策等）</summary>
         public DbSet<IdentificationAmRule> IdentificationAmRules { get; set; }
+
+        /// <summary>防火牆規則資料表</summary>
+        public DbSet<FireWallRule> FireWallRules { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +42,16 @@ namespace AseAudit.Infrastructure.Data
             {
                 entity.HasIndex(e => e.HostName)
                       .HasDatabaseName("IX_Identification_AM_rule_HostName");
+
+                entity.Property(e => e.CreatedTime)
+                      .HasDefaultValueSql("GETDATE()");
+            });
+
+            // FireWallRule 設定
+            modelBuilder.Entity<FireWallRule>(entity =>
+            {
+                entity.HasIndex(e => e.HostName)
+                      .HasDatabaseName("IX_FireWallRule_HostName");
 
                 entity.Property(e => e.CreatedTime)
                       .HasDefaultValueSql("GETDATE()");

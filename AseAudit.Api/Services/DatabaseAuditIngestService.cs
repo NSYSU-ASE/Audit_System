@@ -29,8 +29,19 @@ public sealed class DatabaseAuditIngestService : IAuditIngestService
             throw new ArgumentException("ScriptName is required.", nameof(upload));
 
         if (!_handlers.TryGetValue(upload.ScriptName, out var handler))
-            throw new ArgumentException(
-                $"Unsupported ScriptName: {upload.ScriptName}", nameof(upload));
+        {
+            _logger.LogWarning("No handler registered for ScriptName '{Script}' from {Host}; skipping.",
+                upload.ScriptName, upload.HostName);
+            return new AuditIngestResponse
+            {
+                IngestId   = string.Empty,
+                HostName   = upload.HostName,
+                ScriptName = upload.ScriptName,
+                StoredPath = string.Empty,
+                ReceivedAt = DateTime.UtcNow,
+                SizeBytes  = 0
+            };
+        }
 
         var receivedAt = DateTime.UtcNow;
         var ingestId = $"{receivedAt:yyyyMMdd_HHmmssfff}_{Guid.NewGuid():N}";
