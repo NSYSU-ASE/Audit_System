@@ -45,7 +45,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
-db.Database.Migrate();
+ // db.Database.Migrate(); 之後要統一資料庫建立
 }
 
 // Configure the HTTP request pipeline.

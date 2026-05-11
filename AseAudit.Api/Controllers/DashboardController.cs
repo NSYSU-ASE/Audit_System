@@ -34,13 +34,13 @@ namespace AseAudit.Api.Controllers
                 // 1. 全場 FR 平均
                 const string frSql = @"
 SELECT
-    AVG(CAST(FR1 AS FLOAT)) AS FR1,
-    AVG(CAST(FR2 AS FLOAT)) AS FR2,
-    AVG(CAST(FR3 AS FLOAT)) AS FR3,
-    AVG(CAST(FR4 AS FLOAT)) AS FR4,
-    AVG(CAST(FR5 AS FLOAT)) AS FR5,
-    AVG(CAST(FR6 AS FLOAT)) AS FR6,
-    AVG(CAST(FR7 AS FLOAT)) AS FR7
+    AVG(CAST(IAM AS FLOAT)) AS IAM,
+    AVG(CAST(SWI AS FLOAT)) AS SWI,
+    AVG(CAST(FWL AS FLOAT)) AS FWL,
+    AVG(CAST(EVT AS FLOAT)) AS EVT,
+    AVG(CAST(AUD AS FLOAT)) AS AUD,
+    AVG(CAST(DAT AS FLOAT)) AS DAT,
+    AVG(CAST(RES AS FLOAT)) AS RES
 FROM dbo.AuditResult
 WHERE AuditPeriod = @Period;";
 
@@ -70,7 +70,7 @@ WHERE AuditPeriod = @Period;";
 SELECT
     a.AreaName,
     a.OwnerName,
-    AVG(CAST((ar.FR1 + ar.FR2 + ar.FR3 + ar.FR4 + ar.FR5 + ar.FR6 + ar.FR7) / 7.0 AS FLOAT)) AS AvgScore
+    AVG(CAST((ar.IAM + ar.SWI + ar.FWL + ar.EVT + ar.AUD + ar.DAT + ar.RES) / 7.0 AS FLOAT)) AS AvgScore
 FROM dbo.Area a
 LEFT JOIN dbo.Building b ON a.AreaId = b.AreaId
 LEFT JOIN dbo.Device d ON b.BuildingId = d.BuildingId
@@ -100,13 +100,13 @@ ORDER BY a.AreaId;";
                 const string buildingSql = @"
 SELECT
     b.BuildingName,
-    AVG(CAST(ar.FR1 AS FLOAT)) AS FR1,
-    AVG(CAST(ar.FR2 AS FLOAT)) AS FR2,
-    AVG(CAST(ar.FR3 AS FLOAT)) AS FR3,
-    AVG(CAST(ar.FR4 AS FLOAT)) AS FR4,
-    AVG(CAST(ar.FR5 AS FLOAT)) AS FR5,
-    AVG(CAST(ar.FR6 AS FLOAT)) AS FR6,
-    AVG(CAST(ar.FR7 AS FLOAT)) AS FR7
+    AVG(CAST(ar.IAM AS FLOAT)) AS IAM,
+    AVG(CAST(ar.SWI AS FLOAT)) AS SWI,
+    AVG(CAST(ar.FWL AS FLOAT)) AS FWL,
+    AVG(CAST(ar.EVT AS FLOAT)) AS EVT,
+    AVG(CAST(ar.AUD AS FLOAT)) AS AUD,
+    AVG(CAST(ar.DAT AS FLOAT)) AS DAT,
+    AVG(CAST(ar.RES AS FLOAT)) AS RES
 FROM dbo.Building b
 LEFT JOIN dbo.Device d ON b.BuildingId = d.BuildingId
 LEFT JOIN dbo.AuditResult ar ON d.DeviceId = ar.DeviceId AND ar.AuditPeriod = @Period
@@ -129,11 +129,11 @@ ORDER BY b.BuildingId;";
                         }
 
                         var values = new List<int>();
-                        for (int i = 1; i <= 7; i++)
+                        foreach (var column in new[] { "IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES" })
                         {
-                            var value = reader[$"FR{i}"] == DBNull.Value
+                            var value = reader[column] == DBNull.Value
                                 ? 0
-                                : Convert.ToDouble(reader[$"FR{i}"]);
+                                : Convert.ToDouble(reader[column]);
                             values.Add((int)Math.Round(value));
                         }
 
@@ -177,13 +177,13 @@ SELECT
     b.BuildingCode,
     b.BuildingName,
     a.AreaName,
-    ar.FR1,
-    ar.FR2,
-    ar.FR3,
-    ar.FR4,
-    ar.FR5,
-    ar.FR6,
-    ar.FR7,
+    ar.IAM,
+    ar.SWI,
+    ar.FWL,
+    ar.EVT,
+    ar.AUD,
+    ar.DAT,
+    ar.RES,
     CASE
         WHEN EXISTS (
             SELECT 1
@@ -230,16 +230,18 @@ ORDER BY d.DeviceId;";
                 {
                     var hasIdentityData = Convert.ToBoolean(reader["HasIdentityData"]);
                     var fr = new List<int?>();
-                    for (var i = 1; i <= 7; i++)
+                    var columns = new[] { "IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES" };
+                    for (var i = 0; i < columns.Length; i++)
                     {
-                        if (reader[$"FR{i}"] == DBNull.Value)
+                        var column = columns[i];
+                        if (reader[column] == DBNull.Value)
                         {
                             fr.Add(null);
                             continue;
                         }
 
-                        var value = Convert.ToInt32(reader[$"FR{i}"]);
-                        fr.Add(hasIdentityData && i > 1 && value == 0 ? null : value);
+                        var value = Convert.ToInt32(reader[column]);
+                        fr.Add(hasIdentityData && i > 0 && value == 0 ? null : value);
                     }
 
                     devices.Add(new
