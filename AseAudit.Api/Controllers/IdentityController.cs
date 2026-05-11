@@ -417,7 +417,7 @@ public class IdentityController : ControllerBase
             : _repo.GetAuditFindings(result.AuditResultId).ToList();
 
         var identityFindings = findings
-            .Where(x => x.FRCode.Equals("FR1", StringComparison.OrdinalIgnoreCase))
+            .Where(x => x.FRCode.Equals("IAM", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         var identityItems = identityFindings.Count == 0
@@ -425,13 +425,13 @@ public class IdentityController : ControllerBase
             {
                 new
                 {
-                    sr = "FR1",
+                    sr = "IAM",
                     title = "身分識別檢核",
-                    score = result?.FR1,
-                    status = result is null ? "--" : result.FR1 >= 80 ? "通過" : "未通過",
+                    score = result?.IAM,
+                    status = result is null ? "--" : result.IAM >= 80 ? "通過" : "未通過",
                     reason = result is null
                         ? "--"
-                        : result.FR1 >= 80
+                        : result.IAM >= 80
                             ? "此功能需求目前未列出缺失。"
                             : "此功能需求未達標準，但未取得詳細扣分原因。"
                 }
@@ -443,8 +443,8 @@ public class IdentityController : ControllerBase
                 {
                     sr = parsed.sr,
                     title = parsed.title,
-                    score = result?.FR1,
-                    status = result is null ? "--" : result.FR1 >= 80 ? "通過" : "未通過",
+                    score = result?.IAM,
+                    status = result is null ? "--" : result.IAM >= 80 ? "通過" : "未通過",
                     reason = parsed.reason
                 };
             }).Cast<object>().ToList();
@@ -456,16 +456,16 @@ public class IdentityController : ControllerBase
             ? new double?[] { null, null, null, null, null, null, null }
             : new double?[]
             {
-                result.FR1,
-                hasIdentitySource && result.FR2 == 0 ? null : result.FR2,
-                hasIdentitySource && result.FR3 == 0 ? null : result.FR3,
-                hasIdentitySource && result.FR4 == 0 ? null : result.FR4,
-                hasIdentitySource && result.FR5 == 0 ? null : result.FR5,
-                hasIdentitySource && result.FR6 == 0 ? null : result.FR6,
-                hasIdentitySource && result.FR7 == 0 ? null : result.FR7
+                result.IAM,
+                hasIdentitySource && result.SWI == 0 ? null : result.SWI,
+                hasIdentitySource && result.FWL == 0 ? null : result.FWL,
+                hasIdentitySource && result.EVT == 0 ? null : result.EVT,
+                hasIdentitySource && result.AUD == 0 ? null : result.AUD,
+                hasIdentitySource && result.DAT == 0 ? null : result.DAT,
+                hasIdentitySource && result.RES == 0 ? null : result.RES
             };
 
-        var identityScore = result is null ? (double?)null : result.FR1;
+        var identityScore = result is null ? (double?)null : result.IAM;
 
         var modules = new List<object>
         {
@@ -539,7 +539,7 @@ public class IdentityController : ControllerBase
             return (parts[0], "身分識別缺失", parts[1]);
         }
 
-        return ("FR1", "身分識別缺失", reason);
+        return ("IAM", "身分識別缺失", reason);
     }
 
     private static IEnumerable<(string key, string name)> PlaceholderModules()
