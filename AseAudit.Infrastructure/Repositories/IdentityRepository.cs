@@ -157,53 +157,53 @@ END;";
             .Select(x => x.Score!.Value)
             .ToList();
 
-        var fr1Score = identityScore.Count == 0
+        var iamScore = identityScore.Count == 0
             ? 0
             : (int)Math.Round(identityScore.Average());
 
         const string selectSql = @"
 SELECT TOP 1
-    AuditResultId, DeviceId, AuditPeriod, FR1, FR2, FR3, FR4, FR5, FR6, FR7, TotalScore, CreatedAt
+    AuditResultId, DeviceId, AuditPeriod, IAM, SWI, FWL, EVT, AUD, DAT, RES, TotalScore, CreatedAt
 FROM dbo.AuditResult
 WHERE DeviceId = @DeviceId AND AuditPeriod = @AuditPeriod;";
 
         const string insertSql = @"
 INSERT INTO dbo.AuditResult
 (
-    DeviceId, AuditPeriod, FR1, FR2, FR3, FR4, FR5, FR6, FR7
+    DeviceId, AuditPeriod, IAM, SWI, FWL, EVT, AUD, DAT, RES
 )
 OUTPUT
     INSERTED.AuditResultId,
     INSERTED.DeviceId,
     INSERTED.AuditPeriod,
-    INSERTED.FR1,
-    INSERTED.FR2,
-    INSERTED.FR3,
-    INSERTED.FR4,
-    INSERTED.FR5,
-    INSERTED.FR6,
-    INSERTED.FR7,
+    INSERTED.IAM,
+    INSERTED.SWI,
+    INSERTED.FWL,
+    INSERTED.EVT,
+    INSERTED.AUD,
+    INSERTED.DAT,
+    INSERTED.RES,
     INSERTED.TotalScore,
     INSERTED.CreatedAt
 VALUES
 (
-    @DeviceId, @AuditPeriod, @FR1, 0, 0, 0, 0, 0, 0
+    @DeviceId, @AuditPeriod, @IAM, 0, 0, 0, 0, 0, 0
 );";
 
         const string updateSql = @"
 UPDATE dbo.AuditResult
-SET FR1 = @FR1
+SET IAM = @IAM
 OUTPUT
     INSERTED.AuditResultId,
     INSERTED.DeviceId,
     INSERTED.AuditPeriod,
-    INSERTED.FR1,
-    INSERTED.FR2,
-    INSERTED.FR3,
-    INSERTED.FR4,
-    INSERTED.FR5,
-    INSERTED.FR6,
-    INSERTED.FR7,
+    INSERTED.IAM,
+    INSERTED.SWI,
+    INSERTED.FWL,
+    INSERTED.EVT,
+    INSERTED.AUD,
+    INSERTED.DAT,
+    INSERTED.RES,
     INSERTED.TotalScore,
     INSERTED.CreatedAt
 WHERE AuditResultId = @AuditResultId;";
@@ -211,11 +211,11 @@ WHERE AuditResultId = @AuditResultId;";
         const string deleteFindingSql = @"
 DELETE FROM dbo.AuditFinding
 WHERE AuditResultId = @AuditResultId
-  AND FRCode = N'FR1';";
+  AND FRCode = N'IAM';";
 
         const string insertFindingSql = @"
 INSERT INTO dbo.AuditFinding (AuditResultId, FRCode, Reason)
-VALUES (@AuditResultId, N'FR1', @Reason);";
+VALUES (@AuditResultId, N'IAM', @Reason);";
 
         if (_conn.State != ConnectionState.Open)
         {
@@ -233,11 +233,11 @@ VALUES (@AuditResultId, N'FR1', @Reason);";
             var result = existing is null
                 ? _conn.QuerySingle<AuditResultRecord>(
                     insertSql,
-                    new { target.DeviceId, AuditPeriod = period, FR1 = fr1Score },
+                    new { target.DeviceId, AuditPeriod = period, IAM = iamScore },
                     tx)
                 : _conn.QuerySingle<AuditResultRecord>(
                     updateSql,
-                    new { existing.AuditResultId, FR1 = fr1Score },
+                    new { existing.AuditResultId, IAM = iamScore },
                     tx);
 
             _conn.Execute(deleteFindingSql, new { result.AuditResultId }, tx);
@@ -284,13 +284,13 @@ SELECT
     AuditResultId,
     DeviceId,
     AuditPeriod,
-    FR1,
-    FR2,
-    FR3,
-    FR4,
-    FR5,
-    FR6,
-    FR7,
+    IAM,
+    SWI,
+    FWL,
+    EVT,
+    AUD,
+    DAT,
+    RES,
     TotalScore,
     CreatedAt
 FROM dbo.AuditResult
@@ -343,13 +343,13 @@ public sealed class AuditResultRecord
     public int AuditResultId { get; set; }
     public string DeviceId { get; set; } = "";
     public string AuditPeriod { get; set; } = "";
-    public int FR1 { get; set; }
-    public int FR2 { get; set; }
-    public int FR3 { get; set; }
-    public int FR4 { get; set; }
-    public int FR5 { get; set; }
-    public int FR6 { get; set; }
-    public int FR7 { get; set; }
+    public int IAM { get; set; }
+    public int SWI { get; set; }
+    public int FWL { get; set; }
+    public int EVT { get; set; }
+    public int AUD { get; set; }
+    public int DAT { get; set; }
+    public int RES { get; set; }
     public int TotalScore { get; set; }
     public DateTime CreatedAt { get; set; }
 }

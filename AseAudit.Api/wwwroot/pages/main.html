@@ -775,7 +775,7 @@
         // =========================
         // Demo data
         // =========================
-        const FR_KEYS = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const FR_KEYS = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
         const FR_NAMES = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
 
         const BIG_BUILDINGS = ["K11", "K3/K4", "K12", "K27", "K5", "K7", "K8", "K15", "K9", "K21", "K22", "K24", "K25", "K18"];
@@ -900,17 +900,17 @@
 
         const IMPROVE_HINTS = {
             "K3/K4": [
-                { fr: "FR1", level: "red", text: "密碼政策/週期未落實" },
-                { fr: "FR4", level: "yellow", text: "遠端存取缺少 MFA / 來源限制" }
+                { fr: "IAM", level: "red", text: "密碼政策/週期未落實" },
+                { fr: "EVT", level: "yellow", text: "遠端存取缺少 MFA / 來源限制" }
             ],
             "K11": [
-                { fr: "FR7", level: "yellow", text: "備援/復原演練頻率不足" }
+                { fr: "RES", level: "yellow", text: "備援/復原演練頻率不足" }
             ],
             "K17": [
-                { fr: "FR3", level: "red", text: "紀錄保存不足（變更/稽核軌跡）" }
+                { fr: "FWL", level: "red", text: "紀錄保存不足（變更/稽核軌跡）" }
             ],
             "K26": [
-                { fr: "FR5", level: "yellow", text: "資產清冊更新不即時" }
+                { fr: "AUD", level: "yellow", text: "資產清冊更新不即時" }
             ]
         };
 

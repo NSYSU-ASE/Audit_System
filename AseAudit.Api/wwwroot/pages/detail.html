@@ -512,7 +512,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const frKeys = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const frKeys = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
         const frNames = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
         let currentDevice = null;
         let currentReport = null;
@@ -551,10 +551,12 @@
 
         function displayFrLabel(value) {
             const raw = String(value ?? "");
+            if (frKeys.includes(raw.toUpperCase())) return raw.toUpperCase();
             const match = raw.match(/FR[1-7]/i);
             if (!match) return raw;
             const key = match[0].toUpperCase();
-            const idx = frKeys.indexOf(key);
+            const legacyKeys = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+            const idx = legacyKeys.indexOf(key);
             return idx >= 0 ? raw.replace(match[0], frNames[idx]) : raw;
         }
 
@@ -827,8 +829,14 @@
 
             const reasonsByFr = new Map();
             findings.forEach(item => {
-                const frMatch = String(item.sr).match(/^FR[1-7]/i);
-                const key = frMatch ? frMatch[0].toUpperCase() : "FR1";
+                const sr = String(item.sr);
+                const moduleMatch = sr.match(/^(IAM|SWI|FWL|EVT|AUD|DAT|RES)/i);
+                const frMatch = sr.match(/^FR[1-7]/i);
+                const key = moduleMatch
+                    ? moduleMatch[0].toUpperCase()
+                    : frMatch
+                        ? displayFrLabel(frMatch[0])
+                        : "IAM";
                 const existing = reasonsByFr.get(key);
                 const text = item.reason || "--";
                 reasonsByFr.set(key, existing ? `${existing}；${text}` : text);

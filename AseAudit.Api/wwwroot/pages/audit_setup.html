@@ -330,7 +330,7 @@
                 <div class="glass p-3 p-lg-4 mt-3">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                         <div>
-                            <div class="section-title fs-5">稽核項目設定（FR1 ~ FR7）</div>
+                    <div class="section-title fs-5">稽核項目設定（IAM ~ RES）</div>
                             <div class="small-note">每個 FR 先假設 5 個控制項：可勾選、可上傳照片、或由系統自動蒐集。</div>
                         </div>
                         <div class="d-flex gap-2">
@@ -476,70 +476,70 @@
             end.value = iso;
         })();
 
-        // ===== FR + 控制項資料（每個 FR 5 個 control）=====
+        // ===== 模組 + 控制項資料（每個模組 5 個 control）=====
         // type: manual（只勾選/填寫） / photo（需要上傳照片） / auto（系統自動蒐集）
         const FR_DATA = [
             {
-                fr: "FR1", title: "身份與存取控制", controls: [
-                    { id: "FR1-1", name: "帳號權限最小化", type: "manual", desc: "確認是否依職務分級，避免共用帳號。" },
-                    { id: "FR1-2", name: "密碼政策", type: "photo", desc: "上傳密碼/群組原則截圖或設備畫面。" },
-                    { id: "FR1-3", name: "遠端存取限制", type: "manual", desc: "確認遠端連線是否限制來源與權限。" },
-                    { id: "FR1-4", name: "登入/登出紀錄", type: "auto", desc: "系統將透過腳本蒐集事件紀錄與登入軌跡。" },
-                    { id: "FR1-5", name: "多因素驗證（MFA）", type: "photo", desc: "上傳 MFA 啟用畫面或設定截圖。" },
+                fr: "IAM", title: "身份與存取控制", controls: [
+                    { id: "IAM-1", name: "帳號權限最小化", type: "manual", desc: "確認是否依職務分級，避免共用帳號。" },
+                    { id: "IAM-2", name: "密碼政策", type: "photo", desc: "上傳密碼/群組原則截圖或設備畫面。" },
+                    { id: "IAM-3", name: "遠端存取限制", type: "manual", desc: "確認遠端連線是否限制來源與權限。" },
+                    { id: "IAM-4", name: "登入/登出紀錄", type: "auto", desc: "系統將透過腳本蒐集事件紀錄與登入軌跡。" },
+                    { id: "IAM-5", name: "多因素驗證（MFA）", type: "photo", desc: "上傳 MFA 啟用畫面或設定截圖。" },
                 ]
             },
             {
-                fr: "FR2", title: "網路分割與防護", controls: [
-                    { id: "FR2-1", name: "IT/OT 網路分段", type: "manual", desc: "確認 VLAN/ACL/Firewall 分段是否落實。" },
-                    { id: "FR2-2", name: "防火牆規則檢核", type: "auto", desc: "系統自動擷取規則摘要與異常連線清單。" },
-                    { id: "FR2-3", name: "白名單策略", type: "manual", desc: "確認通訊僅允許必要服務/必要端口。" },
-                    { id: "FR2-4", name: "交換器/路由器配置", type: "photo", desc: "上傳設備介面配置截圖（關鍵頁即可）。" },
-                    { id: "FR2-5", name: "外網連線管控", type: "manual", desc: "確認外連代理/跳板/封包檢測機制。" },
+                fr: "SWI", title: "網路分割與防護", controls: [
+                    { id: "SWI-1", name: "IT/OT 網路分段", type: "manual", desc: "確認 VLAN/ACL/Firewall 分段是否落實。" },
+                    { id: "SWI-2", name: "防火牆規則檢核", type: "auto", desc: "系統自動擷取規則摘要與異常連線清單。" },
+                    { id: "SWI-3", name: "白名單策略", type: "manual", desc: "確認通訊僅允許必要服務/必要端口。" },
+                    { id: "SWI-4", name: "交換器/路由器配置", type: "photo", desc: "上傳設備介面配置截圖（關鍵頁即可）。" },
+                    { id: "SWI-5", name: "外網連線管控", type: "manual", desc: "確認外連代理/跳板/封包檢測機制。" },
                 ]
             },
             {
-                fr: "FR3", title: "日誌與稽核追蹤", controls: [
-                    { id: "FR3-1", name: "日誌集中保存", type: "manual", desc: "確認日誌是否集中至 SIEM / Log Server。" },
-                    { id: "FR3-2", name: "稽核軌跡不可否認", type: "auto", desc: "系統將檢查日誌完整性與時間同步狀態。" },
-                    { id: "FR3-3", name: "關鍵事件告警", type: "manual", desc: "是否對登入失敗/權限變更/異常連線告警。" },
-                    { id: "FR3-4", name: "時間同步（NTP）", type: "photo", desc: "上傳 NTP 設定與同步狀態截圖。" },
-                    { id: "FR3-5", name: "日誌留存期限", type: "manual", desc: "確認留存天數符合內規/法規要求。" },
+                fr: "FWL", title: "日誌與稽核追蹤", controls: [
+                    { id: "FWL-1", name: "日誌集中保存", type: "manual", desc: "確認日誌是否集中至 SIEM / Log Server。" },
+                    { id: "FWL-2", name: "稽核軌跡不可否認", type: "auto", desc: "系統將檢查日誌完整性與時間同步狀態。" },
+                    { id: "FWL-3", name: "關鍵事件告警", type: "manual", desc: "是否對登入失敗/權限變更/異常連線告警。" },
+                    { id: "FWL-4", name: "時間同步（NTP）", type: "photo", desc: "上傳 NTP 設定與同步狀態截圖。" },
+                    { id: "FWL-5", name: "日誌留存期限", type: "manual", desc: "確認留存天數符合內規/法規要求。" },
                 ]
             },
             {
-                fr: "FR4", title: "遠端維運與變更管理", controls: [
-                    { id: "FR4-1", name: "遠端維運流程", type: "manual", desc: "是否有申請/審核/記錄（含外包商）。" },
-                    { id: "FR4-2", name: "跳板機/堡壘機", type: "photo", desc: "上傳跳板配置或登入控管畫面。" },
-                    { id: "FR4-3", name: "變更紀錄", type: "manual", desc: "是否可追蹤設定變更與回復機制。" },
-                    { id: "FR4-4", name: "遠端連線日誌", type: "auto", desc: "系統透過腳本蒐集遠端連線 session 紀錄。" },
-                    { id: "FR4-5", name: "維運帳號管控", type: "manual", desc: "維運帳號是否分流、到期、可追溯。" },
+                fr: "EVT", title: "遠端維運與變更管理", controls: [
+                    { id: "EVT-1", name: "遠端維運流程", type: "manual", desc: "是否有申請/審核/記錄（含外包商）。" },
+                    { id: "EVT-2", name: "跳板機/堡壘機", type: "photo", desc: "上傳跳板配置或登入控管畫面。" },
+                    { id: "EVT-3", name: "變更紀錄", type: "manual", desc: "是否可追蹤設定變更與回復機制。" },
+                    { id: "EVT-4", name: "遠端連線日誌", type: "auto", desc: "系統透過腳本蒐集遠端連線 session 紀錄。" },
+                    { id: "EVT-5", name: "維運帳號管控", type: "manual", desc: "維運帳號是否分流、到期、可追溯。" },
                 ]
             },
             {
-                fr: "FR5", title: "資產盤點與標識", controls: [
-                    { id: "FR5-1", name: "資產標籤與命名", type: "photo", desc: "上傳資產標籤照片或資產系統畫面。" },
-                    { id: "FR5-2", name: "資產清單完整性", type: "manual", desc: "是否含型號/序號/位置/責任人/網段等。" },
-                    { id: "FR5-3", name: "設備韌體/版本", type: "auto", desc: "系統將蒐集版本與補丁狀態摘要。" },
-                    { id: "FR5-4", name: "責任歸屬", type: "manual", desc: "是否明確指定維護單位與負責人。" },
-                    { id: "FR5-5", name: "關鍵資產分級", type: "manual", desc: "是否有關鍵性等級與優先修補策略。" },
+                fr: "AUD", title: "資產盤點與標識", controls: [
+                    { id: "AUD-1", name: "資產標籤與命名", type: "photo", desc: "上傳資產標籤照片或資產系統畫面。" },
+                    { id: "AUD-2", name: "資產清單完整性", type: "manual", desc: "是否含型號/序號/位置/責任人/網段等。" },
+                    { id: "AUD-3", name: "設備韌體/版本", type: "auto", desc: "系統將蒐集版本與補丁狀態摘要。" },
+                    { id: "AUD-4", name: "責任歸屬", type: "manual", desc: "是否明確指定維護單位與負責人。" },
+                    { id: "AUD-5", name: "關鍵資產分級", type: "manual", desc: "是否有關鍵性等級與優先修補策略。" },
                 ]
             },
             {
-                fr: "FR6", title: "惡意程式與端點防護", controls: [
-                    { id: "FR6-1", name: "端點防護狀態", type: "auto", desc: "系統將蒐集防毒/EDR 狀態與異常事件。" },
-                    { id: "FR6-2", name: "可攜式媒體管控", type: "manual", desc: "USB/外接裝置是否限制與記錄。" },
-                    { id: "FR6-3", name: "白名單執行", type: "manual", desc: "應用程式白名單/執行管制是否啟用。" },
-                    { id: "FR6-4", name: "隔離/封鎖策略", type: "manual", desc: "偵測後是否有隔離、封鎖與通報流程。" },
-                    { id: "FR6-5", name: "防護設定證據", type: "photo", desc: "上傳端點防護政策/設定畫面截圖。" },
+                fr: "DAT", title: "惡意程式與端點防護", controls: [
+                    { id: "DAT-1", name: "端點防護狀態", type: "auto", desc: "系統將蒐集防毒/EDR 狀態與異常事件。" },
+                    { id: "DAT-2", name: "可攜式媒體管控", type: "manual", desc: "USB/外接裝置是否限制與記錄。" },
+                    { id: "DAT-3", name: "白名單執行", type: "manual", desc: "應用程式白名單/執行管制是否啟用。" },
+                    { id: "DAT-4", name: "隔離/封鎖策略", type: "manual", desc: "偵測後是否有隔離、封鎖與通報流程。" },
+                    { id: "DAT-5", name: "防護設定證據", type: "photo", desc: "上傳端點防護政策/設定畫面截圖。" },
                 ]
             },
             {
-                fr: "FR7", title: "備援復原與營運韌性", controls: [
-                    { id: "FR7-1", name: "備份策略與頻率", type: "manual", desc: "是否定期備份與驗證可還原性。" },
-                    { id: "FR7-2", name: "備份/還原證據", type: "photo", desc: "上傳備份紀錄、排程或還原測試截圖。" },
-                    { id: "FR7-3", name: "災難復原演練", type: "manual", desc: "是否有演練紀錄、缺失與改善追蹤。" },
-                    { id: "FR7-4", name: "復原時間目標（RTO/RPO）", type: "manual", desc: "是否明確訂定並能量測符合。" },
-                    { id: "FR7-5", name: "自動蒐集（備份狀態）", type: "auto", desc: "系統透過腳本查詢備份服務狀態/最近備份時間。" },
+                fr: "RES", title: "備援復原與營運韌性", controls: [
+                    { id: "RES-1", name: "備份策略與頻率", type: "manual", desc: "是否定期備份與驗證可還原性。" },
+                    { id: "RES-2", name: "備份/還原證據", type: "photo", desc: "上傳備份紀錄、排程或還原測試截圖。" },
+                    { id: "RES-3", name: "災難復原演練", type: "manual", desc: "是否有演練紀錄、缺失與改善追蹤。" },
+                    { id: "RES-4", name: "復原時間目標（RTO/RPO）", type: "manual", desc: "是否明確訂定並能量測符合。" },
+                    { id: "RES-5", name: "自動蒐集（備份狀態）", type: "auto", desc: "系統透過腳本查詢備份服務狀態/最近備份時間。" },
                 ]
             },
         ];
@@ -716,7 +716,7 @@
             document.getElementById("sumAuto").textContent = autoEnabled;
         }
 
-        // ===== 全選/全不選（全部 FR）=====
+        // ===== 全選/全不選（全部模組）=====
         function selectAll(on) {
             document.querySelectorAll(".audit-check").forEach(chk => {
                 chk.checked = on;
@@ -724,7 +724,7 @@
             });
         }
 
-        // ===== 全選/全不選（單一 FR）=====
+        // ===== 全選/全不選（單一模組）=====
         function toggleFR(frKey, on) {
             document.querySelectorAll(`.audit-check[data-fr="${frKey}"]`).forEach(chk => {
                 chk.checked = on;

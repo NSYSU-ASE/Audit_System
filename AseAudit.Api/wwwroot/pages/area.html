@@ -741,7 +741,7 @@
         // =========================
         // Data (Zone II demo)
         // =========================
-        const FR_KEYS = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
+        const FR_KEYS = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
         const FR_NAMES = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
         const ZONE_BUILDINGS = ["K18", "K21", "K22", "K24", "K25", "K26"];
 
@@ -773,29 +773,29 @@
 
         const IMPROVE_HINTS = {
             "K18": [
-                { fr: "FR4", level: "yellow", text: "遠端存取需補強 MFA / 來源限制" },
-                { fr: "FR7", level: "yellow", text: "備援/復原演練頻率不足" }
+                { fr: "EVT", level: "yellow", text: "遠端存取需補強 MFA / 來源限制" },
+                { fr: "RES", level: "yellow", text: "備援/復原演練頻率不足" }
             ],
             "K21": [
-                { fr: "FR2", level: "yellow", text: "權限審核週期需制度化" }
+                { fr: "SWI", level: "yellow", text: "權限審核週期需制度化" }
             ],
             "K22": [
-                { fr: "FR3", level: "yellow", text: "稽核軌跡/紀錄保存需一致化" }
+                { fr: "FWL", level: "yellow", text: "稽核軌跡/紀錄保存需一致化" }
             ],
             "K24": [
-                { fr: "FR5", level: "yellow", text: "資產清冊更新與變更控管需同步" }
+                { fr: "AUD", level: "yellow", text: "資產清冊更新與變更控管需同步" }
             ],
             "K25": [
-                { fr: "FR1", level: "yellow", text: "帳密政策需納入例外審批與追蹤" }
+                { fr: "IAM", level: "yellow", text: "帳密政策需納入例外審批與追蹤" }
             ],
             "K26": [
-                { fr: "FR3", level: "red", text: "紀錄保存不足（變更/稽核軌跡）" },
-                { fr: "FR5", level: "yellow", text: "資產清冊更新不即時" }
+                { fr: "FWL", level: "red", text: "紀錄保存不足（變更/稽核軌跡）" },
+                { fr: "AUD", level: "yellow", text: "資產清冊更新不即時" }
             ],
             "__AREA__": [
-                { fr: "FR4", level: "yellow", text: "遠端存取：MFA / 來源限制建議統一" },
-                { fr: "FR3", level: "yellow", text: "紀錄保存：保留週期與稽核軌跡補強" },
-                { fr: "FR5", level: "yellow", text: "資產清冊：盤點頻率與責任人落實" }
+                { fr: "EVT", level: "yellow", text: "遠端存取：MFA / 來源限制建議統一" },
+                { fr: "FWL", level: "yellow", text: "紀錄保存：保留週期與稽核軌跡補強" },
+                { fr: "AUD", level: "yellow", text: "資產清冊：盤點頻率與責任人落實" }
             ]
         };
 
