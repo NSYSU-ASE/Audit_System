@@ -68,3 +68,30 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static void SyncExistingInitialSchema(AuditDbContext db)
+{
+    db.Database.ExecuteSqlRaw("""
+IF OBJECT_ID(N'[dbo].[__EFMigrationsHistory]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+
+IF OBJECT_ID(N'[dbo].[FireWallRule]', N'U') IS NOT NULL
+   AND OBJECT_ID(N'[dbo].[Identification_AM_Account]', N'U') IS NOT NULL
+   AND OBJECT_ID(N'[dbo].[Identification_AM_rule]', N'U') IS NOT NULL
+   AND NOT EXISTS (
+        SELECT 1
+        FROM [dbo].[__EFMigrationsHistory]
+        WHERE [MigrationId] = N'20260505044342_InitialSchema'
+   )
+BEGIN
+    INSERT INTO [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260505044342_InitialSchema', N'8.0.26');
+END;
+""");
+}
