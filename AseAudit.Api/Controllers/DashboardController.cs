@@ -132,6 +132,7 @@ ORDER BY b.BuildingId;";
                         var values = new List<int>();
                         for (int i = 1; i <= 7; i++)
                         {
+                            var column = $"FR{i}";
                             var value = reader[column] == DBNull.Value
                                 ? 0
                                 : Convert.ToDouble(reader[column]);
@@ -234,7 +235,8 @@ ORDER BY d.DeviceId;";
                     var fr = new List<int?>();
                     for (var i = 1; i <= 7; i++)
                     {
-                        if (reader[$"FR{i}"] == DBNull.Value)
+                        var column = $"FR{i}";
+                        if (reader[column] == DBNull.Value)
                         {
                             fr.Add(null);
                             continue;
