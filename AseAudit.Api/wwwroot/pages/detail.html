@@ -1,1264 +1,438 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>智慧資安稽核工具 - 詳細報表</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>智慧資安稽核工具 - 詳細報表</title>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    <style>
-        :root {
-            --bg: #0b1220;
-            --card: rgba(255,255,255,0.08);
-            --card2: rgba(255,255,255,0.06);
-            --stroke: rgba(255,255,255,0.14);
-            --txt: rgba(255,255,255,0.92);
-            --muted: rgba(255,255,255,0.62);
-            --low: #16a34a;
-            --mid: #facc15;
-            --high: #dc2626;
-        }
-
-        body {
-            background: radial-gradient(1200px 600px at 20% 0%, rgba(99,102,241,.25), transparent 60%), radial-gradient(1200px 600px at 90% 30%, rgba(16,185,129,.18), transparent 55%), linear-gradient(180deg, #070b14 0%, #0b1220 60%, #070b14 100%);
-            color: var(--txt);
-            min-height: 100vh;
-            font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
-        }
-
-        .glass {
-            background: var(--card);
-            border: 1px solid var(--stroke);
-            backdrop-filter: blur(12px);
-            border-radius: 18px;
-        }
-
-        .glass-soft {
-            background: var(--card2);
-            border: 1px solid var(--stroke);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-        }
-
-        .brand {
-            letter-spacing: .5px;
-            font-weight: 800;
-        }
-
-        .chip {
-            font-size: .85rem;
-            padding: .35rem .6rem;
-            border-radius: 999px;
-            border: 1px solid var(--stroke);
-            background: rgba(255,255,255,.06);
-            color: var(--muted);
-            white-space: nowrap;
-        }
-
-        .mono {
-            font-variant-numeric: tabular-nums;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        }
-
-        .pill {
-            border-radius: 999px;
-        }
-
-        .small-note {
-            color: rgba(255,255,255,.55);
-            font-size: .85rem;
-        }
-
-        .kpi {
-            font-size: 2.2rem;
-            font-weight: 900;
-            line-height: 1;
-            letter-spacing: .3px;
-        }
-
-        .btn-ghost {
-            background: rgba(255,255,255,.06);
-            border: 1px solid rgba(255,255,255,.14);
-            color: rgba(255,255,255,.86);
-        }
-
-            .btn-ghost:hover {
-                background: rgba(255,255,255,.10);
-                color: rgba(255,255,255,.95);
-            }
-
-        /* 上方摘要卡（外框不動，只動內容） */
-        .info-card {
-            padding: 16px 18px;
-            border-radius: 18px;
-        }
-
-            /* ✅ 只動內容：置中 + 放大（不動框、不改 col） */
-            .info-card.centered {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                text-align: center;
-                min-height: 120px;
-            }
-
-                .info-card.centered .small-note {
-                    font-size: .9rem;
-                    opacity: .85;
-                    margin-bottom: 10px;
-                }
-
-        .id-badge {
-            background: rgba(59,130,246,.18);
-            border: 1px solid rgba(59,130,246,.35);
-            color: rgba(255,255,255,.95);
-            padding: 8px 12px;
-            border-radius: 999px;
-            font-weight: 900;
-        }
-
-        .type-tag {
-            background: rgba(255,255,255,.06);
-            border: 1px solid rgba(255,255,255,.14);
-            color: rgba(255,255,255,.78);
-            padding: 7px 10px;
-            border-radius: 999px;
-            font-weight: 800;
-        }
-
-        .info-card.centered .big-id,
-        .info-card.centered .big-type {
-            font-size: 1.25rem;
-            padding: 10px 16px;
-            border-radius: 999px;
-        }
-
-        .info-card.centered .big-score {
-            font-size: 3.2rem;
-            font-weight: 1000;
-            line-height: 1;
-            letter-spacing: .5px;
-        }
-
-        /* 風險：上大塊 + 下三小塊（保留你原本喜歡的風格） */
-        .risk-stack {
-            display: grid;
-            grid-template-rows: auto auto;
-            gap: 12px;
-            height: 100%;
-        }
-
-        .risk-banner {
-            border-radius: 18px;
-            padding: 14px 16px;
-            border: 1px solid rgba(255,255,255,.12);
-            box-shadow: 0 16px 48px rgba(0,0,0,.35);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            min-height: 82px;
-        }
-
-            .risk-banner .title {
-                font-weight: 900;
-                letter-spacing: .2px;
-            }
-
-            .risk-banner .big {
-                font-size: 1.55rem;
-                font-weight: 1000;
-                letter-spacing: .3px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                white-space: nowrap;
-            }
-
-            .risk-banner.low {
-                background: linear-gradient(135deg, rgba(22,163,74,.85), rgba(22,163,74,.55));
-            }
-
-            .risk-banner.mid {
-                background: linear-gradient(135deg, rgba(250,204,21,.92), rgba(250,204,21,.60));
-                color: #1f2937;
-            }
-
-            .risk-banner.high {
-                background: linear-gradient(135deg, rgba(220,38,38,.90), rgba(220,38,38,.58));
-            }
-
-        .risk-mini-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .risk-mini {
-            border-radius: 16px;
-            padding: 10px 12px;
-            border: 1px solid rgba(255,255,255,.12);
-            background: rgba(255,255,255,.04);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            min-height: 58px;
-            opacity: .88;
-        }
-
-            .risk-mini .label {
-                font-weight: 900;
-                font-size: .95rem;
-                white-space: nowrap;
-            }
-
-            .risk-mini .dot {
-                width: 10px;
-                height: 10px;
-                border-radius: 999px;
-                box-shadow: 0 0 0 4px rgba(255,255,255,.06);
-                flex: 0 0 auto;
-            }
-
-            .risk-mini.low .dot {
-                background: var(--low);
-            }
-
-            .risk-mini.mid .dot {
-                background: var(--mid);
-            }
-
-            .risk-mini.high .dot {
-                background: var(--high);
-            }
-
-            .risk-mini.active {
-                opacity: 1;
-                background: rgba(255,255,255,.08);
-                border-color: rgba(255,255,255,.22);
-                box-shadow: 0 14px 40px rgba(0,0,0,.30);
-                transform: translateY(-1px);
-            }
-
-        /* 原本下半部表格/輸入樣式（維持你喜歡的感覺） */
-        .score-pill {
-            background: rgba(37,99,235,.95);
-            color: #fff;
-            border-radius: 12px;
-            padding: 8px 12px;
-            min-width: 70px;
-            text-align: center;
-            font-weight: 900;
-            display: inline-block;
-            box-shadow: 0 10px 28px rgba(0,0,0,.28);
-        }
-
-            .score-pill.na {
-                background: rgba(148,163,184,.45);
-                color: rgba(255,255,255,.72);
-            }
-
-        .dark-field {
-            background: rgba(0,0,0,.22) !important;
-            border: 1px solid rgba(255,255,255,.16) !important;
-            color: rgba(255,255,255,.92) !important;
-        }
-
-        .reason {
-            min-height: 44px;
-            resize: vertical;
-            border-radius: 14px !important;
-        }
-
-        .table-dark {
-            --bs-table-bg: rgba(255,255,255,.03);
-            --bs-table-striped-bg: rgba(255,255,255,.04);
-            --bs-table-hover-bg: rgba(255,255,255,.06);
-            border-color: rgba(255,255,255,.10);
-        }
-
-        .status-pass {
-            color: #86efac;
-            font-weight: 900;
-        }
-
-        .status-partial {
-            color: #fef08a;
-            font-weight: 900;
-        }
-
-        .status-fail {
-            color: #fecaca;
-            font-weight: 900;
-        }
-
-        .status-na {
-            color: rgba(255,255,255,.55);
-            font-weight: 900;
-        }
-
-        @media (max-width: 991px) {
-            .risk-mini-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .risk-banner {
-                min-height: 74px;
-            }
-        }
-    </style>
+  <style>
+    :root{
+      --bg:#0b1220; --card:rgba(255,255,255,.08); --card2:rgba(255,255,255,.06);
+      --stroke:rgba(255,255,255,.14); --txt:rgba(255,255,255,.92); --muted:rgba(255,255,255,.62);
+      --low:#0ea5e9; --mid:#facc15; --high:#dc2626;
+    }
+    body{
+      background:radial-gradient(1200px 600px at 20% 0%,rgba(99,102,241,.25),transparent 60%),
+                 radial-gradient(1200px 600px at 90% 30%,rgba(16,185,129,.18),transparent 55%),
+                 linear-gradient(180deg,#070b14 0%,#0b1220 60%,#070b14 100%);
+      color:var(--txt);min-height:100vh;font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    }
+    body *{-webkit-text-fill-color:currentColor;}
+    .glass{background:var(--card);border:1px solid var(--stroke);backdrop-filter:blur(12px);border-radius:18px;}
+    .glass-soft{background:var(--card2);border:1px solid var(--stroke);backdrop-filter:blur(10px);border-radius:16px;}
+    .glass,.glass-soft,.chip,.table,.table-dark,.table-dark>:not(caption)>*>*{color:var(--txt);}
+    .table-dark thead th{color:rgba(255,255,255,.92);}
+    .table-dark tbody td{color:rgba(255,255,255,.86);}
+    .brand{letter-spacing:.5px;font-weight:800;}
+    .chip{font-size:.85rem;padding:.35rem .6rem;border-radius:999px;border:1px solid var(--stroke);background:rgba(255,255,255,.06);color:var(--muted);white-space:nowrap;}
+    .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
+    .pill{border-radius:999px;}
+    .small-note{color:rgba(255,255,255,.55);font-size:.85rem;}
+    .kpi{font-size:2.2rem;font-weight:900;line-height:1;letter-spacing:.3px;}
+    .btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.86);}
+    .btn-ghost:hover{background:rgba(255,255,255,.10);color:rgba(255,255,255,.95);}
+    .info-card{padding:16px 18px;border-radius:18px;}
+    .info-card.centered{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:120px;}
+    .info-card.centered .small-note{font-size:.9rem;opacity:.85;margin-bottom:10px;}
+    .id-badge{background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.35);color:rgba(255,255,255,.95);padding:8px 12px;border-radius:999px;font-weight:900;}
+    .type-tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.78);padding:7px 10px;border-radius:999px;font-weight:800;}
+    .big-id,.big-type{font-size:1.25rem!important;padding:10px 16px!important;border-radius:999px!important;}
+    .big-score{font-size:3.2rem;font-weight:1000;line-height:1;letter-spacing:.5px;}
+    .risk-stack{display:grid;grid-template-rows:auto auto;gap:12px;height:100%;}
+    .risk-banner{border-radius:18px;padding:14px 16px;border:1px solid rgba(255,255,255,.12);box-shadow:0 16px 48px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:82px;}
+    .risk-banner .title{font-weight:900;}
+    .risk-banner .big{font-size:1.55rem;font-weight:1000;display:flex;align-items:center;gap:8px;white-space:nowrap;}
+    .risk-banner.low{background:linear-gradient(135deg,rgba(14,165,233,.88),rgba(37,99,235,.58));}
+    .risk-banner.mid{background:linear-gradient(135deg,rgba(250,204,21,.92),rgba(250,204,21,.60));color:#1f2937;}
+    .risk-banner.high{background:linear-gradient(135deg,rgba(220,38,38,.90),rgba(220,38,38,.58));}
+    .risk-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+    .risk-mini{border-radius:16px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:58px;opacity:.88;}
+    .risk-mini .label{font-weight:900;font-size:.95rem;white-space:nowrap;}
+    .risk-mini .dot{width:10px;height:10px;border-radius:999px;box-shadow:0 0 0 4px rgba(255,255,255,.06);}
+    .risk-mini.low .dot{background:var(--low);}
+    .risk-mini.mid .dot{background:var(--mid);}
+    .risk-mini.high .dot{background:var(--high);}
+    .risk-mini.active{opacity:1;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22);box-shadow:0 14px 40px rgba(0,0,0,.30);transform:translateY(-1px);}
+    .score-pill{background:rgba(37,99,235,.95);color:#fff;border-radius:12px;padding:8px 12px;min-width:70px;text-align:center;font-weight:900;display:inline-block;box-shadow:0 10px 28px rgba(0,0,0,.28);}
+    .score-pill.na{background:rgba(148,163,184,.45);color:rgba(255,255,255,.72);}
+    .dark-field{background:rgba(0,0,0,.22)!important;border:1px solid rgba(255,255,255,.16)!important;color:rgba(255,255,255,.92)!important;}
+    .reason{min-height:44px;resize:vertical;border-radius:14px!important;}
+    .table-dark{--bs-table-bg:rgba(255,255,255,.03);--bs-table-striped-bg:rgba(255,255,255,.04);--bs-table-hover-bg:rgba(255,255,255,.06);border-color:rgba(255,255,255,.10);}
+    .status-pass{color:#86efac;font-weight:900;}
+    .status-partial{color:#fef08a;font-weight:900;}
+    .status-fail{color:#fecaca;font-weight:900;}
+    .status-na{color:rgba(255,255,255,.55);font-weight:900;}
+    .loading-row td{padding:18px!important;color:rgba(255,255,255,.68)!important;}
+    .radar-fallback{width:100%;height:100%;display:block;}
+    @media(max-width:991px){.risk-mini-grid{grid-template-columns:1fr}.risk-banner{min-height:74px}}
+  </style>
 </head>
-
 <body>
-    <div class="container py-4">
-
-        <!-- Header -->
-        <div class="glass p-3 px-lg-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <div class="d-flex align-items-center gap-3">
-                <div class="d-inline-flex align-items-center justify-content-center rounded-4"
-                     style="width:44px;height:44px;background:rgba(99,102,241,.22);border:1px solid rgba(255,255,255,.14)">
-                    <i class="bi bi-file-earmark-text fs-4"></i>
-                </div>
-                <div>
-                    <div class="brand fs-4">智慧資安稽核工具</div>
-                    <div class="small-note">詳細報表（單一機台）</div>
-                </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <span class="chip"><i class="bi bi-calendar3 me-1"></i>本次稽核：2025-12</span>
-                <a class="chip text-decoration-none" href="index.html"><i class="bi bi-arrow-left me-1"></i>回主頁</a>
-            </div>
-        </div>
-
-        <!-- ✅ 你原本喜歡的：機台資訊大外框（恢復） -->
-        <div class="glass p-3 p-lg-4 mt-3">
-            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
-                <div>
-                    <div class="fw-bold fs-5">機台資訊</div>
-                    <div class="small-note">保留雷達圖，並列出 IAM~RES 的扣分原因（可編輯後匯出）</div>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-ghost pill" id="btnExportCSV">
-                        <i class="bi bi-filetype-csv me-1"></i>匯出 CSV
-                    </button>
-                    <button class="btn btn-primary pill" id="btnExportXLS">
-                        <i class="bi bi-file-earmark-excel me-1"></i>匯出 Excel
-                    </button>
-                    <button class="btn btn-danger pill" id="btnDailyReport">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>生成每日報告 PDF
-                    </button>
-                </div>
-            </div>
-
-            <!-- ✅ 一定要有 row：保持橫排 -->
-            <div class="row g-3 mt-2">
-                <div class="col-12 col-lg-3">
-                    <div class="glass-soft info-card centered h-100">
-                        <div class="small-note">機台編號</div>
-                        <span class="id-badge mono big-id" id="devId">--</span>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-3">
-                    <div class="glass-soft info-card centered h-100">
-                        <div class="small-note">種類</div>
-                        <span class="type-tag big-type" id="devType">--</span>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-3">
-                    <div class="glass-soft info-card centered h-100">
-                        <div class="small-note">成熟度</div>
-                        <div class="mono big-score" id="devOverall">--</div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-3">
-                    <div class="risk-stack">
-                        <div id="riskBanner" class="risk-banner mid">
-                            <div>
-                                <div class="title">風險等級</div>
-                            </div>
-                            <div class="big" id="riskBig">
-                                <i class="bi bi-shield-exclamation"></i><span>中風險</span>
-                            </div>
-                        </div>
-
-                        <div class="risk-mini-grid">
-                            <div id="miniLow" class="risk-mini low">
-                                <div class="label">低風險</div>
-                                <div class="dot"></div>
-                            </div>
-                            <div id="miniMid" class="risk-mini mid">
-                                <div class="label">中風險</div>
-                                <div class="dot"></div>
-                            </div>
-                            <div id="miniHigh" class="risk-mini high">
-                                <div class="label">高風險</div>
-                                <div class="dot"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Radar（維持你原本喜歡的樣子） -->
-        <div class="glass p-3 p-lg-4 mt-3">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div>
-                    <div class="fw-bold fs-5">模組雷達圖</div>
-                    <div class="small-note">分數直接標示在圖上（更直觀）</div>
-                </div>
-                <div class="glass-soft px-3 py-2 d-flex align-items-center gap-3">
-                    <div>
-                        <div class="small-note">模組平均</div>
-                        <div class="kpi mono" id="frAvg">--</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass-soft p-3 mt-3" style="height:360px;">
-                <canvas id="frRadar"></canvas>
-            </div>
-        </div>
-
-        <!-- Reasons list（維持你原本喜歡的樣子） -->
-        <div class="glass p-3 p-lg-4 mt-3 mb-4">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div>
-                    <div class="fw-bold fs-5">扣分原因（IAM ~ RES）</div>
-                    <div class="small-note">只保留「得分(%) + 原因」，不再顯示扣分數</div>
-                </div>
-                <div class="mono small-note" id="rowCount">共 0 筆</div>
-            </div>
-
-            <div class="table-responsive mt-3">
-                <table class="table table-dark table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th style="width:90px;">項目</th>
-                            <th class="text-center" style="width:140px;">得分 (%)</th>
-                            <th>扣分原因（可編輯）</th>
-                        </tr>
-                    </thead>
-                    <tbody id="frTbody"></tbody>
-                </table>
-            </div>
-
-            <div class="small-note mt-2">
-                匯出 CSV / Excel 會包含：機台編號、種類、總分、風險等級、項目、得分、扣分原因。
-            </div>
-        </div>
-
-        <div class="glass p-3 p-lg-4 mt-3">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div>
-                    <div class="fw-bold fs-5">7 大模組雷達圖</div>
-                    <div class="small-note">有接入資料的模組顯示實際分數；尚未接入的模組以 -- 表示。</div>
-                </div>
-                <div class="glass-soft px-3 py-2 d-flex align-items-center gap-3">
-                    <div>
-                        <div class="small-note">七大模組平均</div>
-                        <div class="kpi mono" id="moduleAvg">--</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass-soft p-3 mt-3" style="height:360px;">
-                <canvas id="moduleRadar"></canvas>
-            </div>
-        </div>
-
-        <div class="glass p-3 p-lg-4 mt-3 mb-4">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div>
-                    <div class="fw-bold fs-5">稽核項目明細</div>
-                    <div class="small-note">對應報告第二項：模組 / SR 群組 / 控制內容 / 得分 / 狀態 / 評分原因。</div>
-                </div>
-                <div class="mono small-note" id="detailRowCount">共 0 筆</div>
-            </div>
-
-            <div class="table-responsive mt-3">
-                <table class="table table-dark table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th style="width:130px;">模組</th>
-                            <th style="width:180px;">SR 群組</th>
-                            <th style="width:220px;">控制項名稱</th>
-                            <th class="text-center" style="width:120px;">得分 (%)</th>
-                            <th style="width:110px;">狀態</th>
-                            <th>評分原因</th>
-                        </tr>
-                    </thead>
-                    <tbody id="detailTbody"></tbody>
-                </table>
-            </div>
-        </div>
-
+<div class="container py-4">
+  <div class="glass p-3 px-lg-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-4" style="width:44px;height:44px;background:rgba(99,102,241,.22);border:1px solid rgba(255,255,255,.14)"><i class="bi bi-file-earmark-text fs-4"></i></div>
+      <div><div class="brand fs-4">智慧資安稽核工具</div><div class="small-note">詳細報表（單一機台 / 7 大模組）</div></div>
     </div>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <!-- Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        const frKeys = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
-        const frNames = ["IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES"];
-        let currentDevice = null;
-        let currentReport = null;
-        let moduleChart = null;
-
-        function avg(arr) {
-            const nums = arr.filter(v => typeof v === "number" && !Number.isNaN(v));
-            return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
-        }
-
-        function fmtScore(score) {
-            if (score === null || score === undefined || Number.isNaN(Number(score))) return "--";
-            const n = Number(score);
-            return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
-        }
-
-        function riskLevel(score) {
-            if (score === null || score === undefined || Number.isNaN(Number(score))) return { key: "mid", label: "--" };
-            if (score >= 80) return { key: "low", label: "低風險" };
-            if (score >= 70) return { key: "mid", label: "中風險" };
-            return { key: "high", label: "高風險" };
-        }
-
-        function getQueryParam(name) {
-            const url = new URL(window.location.href);
-            return url.searchParams.get(name);
-        }
-        function escapeHTML(str) {
-            return String(str ?? "")
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-        }
-
-        function displayFrLabel(value) {
-            const raw = String(value ?? "");
-            if (frKeys.includes(raw.toUpperCase())) return raw.toUpperCase();
-            const match = raw.match(/FR[1-7]/i);
-            if (!match) return raw;
-            const key = match[0].toUpperCase();
-            const legacyKeys = ["FR1", "FR2", "FR3", "FR4", "FR5", "FR6", "FR7"];
-            const idx = legacyKeys.indexOf(key);
-            return idx >= 0 ? raw.replace(match[0], frNames[idx]) : raw;
-        }
-
-        // ====== Radar value labels plugin ======
-        const radarValueLabelsPlugin = {
-            id: "radarValueLabels",
-            afterDatasetsDraw(chart) {
-                const { ctx } = chart;
-                const meta = chart.getDatasetMeta(0);
-                if (!meta?.data?.length) return;
-
-                const data = chart.data.datasets[0].data;
-                const rawScores = chart.data.datasets[0].rawScores || data;
-
-                ctx.save();
-                ctx.font = "800 12px Segoe UI, system-ui, -apple-system, Arial";
-                ctx.fillStyle = "rgba(255,255,255,.92)";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-
-                meta.data.forEach((point, i) => {
-                    const { x, y } = point.getProps(["x", "y"], true);
-                    ctx.fillText(rawScores[i] == null ? "--" : String(data[i]), x, y - 14);
-                });
-
-                ctx.restore();
-            }
-        };
-
-        let radarChart = null;
-        function renderRadar(scores) {
-            const canvas = document.getElementById("frRadar");
-            if (!canvas) return;
-            if (radarChart) radarChart.destroy();
-
-            const values = scores.map(v => {
-                const n = Number(v);
-                return Number.isFinite(n) ? Math.round(n) : 0;
-            });
-
-            radarChart = new Chart(canvas, {
-                type: "radar",
-                data: {
-                    labels: frNames,
-                    datasets: [{
-                        data: values,
-                        rawScores: scores,
-                        fill: true,
-                        backgroundColor: "rgba(59,130,246,0.22)",
-                        borderColor: "rgba(59,130,246,0.95)",
-                        pointBackgroundColor: "#3b82f6",
-                        pointBorderColor: "#fff",
-                        pointRadius: 4,
-                        pointHoverRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            min: 0,
-                            max: 100,
-                            ticks: {
-                                stepSize: 20,
-                                backdropColor: "transparent",
-                                color: "rgba(255,255,255,.6)"
-                            },
-                            grid: { color: "rgba(255,255,255,.15)" },
-                            angleLines: { color: "rgba(255,255,255,.2)" },
-                            pointLabels: {
-                                color: "#fff",
-                                font: { size: 13, weight: "bold" }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.raw} 分` } }
-                    }
-                },
-                plugins: [radarValueLabelsPlugin]
-            });
-        }
-
-        function renderRiskUI(overallScore) {
-            const r = riskLevel(overallScore);
-
-            const banner = document.getElementById("riskBanner");
-            const big = document.getElementById("riskBig");
-
-            banner.classList.remove("low", "mid", "high");
-            banner.classList.add(r.key);
-
-            const icon =
-                r.key === "low" ? "bi-shield-check" :
-                    r.key === "mid" ? "bi-shield-exclamation" :
-                        "bi-shield-x";
-
-            if (r.key === "mid") {
-                big.style.color = "#111827";
-            } else {
-                big.style.color = "rgba(255,255,255,.96)";
-            }
-            big.innerHTML = `<i class="bi ${icon}"></i><span>${r.label}</span>`;
-
-            const low = document.getElementById("miniLow");
-            const mid = document.getElementById("miniMid");
-            const high = document.getElementById("miniHigh");
-            [low, mid, high].forEach(el => el.classList.remove("active"));
-            if (r.key === "low") low.classList.add("active");
-            if (r.key === "mid") mid.classList.add("active");
-            if (r.key === "high") high.classList.add("active");
-        }
-
-        function statusClass(status) {
-            if (status === "通過") return "status-pass";
-            if (status === "部分通過") return "status-partial";
-            if (status === "未通過") return "status-fail";
-            return "status-na";
-        }
-
-        function renderDevice(device) {
-            document.getElementById("devId").textContent = device.id;
-            document.getElementById("devType").textContent = device.type;
-
-            const overall = avg(device.fr);
-            document.getElementById("devOverall").textContent = fmtScore(overall);
-
-            renderRiskUI(overall);
-
-            renderRadar(device.fr);
-            document.getElementById("frAvg").textContent = fmtScore(overall);
-
-            const tbody = document.getElementById("frTbody");
-            tbody.innerHTML = device.fr.map((score, i) => {
-                const s = score === null || score === undefined ? "--" : fmtScore(score);
-                const reason = (device.reasons && device.reasons[i]) ? device.reasons[i] : "--";
-                const scoreClass = s === "--" ? "score-pill mono na" : "score-pill mono";
-                return `
-              <tr>
-                <td class="fw-bold">${frNames[i]}</td>
-                <td class="text-center"><span class="${scoreClass}">${s}</span></td>
-                <td>
-                  <textarea class="form-control dark-field reason" data-fr="${frKeys[i]}" rows="2">${escapeHTML(reason)}</textarea>
-                  <div class="small-note mt-1">（可直接編輯，匯出會帶出你改的內容）</div>
-                </td>
-              </tr>
-            `;
-            }).join("");
-
-            document.getElementById("rowCount").textContent = `共 ${device.fr.length} 筆`;
-        }
-
-        function renderModules(report) {
-            currentReport = report;
-            const modules = report.modules || [];
-            const labels = modules.map(m => displayFrLabel(String(m.name || "").replace("模組", "")));
-            const scores = modules.map(m => typeof m.score === "number" ? m.score : 0);
-            const availableAvg = avg(modules.map(m => m.score));
-
-            document.getElementById("moduleAvg").textContent = fmtScore(availableAvg);
-
-            const canvas = document.getElementById("moduleRadar");
-            if (canvas) {
-                if (moduleChart) moduleChart.destroy();
-                moduleChart = new Chart(canvas, {
-                    type: "radar",
-                    data: {
-                        labels,
-                        datasets: [{
-                            data: scores,
-                            fill: true,
-                            backgroundColor: "rgba(59,130,246,0.22)",
-                            borderColor: "rgba(59,130,246,0.95)",
-                            pointBackgroundColor: "#3b82f6",
-                            pointBorderColor: "#fff",
-                            pointRadius: 4,
-                            pointHoverRadius: 5
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            r: {
-                                min: 0,
-                                max: 100,
-                                ticks: { stepSize: 20, backdropColor: "transparent", color: "rgba(255,255,255,.6)" },
-                                grid: { color: "rgba(255,255,255,.15)" },
-                                angleLines: { color: "rgba(255,255,255,.2)" },
-                                pointLabels: { color: "#fff", font: { size: 13, weight: "bold" } }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: (ctx) => ` ${ctx.label}: ${fmtScore(modules[ctx.dataIndex]?.score)} 分`
-                                }
-                            }
-                        }
-                    },
-                    plugins: [{
-                        id: "moduleValueLabels",
-                        afterDatasetsDraw(chart) {
-                            const { ctx } = chart;
-                            const meta = chart.getDatasetMeta(0);
-                            if (!meta?.data?.length) return;
-                            ctx.save();
-                            ctx.font = "800 12px Segoe UI, system-ui, -apple-system, Arial";
-                            ctx.fillStyle = "rgba(255,255,255,.92)";
-                            ctx.textAlign = "center";
-                            ctx.textBaseline = "middle";
-                            meta.data.forEach((point, i) => {
-                                const { x, y } = point.getProps(["x", "y"], true);
-                                ctx.fillText(fmtScore(modules[i]?.score), x, y - 14);
-                            });
-                            ctx.restore();
-                        }
-                    }]
-                });
-            }
-
-            const rows = modules.flatMap(module => {
-                const items = module.items?.length ? module.items : [{
-                    sr: "--",
-                    title: "尚未接入資料",
-                    score: null,
-                    status: "--",
-                    reason: "--"
-                }];
-
-                return items.map(item => ({
-                    module: module.name,
-                    sr: item.sr,
-                    title: item.title,
-                    score: item.score,
-                    status: item.status,
-                    reason: item.reason
-                }));
-            });
-
-            document.getElementById("detailTbody").innerHTML = rows.map(row => {
-                const scoreText = fmtScore(row.score);
-                const scoreClass = scoreText === "--" ? "score-pill mono na" : "score-pill mono";
-                return `
-                    <tr>
-                        <td>${escapeHTML(displayFrLabel(row.module))}</td>
-                        <td>${escapeHTML(displayFrLabel(row.sr))}</td>
-                        <td>${escapeHTML(row.title)}</td>
-                        <td class="text-center"><span class="${scoreClass}">${escapeHTML(scoreText)}</span></td>
-                        <td class="${statusClass(row.status)}">${escapeHTML(row.status || "--")}</td>
-                        <td>${escapeHTML(row.reason || "--")}</td>
-                    </tr>
-                `;
-            }).join("");
-
-            document.getElementById("detailRowCount").textContent = `共 ${rows.length} 筆`;
-        }
-
-        function buildDeviceFromReport(report) {
-            const scores = Array.isArray(report.frScores)
-                ? report.frScores.slice(0, 7)
-                : [];
-
-            const findings = (report.modules || [])
-                .flatMap(module => module.items || [])
-                .filter(item => item.sr && item.reason && item.reason !== "--");
-
-            const reasonsByFr = new Map();
-            findings.forEach(item => {
-                const sr = String(item.sr);
-                const moduleMatch = sr.match(/^(IAM|SWI|FWL|EVT|AUD|DAT|RES)/i);
-                const frMatch = sr.match(/^FR[1-7]/i);
-                const key = moduleMatch
-                    ? moduleMatch[0].toUpperCase()
-                    : frMatch
-                        ? displayFrLabel(frMatch[0])
-                        : "IAM";
-                const existing = reasonsByFr.get(key);
-                const text = item.reason || "--";
-                reasonsByFr.set(key, existing ? `${existing}；${text}` : text);
-            });
-
-            const reasons = frKeys.map(fr => reasonsByFr.get(fr) || "--");
-
-            while (scores.length < 7) scores.push(null);
-
-            return {
-                id: report.target?.deviceId || report.target?.buildingName || "K18",
-                type: report.target?.deviceType || "--",
-                fr: scores.slice(0, 7),
-                reasons: reasons.slice(0, 7)
-            };
-        }
-
-        async function loadAuditResult() {
-            const period = getQueryParam("period") || "2025-12";
-            const building = getQueryParam("building") || getQueryParam("b") || "K18";
-            const deviceId = getQueryParam("deviceId") || getQueryParam("id");
-
-            const url = new URL("/api/identity/audit-zone-k18", window.location.origin);
-            url.searchParams.set("period", period);
-            url.searchParams.set("buildingCode", building);
-            if (deviceId) url.searchParams.set("deviceId", deviceId);
-
-            const res = await fetch(url, {
-                method: "POST"
-            });
-
-            if (!res.ok) {
-                throw new Error(`Identity audit API failed: ${res.status}`);
-            }
-
-            const report = await res.json();
-            currentDevice = buildDeviceFromReport(report);
-            renderDevice(currentDevice);
-            renderModules(report);
-        }
-
-        function collectRowsForExport(device) {
-            const reasonsMap = new Map();
-            document.querySelectorAll("textarea[data-fr]").forEach(t => {
-                reasonsMap.set(t.getAttribute("data-fr"), t.value.trim());
-            });
-
-            const overall = avg(device.fr);
-            const r = riskLevel(overall);
-
-            return device.fr.map((score, i) => {
-                const fr = frNames[i];
-                const frKey = frKeys[i];
-                const s = score === null || score === undefined ? "--" : fmtScore(score);
-                const reason = reasonsMap.get(frKey) || "";
-                return {
-                    device_id: device.id,
-                    device_type: device.type,
-                    overall_score: fmtScore(overall),
-                    overall_risk: r.label,
-                    fr: fr,
-                    score_percent: s,
-                    deduction_reason: reason
-                };
-            });
-        }
-
-        function downloadBlob(filename, mimeType, content) {
-            const blob = new Blob([content], { type: mimeType });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(a.href);
-        }
-
-        function exportCSV(device) {
-            const rows = collectRowsForExport(device);
-            const headers = Object.keys(rows[0]);
-            const esc = (v) => {
-                const s = String(v ?? "");
-                if (/[",\n]/.test(s)) return `"${s.replaceAll('"', '""')}"`;
-                return s;
-            };
-            const csv = [
-                headers.join(","),
-                ...rows.map(r => headers.map(h => esc(r[h])).join(","))
-            ].join("\n");
-
-            const bom = "\uFEFF";
-            downloadBlob(`${device.id}_detail.csv`, "text/csv;charset=utf-8", bom + csv);
-        }
-
-        function exportXLS(device) {
-            const rows = collectRowsForExport(device);
-            const headers = Object.keys(rows[0]);
-
-            const table = `
-            <table border="1">
-              <thead><tr>${headers.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr></thead>
-              <tbody>
-                ${rows.map(r => `<tr>${headers.map(h => `<td>${escapeHTML(r[h])}</td>`).join("")}</tr>`).join("")}
-              </tbody>
-            </table>
-          `;
-
-            const html = `
-            <html xmlns:o="urn:schemas-microsoft-com:office:office"
-                  xmlns:x="urn:schemas-microsoft-com:office:excel"
-                  xmlns="http://www.w3.org/TR/REC-html40">
-              <head><meta charset="utf-8"></head>
-              <body>${table}</body>
-            </html>
-          `;
-            downloadBlob(`${device.id}_detail.xls`, "application/vnd.ms-excel;charset=utf-8", html);
-        }
-
-        // Init
-        loadAuditResult().catch(err => {
-            console.error("loadAuditResult failed:", err);
-            alert("detail.html 讀取或寫入稽核結果失敗，請看 Console / Network");
-        });
-
-        document.getElementById("btnExportCSV").addEventListener("click", () => currentDevice && exportCSV(currentDevice));
-        document.getElementById("btnExportXLS").addEventListener("click", () => currentDevice && exportXLS(currentDevice));
-
-        document.getElementById("btnDailyReport").addEventListener("click", generateDailyReport);
-
-        function generateDailyReport() {
-            // 取當下頁面資料（含你在 textarea 編輯的原因）
-            const auditDate = new Date();
-            const yyyy = auditDate.getFullYear();
-            const mm = String(auditDate.getMonth() + 1).padStart(2, "0");
-            const dd = String(auditDate.getDate()).padStart(2, "0");
-            const dateStr = `${yyyy}-${mm}-${dd}`;
-
-            const deviceId = document.getElementById("devId")?.textContent?.trim() || "--";
-            const deviceType = document.getElementById("devType")?.textContent?.trim() || "--";
-            const overall = document.getElementById("devOverall")?.textContent?.trim() || "--";
-            const riskText = document.getElementById("riskBig")?.innerText?.trim() || "--";
-
-            // 收集 FR 表格（得分 + 原因）
-            const rows = [];
-            const frEls = document.querySelectorAll("textarea[data-fr]");
-            const scoreEls = document.querySelectorAll(".score-pill");
-
-            frEls.forEach((t, idx) => {
-                const fr = displayFrLabel(t.getAttribute("data-fr") || `FR${idx + 1}`);
-                const score = scoreEls[idx]?.textContent?.trim() || "--";
-                const reason = t.value?.trim() || "";
-                rows.push({ fr, score, reason });
-            });
-
-            const detailRows = currentReport
-                ? (currentReport.modules || []).flatMap(module => {
-                    const items = module.items?.length ? module.items : [{
-                        sr: "--",
-                        title: "尚未接入資料",
-                        score: null,
-                        status: "--",
-                        reason: "--"
-                    }];
-
-                    return items.map(item => ({
-                        module: displayFrLabel(module.name),
-                        sr: displayFrLabel(item.sr || "--"),
-                        title: item.title || "--",
-                        score: fmtScore(item.score),
-                        status: item.status || "--",
-                        reason: item.reason || "--"
-                    }));
-                })
-                : rows.map(row => ({
-                    module: "身分識別模組",
-                    sr: row.fr,
-                    title: row.fr,
-                    score: row.score,
-                    status: "--",
-                    reason: row.reason
-                }));
-
-            const moduleRows = currentReport
-                ? (currentReport.modules || []).map(module => ({
-                    module: displayFrLabel(module.name),
-                    score: fmtScore(module.score),
-                    status: module.score == null ? "--" : riskLevel(module.score).label
-                }))
-                : [];
-
-            // HTML escape（避免報告內文字破版）
-            const esc = (s) => String(s ?? "")
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-
-            // 產出報告 HTML（新視窗）
-            const reportHtml = `
-      <!doctype html>
-      <html lang="zh-Hant">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>每日稽核報告_${esc(deviceId)}_${esc(dateStr)}</title>
-        <style>
-          body{
-            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", Arial, sans-serif;
-            margin: 24px;
-            color: #111827;
-          }
-          .topbar{
-            display:flex;
-            justify-content: space-between;
-            align-items:flex-start;
-            gap: 16px;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 14px;
-            margin-bottom: 18px;
-          }
-          h1{
-            font-size: 20px;
-            margin: 0 0 6px 0;
-            letter-spacing: .2px;
-          }
-          .sub{
-            color:#4b5563;
-            font-size: 12px;
-            margin: 0;
-            line-height: 1.6;
-          }
-          .meta{
-            text-align:right;
-            font-size: 12px;
-            color:#374151;
-            line-height: 1.7;
-            white-space: nowrap;
-          }
-          .badge{
-            display:inline-block;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-weight: 700;
-            border: 1px solid #e5e7eb;
-            background:#f9fafb;
-            margin-left: 8px;
-          }
-          .section{
-            margin-top: 16px;
-            page-break-inside: avoid;
-          }
-          .section-title{
-            font-size: 14px;
-            font-weight: 800;
-            margin: 0 0 8px 0;
-          }
-          table{
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-          }
-          th, td{
-            border: 1px solid #e5e7eb;
-            padding: 10px 10px;
-            vertical-align: top;
-          }
-          th{
-            background:#f3f4f6;
-            text-align:left;
-            font-weight: 800;
-          }
-          .score{
-            font-weight: 900;
-            text-align:center;
-            width: 90px;
-            white-space: nowrap;
-          }
-          .reason{
-            white-space: pre-wrap;
-            color:#111827;
-          }
-          .footer{
-            margin-top: 18px;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 10px;
-            color:#6b7280;
-            font-size: 11px;
-            display:flex;
-            justify-content: space-between;
-            gap: 12px;
-          }
-
-          @media print {
-            body{ margin: 12mm; }
-            .no-print{ display:none !important; }
-          }
-
-          .print-actions{
-            display:flex;
-            gap: 10px;
-            justify-content:flex-end;
-            margin-bottom: 10px;
-          }
-          button{
-            border: 1px solid #d1d5db;
-            background: #111827;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor:pointer;
-            font-weight: 800;
-            font-size: 12px;
-          }
-          button.secondary{
-            background:#fff;
-            color:#111827;
-          }
-        </style>
-      </head>
-
-      <body>
-        <div class="print-actions no-print">
-          <button class="secondary" onclick="window.close()">關閉</button>
-          <button onclick="window.print()">列印 / 另存 PDF</button>
-        </div>
-
-        <div class="topbar">
-          <div>
-            <h1>日月光智慧資安稽核工具｜詳細稽核報告</h1>
-            <p class="sub">本報告內容由資料庫中的 rules 運算結果產生；尚未接入資料的模組以 -- 標示。</p>
-          </div>
-          <div class="meta">
-            稽核日期：<b>${esc(dateStr)}</b><br/>
-            機台編號：<b>${esc(deviceId)}</b><br/>
-            系統類型：<b>${esc(deviceType)}</b><br/>
-            成熟度：<b>${esc(overall)}%</b><br/>
-            風險等級：<span class="badge">${esc(riskText)}</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">一、七大模組總覽</div>
-          <table>
-            <thead>
-              <tr>
-                <th>模組</th>
-                <th class="score">得分(%)</th>
-                <th style="width:130px;">風險等級</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${moduleRows.map(g => `
-                <tr>
-                  <td><b>${esc(g.module)}</b></td>
-                  <td class="score">${esc(g.score)}</td>
-                  <td class="score">${esc(g.status)}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-title">二、稽核項目明細與評分原因</div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width:130px;">模組</th>
-                <th style="width:190px;">SR 群組</th>
-                <th>控制內容</th>
-                <th class="score">得分(%)</th>
-                <th style="width:110px;">狀態</th>
-                <th>評分原因</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${detailRows.map(g => `
-                <tr>
-                  <td><b>${esc(g.module)}</b></td>
-                  <td><b>${esc(g.sr)}</b></td>
-                  <td>${esc(g.title)}</td>
-                  <td class="score">${esc(g.score)}</td>
-                  <td class="score">${esc(g.status)}</td>
-                  <td class="reason">${esc(g.reason || "（無）")}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-title">三、改善建議（可作為追蹤項）</div>
-          <ol style="margin:6px 0 0 18px; font-size:12px; color:#111827;">
-            <li>優先補齊顯示 -- 的模組資料來源，讓七大模組可完整計分。</li>
-            <li>針對未通過或低分 SR 群組補強設定、流程與佐證文件。</li>
-            <li>計算結果已寫回資料庫，可供後續稽核追溯與改善成效檢核。</li>
-          </ol>
-        </div>
-
-        <div class="footer">
-          <div>輸出來源：智慧資安稽核工具（detail）</div>
-          <div>文件用途：內部稽核 / 改善追蹤（每日）</div>
-        </div>
-      </body>
-      </html>
-        `;
-
-            const w = window.open("", "_blank", "width=920,height=720");
-            if (!w) {
-                alert("瀏覽器阻擋彈出視窗，請允許 Pop-up 後再試一次。");
-                return;
-            }
-
-            w.document.open();
-            w.document.write(reportHtml);
-            w.document.close();
-
-            // ✅ 自動列印放在這裡（不在 reportHtml 內放 <script>）
-            w.onload = () => setTimeout(() => w.print(), 300);
-        }
-    </script>
+    <div class="d-flex align-items-center gap-2 flex-wrap"><span class="chip"><i class="bi bi-calendar3 me-1"></i>本次稽核：<span id="auditPeriod">--</span></span><a class="chip text-decoration-none" href="index.html"><i class="bi bi-arrow-left me-1"></i>回主頁</a></div>
+  </div>
+
+  <div class="glass p-3 p-lg-4 mt-3">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+      <div><div class="fw-bold fs-5">機台資訊</div><div class="small-note">目前已依後端 DTO / Rule 與稽核資料補齊各模組預設結果。</div></div>
+      <div class="d-flex flex-wrap gap-2"><button class="btn btn-ghost pill" id="btnExportCSV"><i class="bi bi-filetype-csv me-1"></i>匯出 CSV</button><button class="btn btn-primary pill" id="btnExportXLS"><i class="bi bi-file-earmark-excel me-1"></i>匯出 Excel</button><button class="btn btn-danger pill" id="btnDailyReport"><i class="bi bi-file-earmark-pdf me-1"></i>生成每日報告 PDF</button></div>
+    </div>
+    <div class="row g-3 mt-2">
+      <div class="col-12 col-lg-3"><div class="glass-soft info-card centered h-100"><div class="small-note">機台編號</div><span class="id-badge mono big-id" id="devId">--</span></div></div>
+      <div class="col-12 col-lg-3"><div class="glass-soft info-card centered h-100"><div class="small-note">種類</div><span class="type-tag big-type" id="devType">--</span></div></div>
+      <div class="col-12 col-lg-3"><div class="glass-soft info-card centered h-100"><div class="small-note">成熟度</div><div class="mono big-score" id="devOverall">--</div></div></div>
+      <div class="col-12 col-lg-3"><div class="risk-stack"><div id="riskBanner" class="risk-banner mid"><div><div class="title">風險等級</div></div><div class="big" id="riskBig"><i class="bi bi-shield-exclamation"></i><span>中風險</span></div></div><div class="risk-mini-grid"><div id="miniLow" class="risk-mini low"><div class="label">低風險</div><div class="dot"></div></div><div id="miniMid" class="risk-mini mid"><div class="label">中風險</div><div class="dot"></div></div><div id="miniHigh" class="risk-mini high"><div class="label">高風險</div><div class="dot"></div></div></div></div></div>
+    </div>
+  </div>
+
+  <div class="glass p-3 p-lg-4 mt-3">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2"><div><div class="fw-bold fs-5">7 大模組雷達圖</div><div class="small-note">有接入資料的模組顯示實際分數；尚未接入的模組以 -- 表示。</div></div><div class="glass-soft px-3 py-2 d-flex align-items-center gap-3"><div><div class="small-note">七大模組平均</div><div class="kpi mono" id="moduleAvg">--</div></div></div></div>
+    <div id="radarWrap" class="glass-soft p-3 mt-3" style="height:360px;"><canvas id="moduleRadar"></canvas></div>
+  </div>
+
+  <div class="glass p-3 p-lg-4 mt-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2"><div><div class="fw-bold fs-5">稽核項目明細</div><div class="small-note">對應報告第二項：模組 / SR 群組 / 控制內容 / 得分 / 狀態 / 評分原因。</div></div><div class="mono small-note" id="rowCount">共 0 筆</div></div>
+    <div class="table-responsive mt-3">
+      <table class="table table-dark table-hover align-middle mb-0">
+        <thead><tr><th style="width:130px;">模組</th><th style="width:170px;">SR 群組</th><th style="width:220px;">控制項名稱</th><th class="text-center" style="width:120px;">得分 (%)</th><th style="width:110px;">狀態</th><th>評分原因</th></tr></thead>
+        <tbody id="detailTbody"><tr class="loading-row"><td colspan="6">正在讀取後端詳細報表資料...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const modulePlaceholders = [
+    { key:"Identity", name:"身分識別模組" },
+    { key:"SoftwareControl", name:"軟體識別模組" },
+    { key:"Firewall", name:"防火牆模組" },
+    { key:"DataManagement", name:"資料管理模組" },
+    { key:"ResourceManagement", name:"資源管理模組" },
+    { key:"SystemEvent", name:"系統事件模組" },
+    { key:"ManualReview", name:"稽核流程模組" }
+  ];
+  let audit = null;
+  let moduleChart = null;
+
+  function q(name){ return new URL(window.location.href).searchParams.get(name); }
+  function seedFromQuery(){
+    document.getElementById("auditPeriod").textContent = q("period") || "--";
+    document.getElementById("devId").textContent = q("deviceId") || q("id") || "--";
+  }
+  function escapeHTML(str){ return String(str ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+  function toNumber(value){ if(value === null || value === undefined || value === "--") return null; const n = Number(String(value).replace("%","")); return Number.isFinite(n) ? n : null; }
+  function avgAvailable(values){ const nums = values.map(toNumber).filter(v => v !== null); return nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : null; }
+  function fmtScore(v){ const n = toNumber(v); return n !== null ? (Number.isInteger(n) ? String(n) : n.toFixed(2)) : "--"; }
+  function riskLevel(score){ const n = toNumber(score); if(n === null) return {key:"mid",label:"未完成"}; if(n >= 80) return {key:"low",label:"低風險"}; if(n >= 50) return {key:"mid",label:"中風險"}; return {key:"high",label:"高風險"}; }
+  function statusClass(status){ if(status === "通過") return "status-pass"; if(status === "部分通過" || status === "部分符合") return "status-partial"; if(status === "未通過" || status === "不符合") return "status-fail"; return "status-na"; }
+  function reportRiskClass(score){ const r = riskLevel(score); return r.key === "low" ? "risk-low" : r.key === "high" ? "risk-high" : "risk-mid"; }
+  function reportRiskText(score){ const r = riskLevel(score); if(r.key === "low") return "低"; if(r.key === "mid") return "中"; return "高"; }
+
+  function normalizeReport(report){
+    const target = report?.target || {};
+    const byKey = new Map((report?.modules || []).map(m => [m.key, m]));
+    const modules = modulePlaceholders.map(placeholder => {
+      const module = byKey.get(placeholder.key) || (report?.modules || []).find(m => m.name === placeholder.name) || {};
+      const rawItems = Array.isArray(module.items) && module.items.length ? module.items : [{ sr:"--", title:"尚未接入資料", score:null, status:"--", reason:"--" }];
+      const items = rawItems.map(item => ({
+        sr:item.sr || "--",
+        title:item.title || "--",
+        score:toNumber(item.score),
+        status:item.status || "--",
+        reason:item.reason || "--"
+      }));
+      const score = toNumber(module.score);
+      return {
+        key:placeholder.key,
+        name:module.name || placeholder.name,
+        score:score !== null ? score : null,
+        items
+      };
+    });
+    return {
+      date:report?.period || q("period") || new Date().toISOString().slice(0,10),
+      device:{ id:target.deviceId || target.hostName || q("deviceId") || q("id") || "--", type:target.deviceType || "--" },
+      target,
+      modules,
+      overall:toNumber(report?.overallScore) ?? avgAvailable(modules.map(m => m.score))
+    };
+  }
+
+  function getAllDetailRows(){
+    if(!audit) return [];
+    return audit.modules.flatMap(module => module.items.map(item => ({ module:module.name, ...item })));
+  }
+
+  function renderRiskUI(score){
+    const r = riskLevel(score);
+    const banner = document.getElementById("riskBanner");
+    const big = document.getElementById("riskBig");
+    banner.classList.remove("low","mid","high");
+    banner.classList.add(r.key);
+    const icon = r.key === "low" ? "bi-shield-check" : r.key === "mid" ? "bi-shield-exclamation" : "bi-shield-x";
+    big.style.color = r.key === "mid" ? "#111827" : "rgba(255,255,255,.96)";
+    big.innerHTML = `<i class="bi ${icon}"></i><span>${escapeHTML(r.label)}</span>`;
+    ["miniLow","miniMid","miniHigh"].forEach(id => document.getElementById(id).classList.remove("active"));
+    if(r.key === "low") document.getElementById("miniLow").classList.add("active");
+    if(r.key === "mid") document.getElementById("miniMid").classList.add("active");
+    if(r.key === "high") document.getElementById("miniHigh").classList.add("active");
+  }
+
+  function buildRadarSvg(className = "radar-fallback"){
+    const modules = audit.modules.map(m => ({ label:m.name.replace("模組",""), score:m.score }));
+    const size = 440, cx = 220, cy = 220, maxR = 130, n = modules.length;
+    const point = (i, radius) => { const angle = -Math.PI / 2 + (Math.PI * 2 * i / n); return { x:cx + Math.cos(angle) * radius, y:cy + Math.sin(angle) * radius }; };
+    const polygon = radius => modules.map((_, i) => { const p = point(i, radius); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(" ");
+    const dataPoints = modules.map((m, i) => { const p = point(i, maxR * (toNumber(m.score) ?? 0) / 100); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(" ");
+    const grid = [20,40,60,80,100].map(v => `<polygon points="${polygon(maxR * v / 100)}" fill="none" stroke="#c8d5e3" stroke-width="1"/><text x="${cx + 4}" y="${(cy - maxR * v / 100 + 4).toFixed(1)}" font-size="10" fill="#6b7c93">${v}</text>`).join("");
+    const axes = modules.map((m, i) => {
+      const end = point(i, maxR);
+      const label = point(i, maxR + 34);
+      const value = point(i, maxR * (toNumber(m.score) ?? 0) / 100);
+      return `<line x1="${cx}" y1="${cy}" x2="${end.x.toFixed(1)}" y2="${end.y.toFixed(1)}" stroke="#d7e0ea" stroke-width="1"/><circle cx="${value.x.toFixed(1)}" cy="${value.y.toFixed(1)}" r="3.5" fill="#153e6f"/><text x="${label.x.toFixed(1)}" y="${label.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="12" fill="#153e6f" font-weight="700">${escapeHTML(m.label)}</text><text x="${label.x.toFixed(1)}" y="${(label.y + 15).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="#5f7188">${escapeHTML(fmtScore(m.score))}</text>`;
+    }).join("");
+    return `<svg class="${className}" viewBox="0 0 ${size} ${size}" role="img" aria-label="七大模組雷達圖"><rect width="${size}" height="${size}" rx="8" fill="#ffffff"/><g>${grid}${axes}<polygon points="${dataPoints}" fill="rgba(21,62,111,.18)" stroke="#153e6f" stroke-width="2.5"/><circle cx="${cx}" cy="${cy}" r="2.5" fill="#153e6f"/></g></svg>`;
+  }
+
+  function renderRadar(){
+    if(!audit) return;
+    const wrap = document.getElementById("radarWrap");
+    wrap.innerHTML = '<canvas id="moduleRadar"></canvas>';
+    const canvas = document.getElementById("moduleRadar");
+    if(typeof Chart === "undefined"){
+      wrap.innerHTML = buildRadarSvg();
+      return;
+    }
+    if(moduleChart) moduleChart.destroy();
+    const labels = audit.modules.map(m => m.name.replace("模組",""));
+    const scores = audit.modules.map(m => toNumber(m.score) ?? 0);
+    const valueLabelsPlugin = { id:"moduleValueLabels", afterDatasetsDraw(chart){
+      const {ctx} = chart;
+      const meta = chart.getDatasetMeta(0);
+      if(!meta?.data?.length) return;
+      ctx.save();
+      ctx.font = "800 12px Segoe UI, system-ui";
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      meta.data.forEach((point, i) => {
+        const {x,y} = point.getProps(["x","y"], true);
+        ctx.fillText(fmtScore(audit.modules[i].score), x, y - 14);
+      });
+      ctx.restore();
+    }};
+    moduleChart = new Chart(canvas, {
+      type:"radar",
+      data:{ labels, datasets:[{ data:scores, fill:true, backgroundColor:"rgba(59,130,246,.22)", borderColor:"rgba(59,130,246,.95)", pointBackgroundColor:"#3b82f6", pointBorderColor:"#fff", pointRadius:4, pointHoverRadius:5 }] },
+      options:{ responsive:true, maintainAspectRatio:false, scales:{ r:{ min:0, max:100, ticks:{ stepSize:20, backdropColor:"transparent", color:"rgba(255,255,255,.6)" }, grid:{ color:"rgba(255,255,255,.15)" }, angleLines:{ color:"rgba(255,255,255,.2)" }, pointLabels:{ color:"#fff", font:{ size:13, weight:"bold" } } } }, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:(ctx) => ` ${ctx.label}: ${fmtScore(audit.modules[ctx.dataIndex].score)} 分` } } } },
+      plugins:[valueLabelsPlugin]
+    });
+  }
+  window.renderRadar = renderRadar;
+
+  function renderDetailTable(){
+    const rows = getAllDetailRows();
+    document.getElementById("detailTbody").innerHTML = rows.map(row => `
+      <tr>
+        <td class="fw-bold">${escapeHTML(row.module)}</td>
+        <td>${escapeHTML(row.sr)}</td>
+        <td>${escapeHTML(row.title)}</td>
+        <td class="text-center"><span class="score-pill mono ${row.score === null ? "na" : ""}">${escapeHTML(fmtScore(row.score))}</span></td>
+        <td class="${statusClass(row.status)}">${escapeHTML(row.status || "--")}</td>
+        <td>${escapeHTML(row.reason || "--")}</td>
+      </tr>
+    `).join("");
+    document.getElementById("rowCount").textContent = `共 ${rows.length} 筆`;
+  }
+
+  function render(){
+    document.getElementById("auditPeriod").textContent = audit.date;
+    document.getElementById("devId").textContent = audit.device.id;
+    document.getElementById("devType").textContent = audit.device.type;
+    document.getElementById("devOverall").textContent = fmtScore(audit.overall);
+    document.getElementById("moduleAvg").textContent = fmtScore(audit.overall);
+    renderRiskUI(audit.overall);
+    renderRadar();
+    renderDetailTable();
+  }
+
+  function collectRowsForExport(){
+    const r = riskLevel(audit.overall);
+    return getAllDetailRows().map(row => ({
+      machine_id:audit.device.id,
+      type:audit.device.type,
+      total_score:fmtScore(audit.overall),
+      risk_level:r.label,
+      module:row.module,
+      sr:row.sr,
+      item:row.title,
+      score_percent:fmtScore(row.score),
+      status:row.status,
+      reason:row.reason
+    }));
+  }
+
+  function downloadBlob(filename, mimeType, content){
+    const blob = new Blob([content], { type:mimeType });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function exportCSV(){
+    const rows = collectRowsForExport();
+    const headers = Object.keys(rows[0] || {});
+    const esc = v => {
+      const s = String(v ?? "");
+      const needsQuote = s.includes('"') || s.includes(",") || s.includes("\n") || s.includes("\r");
+      return needsQuote ? '"' + s.replaceAll('"','""') + '"' : s;
+    };
+    const csv = [headers.join(","), ...rows.map(row => headers.map(h => esc(row[h])).join(","))].join("\n");
+    downloadBlob(`${audit.device.id}_audit_detail.csv`, "text/csv;charset=utf-8", "\uFEFF" + csv);
+  }
+
+  function exportXLS(){
+    const rows = collectRowsForExport();
+    const headers = Object.keys(rows[0] || {});
+    const cell = value => String(value ?? "").replaceAll("\t", " ").replaceAll("\r", " ").replaceAll("\n", " ");
+    const tsv = [headers.join("\t"), ...rows.map(row => headers.map(h => cell(row[h])).join("\t"))].join("\r\n");
+    downloadBlob(audit.device.id + "_audit_detail.xls", "application/vnd.ms-excel;charset=utf-8", "\uFEFF" + tsv);
+  }
+
+  function generateDailyReport(){
+    const detailRows = getAllDetailRows();
+    const moduleRows = audit.modules.map(m => ({ module:m.name, score:m.score, status:riskLevel(m.score).label }));
+    const passCount = detailRows.filter(x => x.status === "通過").length;
+    const partialCount = detailRows.filter(x => x.status === "部分通過" || x.status === "部分符合").length;
+    const failCount = detailRows.filter(x => x.status === "未通過" || x.status === "不符合").length;
+    const highRiskCount = detailRows.filter(x => (toNumber(x.score) ?? 101) < 50).length;
+    const midRiskCount = detailRows.filter(x => { const n = toNumber(x.score); return n !== null && n >= 50 && n < 80; }).length;
+    const lowRiskCount = detailRows.filter(x => (toNumber(x.score) ?? -1) >= 80).length;
+    const todayText = audit.date.includes("-") ? audit.date.replaceAll("-", " 年 ").replace(/ 年 (\d{2})$/, " 月 $1 日") : audit.date;
+    const radarSvg = buildRadarSvg("radar-svg");
+    const moduleRowsHtml = moduleRows.map(m => `<tr><td><b>${escapeHTML(m.module)}</b></td><td class="score">${escapeHTML(fmtScore(m.score))}</td><td class="risk-cell"><span class="risk-badge ${reportRiskClass(m.score)}">${escapeHTML(reportRiskText(m.score))}</span></td></tr>`).join("");
+    const detailPageGroups = audit.modules.flatMap(module => {
+      const rows = detailRows.filter(row => row.module === module.name && row.sr !== "--");
+      const chunks = [];
+      for(let i = 0; i < rows.length; i += 3) chunks.push(rows.slice(i, i + 3));
+      return chunks.map((chunkRows, index) => ({ module, rows:chunkRows, part:index + 1, totalParts:chunks.length }));
+    });
+    const detailPages = detailPageGroups.map(({ module, rows, part, totalParts }, pageIndex) => {
+      const partText = totalParts > 1 ? "｜" + part + "/" + totalParts : "";
+      const rowHtml = rows.map(row => {
+        return '<article class="line-row"><div class="line-row-head"><div><div class="line-title">' +
+          escapeHTML(row.title) +
+          '</div><div class="line-sr">' +
+          escapeHTML(row.sr) +
+          '</div></div><div class="line-score">' +
+          escapeHTML(fmtScore(row.score)) +
+          '</div><div class="' +
+          statusClass(row.status) +
+          ' line-status">' +
+          escapeHTML(row.status) +
+          '</div></div><div class="line-reason">' +
+          escapeHTML(row.reason) +
+          '</div></article>';
+      }).join("");
+      return '<section class="page detail-page"><div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">5. 詳細稽核明細｜' +
+        escapeHTML(module.name) +
+        '</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report</div></div><div class="line-module"><div class="module-heading">' +
+        escapeHTML(module.name) +
+        '<span>' +
+        escapeHTML(fmtScore(module.score)) +
+        ' / 100' +
+        partText +
+        '</span></div><div class="line-list">' +
+        rowHtml +
+        '</div></div><div class="footer"><div>智慧資安稽核工具</div><div>Page ' +
+        (pageIndex + 5) +
+        '</div></div></section>';
+    }).join("");
+    const reportHtml = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>每日稽核報告_${escapeHTML(audit.device.id)}_${escapeHTML(audit.date)}</title><style>
+      :root{--ink:#111827;--muted:#aeb4bd;--line:#111827;--head:#1f5f95;--head2:#eaf2fb;--stripe:#5a8ec4;--ok:#dcecff;--warn:#fff1d4;--bad:#f6ddd8;--risk-red:#9e2018;--risk-yellow:#b87900;--risk-blue:#0f5f96;}
+      body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",Arial,sans-serif;margin:0;background:#303030;color:var(--ink);}
+      .page{position:relative;width:1280px;min-height:720px;margin:0 auto 18px auto;background:#fff;padding:50px 58px 38px 58px;box-sizing:border-box;box-shadow:0 8px 24px rgba(0,0,0,.38);border-top:4px solid #111827;overflow:hidden;}
+      .page::after{content:"AUDIT REPORT";position:absolute;right:28px;top:16px;font-size:46px;letter-spacing:3px;color:#b8bcc3;font-weight:300;z-index:0}.page>*{position:relative;z-index:1}
+      .report-kicker{letter-spacing:4px;color:#cbd5e1;font-size:14px;font-weight:700;margin-top:72px}.cover-title{font-size:48px;color:#111827;font-weight:900;letter-spacing:2px;margin:118px 0 22px}.cover-sub{font-size:18px;line-height:1.8;color:#7b8797;margin-bottom:72px}.cover-table{width:72%;margin:0 auto;border-collapse:collapse;font-size:17px}.cover-table th{width:160px;background:#1f5f95;color:#fff;text-align:left;font-weight:800}.cover-table td{background:#eef4fb;color:#111827}.cover-table th,.cover-table td{border:2px solid #111827;padding:12px 14px}
+      .topbar{padding-bottom:10px;margin-bottom:18px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px}.doc-title{font-size:34px;color:#111827;font-weight:900;letter-spacing:.5px;margin:0}.doc-sub{font-size:12px;color:#6b7280;text-align:right}.stripe{height:8px;width:168px;background:repeating-linear-gradient(90deg,#111827 0 8px,#718096 8px 12px);margin-bottom:10px}
+      .section{margin-top:18px;page-break-inside:avoid}.section-title{font-size:28px;color:#111827;font-weight:900;margin:0 0 14px}.sub-title{font-size:20px;background:#edf3f9;color:#111827;padding:8px 12px;margin:14px 0 10px;font-weight:800}
+      p{font-size:16px;line-height:1.75;margin:8px 0 12px}table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.45}th,td{border:2px solid #111827;padding:8px 10px;vertical-align:top}th{background:#1f5f95;text-align:center;color:#fff;font-weight:900;font-size:17px}tbody tr:nth-child(even) td{background:#eef4fb}.score{font-weight:900;text-align:center;width:82px;white-space:nowrap}.reason{white-space:pre-wrap;color:#111827}.status-pass{background:var(--ok)!important;color:#0f5f96;font-weight:900}.status-partial{background:var(--warn)!important;color:#8a5d00;font-weight:900}.status-fail{background:var(--bad)!important;color:#9e2018;font-weight:900}.status-na{background:#eef1f5!important;color:#65758a;font-weight:900}.risk-cell{text-align:center;vertical-align:middle}.risk-badge{display:inline-flex;align-items:center;justify-content:center;min-width:56px;padding:5px 12px;border-radius:2px;font-weight:900;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.risk-low{background:var(--risk-blue)!important;color:#fff!important}.risk-mid{background:var(--risk-yellow)!important;color:#fff!important}.risk-high{background:var(--risk-red)!important;color:#fff!important}
+      .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}.stat-table td:first-child{width:150px}.metric{font-size:34px;color:#1f5f95;font-weight:900}.radar-card{border:2px solid #111827;background:#f7fafc;padding:10px}.radar-svg{width:100%;max-height:410px;height:auto;display:block}.method-page .topbar{margin-bottom:8px;padding-bottom:4px}.method-page .doc-title{font-size:30px}.method-page .sub-title{font-size:18px;margin:8px 0 6px;padding:6px 10px;background:#fff}.method-page table{font-size:14px;line-height:1.3}.method-page th,.method-page td{padding:6px 9px}.method-page th{font-size:15px}.detail-page{overflow:hidden}.line-module{margin:0 0 18px}.module-heading{background:#fff;color:#aeb4bd;font-size:22px;font-weight:900;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border:2px solid #111827;margin-bottom:12px}.module-heading span{font-size:16px;color:#7b8797}.line-list{display:grid;gap:10px}.line-row{border:2px solid #111827;break-inside:avoid;page-break-inside:avoid;background:#fff}.line-row-head{display:grid;grid-template-columns:1fr 92px 132px;align-items:stretch;border-bottom:2px solid #111827}.line-row-head>div{padding:9px 12px}.line-row-head>div+div{border-left:2px solid #111827}.line-title{font-size:17px;color:#111827;font-weight:900}.line-sr{font-size:13px;color:#111827;margin-top:3px}.line-score{text-align:center;font-size:26px;font-weight:900;display:flex;align-items:center;justify-content:center}.line-status{text-align:center;display:flex;align-items:center;justify-content:center;font-size:15px}.line-reason{font-size:14px;line-height:1.65;white-space:pre-wrap;color:#111827;padding:10px 14px}.footer{position:absolute;left:58px;right:58px;bottom:24px;border-top:2px solid #cbd5e1;padding-top:8px;color:#4b5563;font-size:11px;display:flex;justify-content:space-between;gap:12px}.print-actions{width:1280px;margin:12px auto;display:flex;gap:10px;justify-content:flex-end}.no-print button,button{border:1px solid #d1d5db;background:#111827;color:#fff;padding:8px 12px;border-radius:2px;cursor:pointer;font-weight:800;font-size:12px}button.secondary{background:#fff;color:#111827}
+      @page{size:A4 landscape;margin:8mm}@media print{body{background:#fff}.page{width:auto;min-height:190mm;margin:0;padding:12mm 14mm;box-shadow:none;page-break-after:always}.method-page{padding-top:8mm;padding-bottom:8mm}.method-page table{font-size:12px;line-height:1.2}.method-page th,.method-page td{padding:4px 7px}.page:last-of-type{page-break-after:auto}.page::after{right:12mm;top:8mm}.footer{left:14mm;right:14mm;bottom:8mm}.detail-page{page-break-after:always}.line-row{break-inside:avoid;page-break-inside:avoid}.no-print{display:none!important}}
+    </style></head><body>
+      <div class="print-actions no-print"><button class="secondary" onclick="window.close()">關閉</button><button onclick="window.print()">列印 / 另存 PDF</button></div>
+      <section class="page"><div class="report-kicker">OT / ICS CYBERSECURITY AUDIT REPORT</div><h1 class="cover-title">工控環境資安稽核報告</h1><p class="cover-sub">依 IEC 62443-3-3 控制需求編製之 OT / ICS 稽核報告，資料來源為後端詳細報表 API。</p><table class="cover-table"><tbody><tr><th>受稽核對象</th><td>日月光智慧資安稽核工具（${escapeHTML(audit.device.id)}）</td></tr><tr><th>場景範圍</th><td>${escapeHTML(audit.target.buildingName || audit.target.buildingCode || "--")}</td></tr><tr><th>文件日期</th><td>${escapeHTML(todayText)}</td></tr></tbody></table></section>
+      <section class="page"><div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">執行摘要</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report<br/>${escapeHTML(audit.device.id)}｜${escapeHTML(audit.device.type)}</div></div><div class="sub-title">1.1 執行摘要</div><table><tbody><tr><th style="width:220px;">整體判定</th><td>${detailRows.length} 項控制發現，高風險 ${highRiskCount} 項、中風險 ${midRiskCount} 項、低風險 ${lowRiskCount} 項</td></tr><tr><td class="status-pass">符合</td><td>${passCount} 項</td></tr><tr><td class="status-partial">部分符合</td><td>${partialCount} 項</td></tr><tr><td class="status-fail">不符合</td><td>${failCount} 項</td></tr></tbody></table><div class="sub-title">1.2 文件資訊</div><table><tbody><tr><th style="width:220px;">文件名稱</th><td>工控環境資安稽核報告</td></tr><tr><th>報告日期</th><td>${escapeHTML(audit.date)}</td></tr><tr><th>機台編號</th><td>${escapeHTML(audit.device.id)}</td></tr><tr><th>系統類型</th><td>${escapeHTML(audit.device.type)}</td></tr><tr><th>適用標準</th><td>IEC 62443-3-3</td></tr></tbody></table><div class="footer"><div>智慧資安稽核工具</div><div>Page 1</div></div></section>
+      <section class="page"><div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">管理摘要</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report</div></div><div class="summary-grid"><div><div class="sub-title">1.3 統計摘要</div><table class="stat-table"><tbody><tr><th>指標</th><th>數量</th></tr><tr><td>控制項總數</td><td>${detailRows.length}</td></tr><tr><td class="status-pass">符合</td><td>${passCount}</td></tr><tr><td class="status-partial">部分符合</td><td>${partialCount}</td></tr><tr><td class="status-fail">不符合</td><td>${failCount}</td></tr><tr><td>七大模組平均</td><td><span class="metric">${escapeHTML(fmtScore(audit.overall))}</span> / 100</td></tr><tr><td>風險等級</td><td class="risk-cell"><span class="risk-badge ${reportRiskClass(audit.overall)}">${escapeHTML(riskLevel(audit.overall).label)}</span></td></tr></tbody></table></div><div class="radar-card">${radarSvg}</div></div><div class="footer"><div>智慧資安稽核工具</div><div>Page 2</div></div></section>
+      <section class="page method-page"><div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">3. 稽核方法與判定原則</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report</div></div><div class="sub-title">3.1 評估依據</div><table><thead><tr><th style="width:130px;">功能需求</th><th style="width:210px;">主題</th><th>主要參照條文</th></tr></thead><tbody><tr><td>FR1</td><td>帳密管理</td><td>SR 1.1, SR 1.1 RE(1), SR 1.3, SR 1.5, SR 1.7, SR 1.10, SR 1.11, SR 1.12</td></tr><tr><td>FR2</td><td>使用控制</td><td>SR 2.1, SR 2.1 RE(1), SR 2.3, SR 2.4, SR 2.5, SR 2.8, SR 2.9, SR 2.10, SR 2.11</td></tr><tr><td>FR3</td><td>系統完整性</td><td>SR 3.3, SR 3.5, SR 3.8, SR 3.9</td></tr><tr><td>FR4</td><td>資料保密性</td><td>SR 4.1, SR 4.2</td></tr><tr><td>FR5</td><td>限制資料流</td><td>SR 5.1 RE, SR 5.2 RE, SR 5.3, SR 5.4</td></tr><tr><td>FR6</td><td>即時事件回應</td><td>SR 6.2</td></tr><tr><td>FR7</td><td>資源可用性</td><td>SR 7.2, SR 7.3, SR 7.4, SR 7.5, SR 7.6, SR 7.8</td></tr></tbody></table><div class="sub-title">3.2 判定原則</div><table><thead><tr><th style="width:220px;">狀態</th><th>定義</th></tr></thead><tbody><tr><td class="status-pass">符合</td><td>已有制度、技術控制與可追溯證據，且執行結果與控制目的相符。</td></tr><tr><td class="status-partial">部分符合</td><td>已建立部分制度或技術機制，但執行範圍、落實程度或證據完整性不足。</td></tr><tr><td class="status-fail">不符合</td><td>尚未建立控制、控制失效、長期未執行，或風險已實際暴露。</td></tr></tbody></table><div class="footer"><div>智慧資安稽核工具</div><div>Page 3</div></div></section>
+      <section class="page"><div class="topbar"><div><div class="stripe"></div><h1 class="doc-title">4. 模組總覽</h1></div><div class="doc-sub">Industrial Cybersecurity Audit Report</div></div><div class="sub-title">4.1 七大模組總分</div><table><thead><tr><th>模組</th><th class="score">得分(%)</th><th style="width:120px;">風險等級</th></tr></thead><tbody>${moduleRowsHtml}</tbody></table><div class="footer"><div>智慧資安稽核工具</div><div>Page 4</div></div></section>
+      ${detailPages}
+    </body></html>`;
+    const w = window.open("", "_blank", "width=1100,height=760");
+    if(!w){ alert("瀏覽器阻擋彈出視窗，請允許 Pop-up 後再試一次。"); return; }
+    w.document.open();
+    w.document.write(reportHtml);
+    w.document.close();
+    w.onload = () => setTimeout(() => w.print(), 300);
+  }
+
+  async function fetchReport(){
+    const period = q("period") || "2025-12";
+    const building = q("building") || q("buildingCode") || q("b") || "K18";
+    const deviceId = q("deviceId") || q("id") || "";
+    const origins = [window.location.origin];
+    if(!origins.includes("http://localhost:5001")) origins.push("http://localhost:5001");
+    let lastError = null;
+    for(const origin of origins){
+      const url = new URL("/api/identity/detail-report", origin);
+      url.searchParams.set("period", period);
+      url.searchParams.set("buildingCode", building);
+      if(deviceId) url.searchParams.set("deviceId", deviceId);
+      let timeoutId = null;
+      try{
+        const controller = new AbortController();
+        timeoutId = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(url, { cache:"no-store", signal:controller.signal });
+        if(!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        return await res.json();
+      }catch(err){
+        lastError = err;
+        console.warn("detail report API failed:", origin, err);
+      }finally{
+        if(timeoutId) clearTimeout(timeoutId);
+      }
+    }
+    throw lastError || new Error("detail report API failed");
+  }
+
+  document.getElementById("btnExportCSV").addEventListener("click", () => audit && exportCSV());
+  document.getElementById("btnExportXLS").addEventListener("click", () => audit && exportXLS());
+  document.getElementById("btnDailyReport").addEventListener("click", () => audit && generateDailyReport());
+
+  seedFromQuery();
+  fetchReport()
+    .then(report => {
+      audit = normalizeReport(report);
+      render();
+    })
+    .catch(err => {
+      console.error("load detail report failed:", err);
+      document.getElementById("devId").textContent = q("deviceId") || q("id") || "--";
+      document.getElementById("devType").textContent = "資料讀取失敗";
+      document.getElementById("detailTbody").innerHTML = `<tr class="loading-row"><td colspan="6" class="text-danger fw-bold">詳細報表 API 讀取失敗：${escapeHTML(err.message)}</td></tr>`;
+    });
+</script>
 </body>
 </html>

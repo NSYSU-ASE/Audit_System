@@ -130,7 +130,7 @@ ORDER BY b.BuildingId;";
                         }
 
                         var values = new List<int>();
-                        for (int i = 1; i <= 7; i++)
+                        foreach (var column in moduleColumns)
                         {
                             var value = reader[column] == DBNull.Value
                                 ? 0
@@ -149,6 +149,148 @@ ORDER BY b.BuildingId;";
                     fr = frList,
                     regions,
                     buildingFR = buildingFr
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    detail = ex.ToString()
+                });
+            }
+        }
+
+        [HttpGet("area")]
+        public IActionResult GetArea(
+            [FromQuery] string period = "2025-12",
+            [FromQuery] string region = "ZoneII")
+        {
+            try
+            {
+                using var conn = (SqlConnection)_dbConnection;
+                conn.Open();
+
+                var moduleColumns = new[] { "IAM", "SWI", "FWL", "EVT", "AUD", "DAT", "RES" };
+
+                const string areaSql = @"
+SELECT
+    a.AreaName,
+    a.OwnerName,
+    AVG(CAST(ar.IAM AS FLOAT)) AS IAM,
+    AVG(CAST(ar.SWI AS FLOAT)) AS SWI,
+    AVG(CAST(ar.FWL AS FLOAT)) AS FWL,
+    AVG(CAST(ar.EVT AS FLOAT)) AS EVT,
+    AVG(CAST(ar.AUD AS FLOAT)) AS AUD,
+    AVG(CAST(ar.DAT AS FLOAT)) AS DAT,
+    AVG(CAST(ar.RES AS FLOAT)) AS RES
+FROM dbo.Area a
+LEFT JOIN dbo.Building b ON a.AreaId = b.AreaId
+LEFT JOIN dbo.Device d ON b.BuildingId = d.BuildingId
+LEFT JOIN dbo.AuditResult ar ON d.DeviceId = ar.DeviceId AND ar.AuditPeriod = @Period
+WHERE a.AreaName = @Region
+    OR a.AreaCode = @Region
+    OR REPLACE(a.AreaName, N' ', N'') = REPLACE(@Region, N' ', N'')
+    OR REPLACE(a.AreaCode, N' ', N'') = REPLACE(@Region, N' ', N'')
+GROUP BY a.AreaId, a.AreaName, a.OwnerName;";
+
+                using var areaCmd = new SqlCommand(areaSql, conn);
+                areaCmd.Parameters.AddWithValue("@Period", period);
+                areaCmd.Parameters.AddWithValue("@Region", region);
+
+                string? areaName = null;
+                string? ownerName = null;
+                var areaFr = new List<int>();
+
+                using (var reader = areaCmd.ExecuteReader())
+                {
+                    if (!reader.Read())
+                    {
+                        return NotFound(new
+                        {
+                            message = $"Area '{region}' was not found.",
+                            period,
+                            region
+                        });
+                    }
+
+                    areaName = reader["AreaName"]?.ToString();
+                    ownerName = reader["OwnerName"]?.ToString();
+
+                    foreach (var column in moduleColumns)
+                    {
+                        var value = reader[column] == DBNull.Value
+                            ? 0
+                            : Convert.ToDouble(reader[column]);
+                        areaFr.Add((int)Math.Round(value));
+                    }
+                }
+
+                const string buildingSql = @"
+SELECT
+    b.BuildingName,
+    b.OwnerName,
+    AVG(CAST(ar.IAM AS FLOAT)) AS IAM,
+    AVG(CAST(ar.SWI AS FLOAT)) AS SWI,
+    AVG(CAST(ar.FWL AS FLOAT)) AS FWL,
+    AVG(CAST(ar.EVT AS FLOAT)) AS EVT,
+    AVG(CAST(ar.AUD AS FLOAT)) AS AUD,
+    AVG(CAST(ar.DAT AS FLOAT)) AS DAT,
+    AVG(CAST(ar.RES AS FLOAT)) AS RES
+FROM dbo.Area a
+INNER JOIN dbo.Building b ON a.AreaId = b.AreaId
+LEFT JOIN dbo.Device d ON b.BuildingId = d.BuildingId
+LEFT JOIN dbo.AuditResult ar ON d.DeviceId = ar.DeviceId AND ar.AuditPeriod = @Period
+WHERE a.AreaName = @Region
+    OR a.AreaCode = @Region
+    OR REPLACE(a.AreaName, N' ', N'') = REPLACE(@Region, N' ', N'')
+    OR REPLACE(a.AreaCode, N' ', N'') = REPLACE(@Region, N' ', N'')
+GROUP BY b.BuildingId, b.BuildingName, b.OwnerName
+ORDER BY b.BuildingId;";
+
+                using var buildingCmd = new SqlCommand(buildingSql, conn);
+                buildingCmd.Parameters.AddWithValue("@Period", period);
+                buildingCmd.Parameters.AddWithValue("@Region", region);
+
+                var buildings = new Dictionary<string, List<int>>();
+                var buildingOwners = new Dictionary<string, string?>();
+
+                using (var reader = buildingCmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var buildingName = reader["BuildingName"]?.ToString();
+                        if (string.IsNullOrWhiteSpace(buildingName))
+                        {
+                            continue;
+                        }
+
+                        var values = new List<int>();
+                        foreach (var column in moduleColumns)
+                        {
+                            var value = reader[column] == DBNull.Value
+                                ? 0
+                                : Convert.ToDouble(reader[column]);
+                            values.Add((int)Math.Round(value));
+                        }
+
+                        buildings[buildingName] = values;
+                        buildingOwners[buildingName] = reader["OwnerName"]?.ToString();
+                    }
+                }
+
+                return Ok(new
+                {
+                    period,
+                    area = new
+                    {
+                        areaName,
+                        ownerName,
+                        avg = areaFr.Count > 0 ? (int)Math.Round(areaFr.Average()) : 0,
+                        fr = areaFr
+                    },
+                    buildings,
+                    buildingOwners
                 });
             }
             catch (Exception ex)
@@ -232,9 +374,10 @@ ORDER BY d.DeviceId;";
                 {
                     var hasIdentityData = Convert.ToBoolean(reader["HasIdentityData"]);
                     var fr = new List<int?>();
-                    for (var i = 1; i <= 7; i++)
+                    for (var i = 0; i < moduleColumns.Length; i++)
                     {
-                        if (reader[$"FR{i}"] == DBNull.Value)
+                        var column = moduleColumns[i];
+                        if (reader[column] == DBNull.Value)
                         {
                             fr.Add(null);
                             continue;

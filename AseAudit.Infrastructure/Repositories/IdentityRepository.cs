@@ -82,7 +82,8 @@ SELECT TOP 1
 FROM dbo.Device d
 INNER JOIN dbo.Building b ON d.BuildingId = b.BuildingId
 INNER JOIN dbo.Area a ON b.AreaId = a.AreaId
-WHERE d.DeviceId = @DeviceId;";
+WHERE d.DeviceId = @DeviceId
+   OR d.HostName = @DeviceId;";
 
         return _conn.QueryFirstOrDefault<TargetDeviceInfo>(sql, new { DeviceId = deviceId });
     }
