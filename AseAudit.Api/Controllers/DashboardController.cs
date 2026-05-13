@@ -130,7 +130,7 @@ ORDER BY b.BuildingId;";
                         }
 
                         var values = new List<int>();
-                        foreach (var column in moduleColumns)
+                        for (int i = 1; i <= 7; i++)
                         {
                             var value = reader[column] == DBNull.Value
                                 ? 0
@@ -232,10 +232,9 @@ ORDER BY d.DeviceId;";
                 {
                     var hasIdentityData = Convert.ToBoolean(reader["HasIdentityData"]);
                     var fr = new List<int?>();
-                    for (var i = 0; i < moduleColumns.Length; i++)
+                    for (var i = 1; i <= 7; i++)
                     {
-                        var column = moduleColumns[i];
-                        if (reader[column] == DBNull.Value)
+                        if (reader[$"FR{i}"] == DBNull.Value)
                         {
                             fr.Add(null);
                             continue;
