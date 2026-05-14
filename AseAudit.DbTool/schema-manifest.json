@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "database": "Ase_Audit",
+  "scriptRoot": "../AseAudit.Infrastructure/SQL_file",
+  "tables": [
+    { "name": "Area",          "loadOrder": 10,  "backupable": true,
+      "createScript": "Dashboard_Area_table_create.sql" },
+    { "name": "Building",      "loadOrder": 20,  "backupable": true,
+      "createScript": "Dashboard_Building_table_create.sql" },
+    { "name": "Device",        "loadOrder": 30,  "backupable": true,
+      "createScript": "Dashboard_Device_table_create.sql" },
+    { "name": "AuditResult",   "loadOrder": 40,  "backupable": true,
+      "createScript": "Dashboard_AuditResult_table_create.sql" },
+    { "name": "AuditFinding",  "loadOrder": 50,  "backupable": true,
+      "createScript": "Dashboard_AuditFinding_table_create.sql" },
+    { "name": "Identification_AM_Account", "loadOrder": 100, "backupable": true,
+      "createScript": "Identification_AM_Account_table_create.sql" },
+    { "name": "Identification_AM_rule",    "loadOrder": 110, "backupable": true,
+      "createScript": "Identification_AM_rule_table_create.sql" },
+    { "name": "FireWallRule",  "loadOrder": 120, "backupable": true,
+      "createScript": "Firewall_FireWallRule_table_create.sql" }
+  ]
+}
