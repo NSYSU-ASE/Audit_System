@@ -130,9 +130,8 @@ ORDER BY b.BuildingId;";
                         }
 
                         var values = new List<int>();
-                        for (int i = 1; i <= 7; i++)
+                        foreach (var column in moduleColumns)
                         {
-                            var column = $"FR{i}";
                             var value = reader[column] == DBNull.Value
                                 ? 0
                                 : Convert.ToDouble(reader[column]);
@@ -233,9 +232,8 @@ ORDER BY d.DeviceId;";
                 {
                     var hasIdentityData = Convert.ToBoolean(reader["HasIdentityData"]);
                     var fr = new List<int?>();
-                    for (var i = 1; i <= 7; i++)
+                    foreach (var column in moduleColumns)
                     {
-                        var column = $"FR{i}";
                         if (reader[column] == DBNull.Value)
                         {
                             fr.Add(null);
@@ -243,7 +241,7 @@ ORDER BY d.DeviceId;";
                         }
 
                         var value = Convert.ToInt32(reader[column]);
-                        fr.Add(hasIdentityData && i > 0 && value == 0 ? null : value);
+                        fr.Add(hasIdentityData && value == 0 ? null : value);
                     }
 
                     devices.Add(new
