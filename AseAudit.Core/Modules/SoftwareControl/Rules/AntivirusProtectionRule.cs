@@ -27,7 +27,7 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Rules
                 return Fail("未提供 deviceId，無法查詢防毒狀態。");
             }
 
-            if (baseline is null || string.IsNullOrWhiteSpace(baseline.LatestVersion))
+            if (baseline is null || !HasVersionBaseline(baseline))
             {
                 // ✅ 最新版必須由他們提供，沒提供就視為無法稽核
                 return new AuditItemResult
@@ -36,7 +36,7 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Rules
                     Title = "防毒軟體版本/狀態檢查（SR6.2）",
                     Score = 0,
                     Weight = 1,
-                    Message = "未提供防毒最新版本基準（由對方維護輸入），無法判定是否為最新版本。"
+                    Message = "未提供防毒版本基準（LatestVersion 或 AllowedVersions 由對方維護輸入），無法判定是否符合版本要求。"
                 };
             }
 
@@ -50,23 +50,21 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Rules
 
             if (row.IsInstalled == false)
             {
-                return Fail("未安裝防毒軟體。");
+                return Fail(BuildDeviceMessage(deviceId, row, "未安裝防毒軟體。"));
             }
 
             // 可選：狀態異常就 0（你可以依 DB 狀態值調整）
             if (!IsStatusOk(row.Status))
             {
-                return Fail($"防毒狀態異常：{row.Status ?? "Unknown"}");
+                return Fail(BuildDeviceMessage(deviceId, row, $"防毒狀態異常：{row.Status ?? "Unknown"}"));
             }
 
             // 版本檢查：版本欄位名稱你忘了，會在 DTO 那邊改
             var installedVer = (row.InstalledVersion ?? "").Trim();
             if (string.IsNullOrWhiteSpace(installedVer))
             {
-                return Fail("未取得防毒版本欄位，無法判定是否為最新版本。");
+                return Fail(BuildDeviceMessage(deviceId, row, "未取得防毒版本欄位，無法判定是否符合版本要求。"));
             }
-
-            var latestVer = baseline.LatestVersion.Trim();
 
             var versionOk = IsVersionAcceptable(installedVer, baseline);
 
@@ -78,7 +76,20 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Rules
                     Title = "防毒軟體版本/狀態檢查（SR6.2）",
                     Score = 0,
                     Weight = 1,
-                    Message = $"防毒版本非最新或不符合基準。已裝版本：{installedVer}；基準最新版：{latestVer}"
+                    Message = BuildDeviceMessage(deviceId, row, $"防毒版本不符合基準。{BuildVersionBaselineMessage(installedVer, baseline)}")
+                };
+            }
+
+            var definitionCheck = CheckDefinition(row, baseline);
+            if (!definitionCheck.IsAcceptable)
+            {
+                return new AuditItemResult
+                {
+                    ItemKey = "software.antivirus",
+                    Title = "防毒軟體版本/狀態檢查（SR6.2）",
+                    Score = 0,
+                    Weight = 1,
+                    Message = BuildDeviceMessage(deviceId, row, definitionCheck.Message)
                 };
             }
 
@@ -88,7 +99,11 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Rules
                 Title = "防毒軟體版本/狀態檢查（SR6.2）",
                 Score = 100,
                 Weight = 1,
-                Message = $"防毒已安裝且符合版本基準（已裝：{installedVer}；基準：{latestVer}）。"
+                Passed = true,
+                Message = BuildDeviceMessage(
+                    deviceId,
+                    row,
+                    $"防毒已安裝、狀態正常且符合版本基準。{BuildVersionBaselineMessage(installedVer, baseline)}；{definitionCheck.Message}")
             };
         }
 
@@ -111,8 +126,13 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Rules
             // 例如：OK/Healthy/Running 代表正常，其它代表異常
             return s.Equals("OK", StringComparison.OrdinalIgnoreCase)
                 || s.Equals("Healthy", StringComparison.OrdinalIgnoreCase)
-                || s.Equals("Running", StringComparison.OrdinalIgnoreCase);
+                || s.Equals("Running", StringComparison.OrdinalIgnoreCase)
+                || s.Equals("Normal", StringComparison.OrdinalIgnoreCase);
         }
+
+        private static bool HasVersionBaseline(AntivirusBaselineDto baseline)
+            => !string.IsNullOrWhiteSpace(baseline.LatestVersion)
+                || (baseline.AllowedVersions is not null && baseline.AllowedVersions.Any(v => !string.IsNullOrWhiteSpace(v)));
 
         private static bool IsVersionAcceptable(string installedVer, AntivirusBaselineDto baseline)
         {
@@ -141,5 +161,80 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Rules
             // 嚴格：必須完全等於最新版
             return string.Equals(installedVer.Trim(), baseline.LatestVersion.Trim(), StringComparison.OrdinalIgnoreCase);
         }
+
+        private static DefinitionCheckResult CheckDefinition(
+            AntivirusStatusRecordDto row,
+            AntivirusBaselineDto baseline)
+        {
+            if (row.IsDefinitionUpdated == false)
+            {
+                return new DefinitionCheckResult(false, "病毒碼更新狀態異常或未更新。");
+            }
+
+            if (!string.IsNullOrWhiteSpace(baseline.LatestDefinitionVersion))
+            {
+                var installedDefinition = (row.DefinitionVersion ?? "").Trim();
+                if (string.IsNullOrWhiteSpace(installedDefinition))
+                {
+                    return new DefinitionCheckResult(false, "未取得病毒碼版本，無法比對病毒碼基準。");
+                }
+
+                if (!string.Equals(installedDefinition, baseline.LatestDefinitionVersion.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return new DefinitionCheckResult(
+                        false,
+                        $"病毒碼版本不符合基準。已裝病毒碼：{installedDefinition}；基準病毒碼：{baseline.LatestDefinitionVersion.Trim()}。");
+                }
+
+                return new DefinitionCheckResult(true, $"病毒碼版本符合基準（已裝：{installedDefinition}；基準：{baseline.LatestDefinitionVersion.Trim()}）。");
+            }
+
+            if (baseline.MaxDefinitionAgeDays is > 0)
+            {
+                if (row.DefinitionUpdatedAt is null)
+                {
+                    return new DefinitionCheckResult(false, "未取得病毒碼更新時間，無法判定是否在允許天數內。");
+                }
+
+                var newestAllowedDate = DateTime.UtcNow.Date.AddDays(-baseline.MaxDefinitionAgeDays.Value);
+                if (row.DefinitionUpdatedAt.Value.ToUniversalTime().Date < newestAllowedDate)
+                {
+                    return new DefinitionCheckResult(
+                        false,
+                        $"病毒碼更新時間過舊。最後更新：{row.DefinitionUpdatedAt.Value:yyyy-MM-dd}；允許天數：{baseline.MaxDefinitionAgeDays.Value} 天。");
+                }
+
+                return new DefinitionCheckResult(
+                    true,
+                    $"病毒碼更新時間符合基準（最後更新：{row.DefinitionUpdatedAt.Value:yyyy-MM-dd}；允許天數：{baseline.MaxDefinitionAgeDays.Value} 天）。");
+            }
+
+            if (row.IsDefinitionUpdated == true)
+            {
+                return new DefinitionCheckResult(true, "病毒碼更新狀態正常。");
+            }
+
+            return new DefinitionCheckResult(true, "未提供病毒碼基準或更新狀態，本次僅檢查防毒安裝、狀態與版本。");
+        }
+
+        private static string BuildVersionBaselineMessage(string installedVer, AntivirusBaselineDto baseline)
+        {
+            if (baseline.AllowedVersions is not null && baseline.AllowedVersions.Count > 0)
+            {
+                var allowed = string.Join(", ", baseline.AllowedVersions.Where(v => !string.IsNullOrWhiteSpace(v)).Select(v => v.Trim()));
+                return $"已裝版本：{installedVer}；允許版本：{allowed}";
+            }
+
+            return $"已裝版本：{installedVer}；基準最新版：{baseline.LatestVersion.Trim()}；比較方式：{(baseline.AllowGreaterOrEqual ? "大於或等於基準" : "必須完全相等")}";
+        }
+
+        private static string BuildDeviceMessage(string deviceId, AntivirusStatusRecordDto? row, string reason)
+        {
+            var productName = string.IsNullOrWhiteSpace(row?.ProductName) ? "Unknown" : row.ProductName!.Trim();
+            var status = string.IsNullOrWhiteSpace(row?.Status) ? "Unknown" : row.Status!.Trim();
+            return $"DeviceId：{deviceId}；產品：{productName}；狀態：{status}；{reason}";
+        }
+
+        private sealed record DefinitionCheckResult(bool IsAcceptable, string Message);
     }
 }

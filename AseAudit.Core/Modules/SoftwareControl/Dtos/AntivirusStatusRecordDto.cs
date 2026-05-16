@@ -12,11 +12,17 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Dtos
     public sealed class AntivirusStatusRecordDto
     {
         public string DeviceId { get; set; } = "";          // 機台識別碼/HostName/AssetId 之類
+        public string? ProductName { get; set; }            // 防毒產品名稱
         public bool IsInstalled { get; set; }               // 是否已安裝防毒
 
         // TODO: 你忘記版本欄位名稱的話，請把下面這行改成「他們資料庫實際的版本欄位」
         // 例：AgentVersion / ProductVersion / EngineVersion / DefinitionVersion ... 等
         public string? InstalledVersion { get; set; }       // ←【要改欄位名就改這個 property】
+
+        // 可選：病毒碼/定義檔資訊，若廠商已經提供更新狀態可直接填 IsDefinitionUpdated
+        public string? DefinitionVersion { get; set; }
+        public DateTime? DefinitionUpdatedAt { get; set; }
+        public bool? IsDefinitionUpdated { get; set; }
 
         // 可選：如果他們 DB 有狀態欄位（正常/停用/過期/異常碼）
         public string? Status { get; set; }                 // e.g. "OK", "Disabled", "Expired"

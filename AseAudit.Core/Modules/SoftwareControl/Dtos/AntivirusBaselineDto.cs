@@ -16,6 +16,10 @@ namespace AseAudit.Core.Modules.SoftwareRecognition.Dtos
         // ✅ 最新版本由他們輸入（你只接 DB 的值，不要寫死）
         public string LatestVersion { get; set; } = "";
 
+        // 可選：病毒碼/定義檔基準。未提供時不強制判定病毒碼版本。
+        public string? LatestDefinitionVersion { get; set; }
+        public int? MaxDefinitionAgeDays { get; set; }
+
         // 可選：允許落後的版本（例如允許落後一個小版本）
         public bool AllowGreaterOrEqual { get; set; } = true;
 
