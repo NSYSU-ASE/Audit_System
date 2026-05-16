@@ -14,6 +14,7 @@ namespace AseAudit.Core.Modules.ResourceManagement.Dtos
 
         public ResourceMonitoringSnapshotDto? Monitoring { get; set; }
         public EmergencyPowerSnapshotDto? EmergencyPower { get; set; }
+        public List<ResourceManualReviewResultDto> ManualReviewResults { get; set; } = new();
 
         public List<TopologyAssetRecordDto> TopologyAssets { get; set; } = new();
         public List<NetworkSecurityBaselineSnapshotDto> SecurityBaselines { get; set; } = new();

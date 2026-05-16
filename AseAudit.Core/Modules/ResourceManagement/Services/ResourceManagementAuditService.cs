@@ -22,7 +22,7 @@ namespace AseAudit.Core.Modules.ResourceManagement.Services
             var results = new List<AuditItemResult>
             {
                 _resourceUsageRule.Evaluate(snapshot.Monitoring),
-                _emergencyPowerRule.Evaluate(snapshot.EmergencyPower),
+                _emergencyPowerRule.Evaluate(GetManualReview(snapshot, "resource.7.5")),
                 _networkSecurityRule.Evaluate(snapshot.TopologyAssets, snapshot.SecurityBaselines),
                 _componentInventoryRule.Evaluate(snapshot.TopologyAssets, snapshot.ComponentInventory)
             };
@@ -37,6 +37,16 @@ namespace AseAudit.Core.Modules.ResourceManagement.Services
                 Results = results,
                 TotalScore = totalScore
             };
+        }
+
+        private static ResourceManualReviewResultDto? GetManualReview(
+            ResourceManagementSnapshotDto snapshot,
+            string itemKey)
+        {
+            return snapshot.ManualReviewResults
+                .FirstOrDefault(x =>
+                    string.Equals(x.ItemKey, itemKey, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.DeviceId, snapshot.DeviceId, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

@@ -15,5 +15,6 @@ namespace AseAudit.Core.Modules.SystemEvent.Dtos
         public SessionControlStatusDto SessionControl { get; set; } = new();
         public StorageMonitoringStatusDto StorageMonitoring { get; set; } = new();
         public ResponseHandlingStatusDto ResponseHandling { get; set; } = new();
+        public TimeSyncStatusDto TimeSync { get; set; } = new();
     }
 }

@@ -11,31 +11,36 @@ namespace AseAudit.Core.Modules.ResourceManagement.Rules
 {
     public sealed class EmergencyPowerProtectionRule
     {
-        public AuditItemResult Evaluate(EmergencyPowerSnapshotDto? dto)
+        public AuditItemResult Evaluate(ResourceManualReviewResultDto? review)
         {
-            if (dto is null)
+            if (review is null)
             {
-                return Fail("找不到緊急電源資料。");
+                return Fail("找不到 UPS / 備援電源人工審查結果。");
             }
 
-            if (dto.HasUps || dto.HasBackupPower)
+            if (!review.IsReviewed)
             {
-                if (dto.HasManualReviewEvidence)
-                {
-                    return Pass("已具備 UPS / 備援電源，且有人工審查佐證。", 100);
-                }
+                return Fail("尚未完成 UPS / 備援電源人工審查。");
+            }
 
+            if (review.IsPass)
+            {
+                return Pass(BuildMessage("人工審查通過，已確認 UPS / 備援電源機制。", review), 100);
+            }
+
+            if (review.IsPartial)
+            {
                 return new AuditItemResult
                 {
                     ItemKey = "resource.7.5",
                     Title = "緊急電源檢查（SR7.5）",
                     Score = 50,
                     Weight = 1,
-                    Message = "已有 UPS / 備援電源資料，但缺少人工審查佐證。"
+                    Message = BuildMessage("人工審查部分符合，UPS / 備援電源機制尚未完整。", review)
                 };
             }
 
-            return Fail("未建立 UPS / 備援電源機制。");
+            return Fail(BuildMessage("人工審查未通過，未確認具備 UPS / 備援電源機制。", review));
         }
 
         private static AuditItemResult Pass(string msg, int score) => new()
@@ -55,5 +60,22 @@ namespace AseAudit.Core.Modules.ResourceManagement.Rules
             Weight = 1,
             Message = msg
         };
+
+        private static string BuildMessage(string prefix, ResourceManualReviewResultDto review)
+        {
+            var parts = new List<string> { prefix };
+
+            if (!string.IsNullOrWhiteSpace(review.Comment))
+            {
+                parts.Add(review.Comment.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(review.EvidenceFileName))
+            {
+                parts.Add($"佐證檔案：{review.EvidenceFileName.Trim()}");
+            }
+
+            return string.Join("；", parts);
+        }
     }
 }
