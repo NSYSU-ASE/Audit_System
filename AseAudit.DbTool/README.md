@@ -16,11 +16,34 @@ AseAudit.DbTool.exe
 
 ## 新增資料表的標準流程
 
-1. 在 `../AseAudit.Infrastructure/SQL_file/` 加入 `NewTable_table_create.sql`
-2. 在 `schema-manifest.json` 加入 `tables` 條目（注意 loadOrder 在 FK 父表之後）
+分兩部分：**db-tool 端**讓工具認得新表，**系統端**讓 API/Agent 能讀寫新表。
+
+### db-tool 端（讓 DbTool 能建立 / 備份新表）
+
+1. **在 `AseAudit.Infrastructure/SQL_file/` 加入 `NewTable_table_create.sql`**
+   - 這支建表 SQL 是新表**結構的唯一來源**（欄位、型別、PK/FK 全寫在這）
+   - DbTool 不解析欄位，只把整個腳本交給 SQL Server 執行
+   - build 時 csproj 的 `*.sql` Target 會自動複製到 bin，**不需改 csproj**
+2. 在 `schema-manifest.json` 的 `tables` 加入條目：
+   - `createScript`：填上一步的 .sql 檔名
+   - `loadOrder`：FK 父表的數字要比子表小；現有最大為 120，無 FK 關係的新表接 130 即可
+   - `backupable`：`true` 會出現在備份選單，靜態查找表可設 `false`
+
+只要這兩步，DbTool 就能建立、備份、還原新表。`ManifestLoader` 啟動時會驗證
+表名合法性、name/loadOrder 唯一性、createScript 檔案存在性。
+
+> **db-tool 不儲存表結構。** manifest 只記「表名 + 順序 + 能否備份」；
+> 結構定義只存在於 `SQL_file/*.sql`。改欄位時只改該 .sql 即可，manifest 不用動。
+> 但注意：bcp 備份採 native 格式，**改過結構後舊的 bcp 備份檔即失效**，需重新備份。
+
+### 系統端（讓 API / Agent 能讀寫新表，與 DbTool 無關）
+
 3. 在 `AseAudit.Core/Entities/` 加 POCO
 4. 在 `AseAudit.Infrastructure/Data/AuditDbContext.cs` 加 `DbSet<NewTable>`
 5. （若需要寫入邏輯）加 Repository
+
+### 套用
+
 6. 跑 `dotnet run --project AseAudit.DbTool`，選「重建資料庫」
 
 ## manifest 欄位
