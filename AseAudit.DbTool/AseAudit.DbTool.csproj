@@ -19,7 +19,16 @@
       <CopyToOutputDirectory>PreserveNewer</CopyToOutputDirectory>
     </None>
     <None Update="schema-manifest.json">
-      <CopyToOutputDirectory>PreserveNewer</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <Target Name="CopyInfrastructureSqlFiles" AfterTargets="Build">
+    <ItemGroup>
+      <_SqlFilesToCopy Include="$(MSBuildThisFileDirectory)..\AseAudit.Infrastructure\SQL_file\*.sql" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_SqlFilesToCopy)"
+          DestinationFolder="$(OutDir)SQL_file"
+          SkipUnchangedFiles="true" />
+  </Target>
 </Project>

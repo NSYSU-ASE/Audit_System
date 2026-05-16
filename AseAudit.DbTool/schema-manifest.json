@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "database": "Ase_Audit",
-  "scriptRoot": "../AseAudit.Infrastructure/SQL_file",
+  "scriptRoot": "SQL_file",
   "tables": [
     { "name": "Area",          "loadOrder": 10,  "backupable": true,
       "createScript": "Dashboard_Area_table_create.sql" },
